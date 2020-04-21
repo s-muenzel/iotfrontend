@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<style>
+h1 {
+	text-shadow: 1px 1px grey;
+}
+td:nth-child(even) {
+  background-color: #f0f0f0;
+}
+td:nth-child(4) {
+  text-align: center;
+}
+tr:hover {
+ background-color: #ffddee;
+}
+</style>
+<head>
+<meta charset="UTF-8">
+<title>Alte Rinne 14 - Edit</title>
+<body>
+<h1>
+	Alte Rinne 14 - Edit
+</h1>
+<form action="/submitchange">
+<label for="a0">{{ label0 }}:</label><br>
+<input type="text" id="a0" name="a0" value="{{arg0}}"><br>
+<label for="a1">{{ label1 }}:</label><br>
+<input type="text" id="a1" name="a1" value="{{arg1}}"><br>
+<label for="a2">{{ label2 }}:</label><br>
+<input type="text" id="a2" name="a2" value="{{arg2}}"><br>
+<input type="hidden" id="typ" name="typ"  value="{{typ}}">
+<input type="hidden" id="lfdnr" name="lfdnr"  value="{{lfdnr}}">
+<input type="submit" value="Submit">
+</form>
+</body>
+</html>

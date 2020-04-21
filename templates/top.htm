@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<style>
+h1 {
+	text-shadow: 1px 1px grey;
+}
+.nav td {
+  display: inline-block;
+}
+.nav td {
+  text-align: center;
+}
+th {
+  text-align: left;
+}
+.nav td {
+  text-align: center;
+}
+</style>
+<head>
+<meta charset="UTF-8">
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+	google.charts.load('current', {'packages':['gauge']});
+	google.charts.setOnLoadCallback(drawChart);
+
+	function drawChart() {
+		var data_T = google.visualization.arrayToDataTable([
+			  ['Label', 'Value'],
+			  ['°C', {{ T }}],
+			]);
+		var data_F = google.visualization.arrayToDataTable([
+			  ['Label', 'Value'],
+			  ['%', {{ F }}],
+			]);
+		var data_H = google.visualization.arrayToDataTable([
+			  ['Label', 'Value'],
+			  [' ', {{ H }}]
+			]);
+
+		var options_T = {
+			width: 400, height: 120,
+			greenColor: '#0010a0', greenFrom: -20, greenTo: 0,
+			redFrom: 30, redTo: 50,
+			yellowFrom:15, yellowTo: 30,
+			min: -20, max: 50,
+			minorTicks: 5,
+			majorTicks: ['-20','-10','0','10','20','30','40','50']
+		};
+
+		var options_F = {
+			width: 400, height: 120,
+			yellowFrom:0, yellowTo: 40,
+			greenFrom: 40, greenTo: 65,
+			redFrom: 65, redTo: 100,
+			min: 0, max: 100,
+			minorTicks: 5,
+			majorTicks: ['0','20','40','60','80','100']
+		};
+
+		var options_H = {
+			width: 400, height: 120,
+			redColor: '#101010', redFrom: 0, redTo: 400,
+			yellowColor: '#a0a0a0', yellowFrom:400, yellowTo: 2047,
+			min: 0, max: 4095,
+			minorTicks: 5,
+			majorTicks: ['0','50%','100%']
+		};
+
+		var chart_T = new google.visualization.Gauge(document.getElementById('chart_div_T'));
+		var chart_F = new google.visualization.Gauge(document.getElementById('chart_div_F'));
+		var chart_H = new google.visualization.Gauge(document.getElementById('chart_div_H'));
+
+        chart_T.draw(data_T, options_T);
+        chart_F.draw(data_F, options_F);
+        chart_H.draw(data_H, options_H);
+      }
+</script>
+
+<title>Alte Rinne 14</title>
+</head>
+<body>
+<h1>
+	Alte Rinne 14
+</h1>
+<h2>
+Aktuelles Wetter
+</h2>
+<table id="T">
+<tr>
+ <th class="nav">Temperatur</th>
+ <th class="nav">Rel. Feuchtigkeit</th>
+ <th class="nav">Helligkeit</th>
+</tr>
+<tr>
+ <td class="nav" id="chart_div_T">Temperatur</td>
+ <td class="nav" id="chart_div_F">Feuchtigkeit</td>
+ <td class="nav" id="chart_div_H">Helligkeit</td>
+</tr>
+</table>
+<h2>
+	IOT Devices
+</h2>
+<table id="T">
+<tr>
+ <th><a href="/devices">Device</a></th>
+ <th>Beschreibung</th>
+</tr>
+{% for item in eintraege %}
+<tr>
+ <td><a id="L" href="{{ item[1] }}">{{ item[0] }}</a></td>
+ <td>{{ item[2] }}</td>
+</tr>
+{% endfor %}
+</table></body>
+</html>

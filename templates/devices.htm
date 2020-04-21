@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<style>
+h1 {
+	text-shadow: 1px 1px grey;
+}
+td:nth-child(even) {
+  background-color: #f0f0f0;
+}
+td:nth-child(4) {
+  text-align: center;
+}
+tr:hover {
+/* color: #aaa; */
+ background-color: #ffddee;
+}
+</style>
+<head>
+<meta charset="UTF-8">
+<title>Alte Rinne 14 - IOT Devices</title>
+<body>
+<h1>
+	Alte Rinne 14 - IOT Devices
+</h1>
+<table id="T"><tr><th>Device</th><th>URL</th><th>IPv4</th><th>Status</th><th>Letzter Update</th></tr>
+{% for item in eintraege %}
+<tr><td><a id="L" href="{{ item[1] }}">{{ item[0] }}</a></td>
+	<td>{{ item[1] }}</td>
+	<td>{{- item[2] -}}.{{- item[3] -}}.{{- item[4] -}}.{{- item[5] -}}</td>
+	<td>{{ item[6] }}</td>
+	<td>{{ item[7] }}</td>
+	</tr>
+{% endfor %}
+</table>
+</body>
+</html>

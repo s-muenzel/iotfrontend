@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<style>
+h1 {
+	text-shadow: 1px 1px grey;
+}
+td:nth-child(2) {
+  background-color: #f0f0f0;
+}
+</style>
+<head>
+<meta charset="UTF-8">
+<title>Alte Rinne 14 - IOT Regel-Details </title>
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous"></head>
+<body>
+<h1>
+	Alte Rinne 14 - IOT Regel-Details
+</h1>
+<h2>Regel: {{ actionname }}</h2>
+<h3>Trigger</h3>
+<table id="T"><tr>
+  <th></th>
+  <th>Typ</th>
+  <th>Min</th>
+  <th>Max</th>
+</tr>
+{% for item in trigger %}
+<tr>
+  <td><a href="/edit/trigger/{{ item[3] }}"><small><i class="fas fa-edit"></i></small></a></td>
+  <td>{{ item[0] }}</td>
+  <td>{{ item[1] }}</td>
+  <td>{{ item[2] }}</td>
+</tr>
+{% endfor %}
+</table>
+<h3>Bedingungen</h3>
+<table id="T">
+<tr>
+  <th></th>
+  <th>Typ</th>
+  <th>Min</th>
+  <th>Max</th>
+</tr>
+{% for item in conditions %}
+<tr>
+  <td>
+    <a href="/condition/remove/{{ item[3] }}"><small><i class="fas fa-minus"></i></small></a>
+    <a href="/edit/condition/{{ item[3] }}"><small><i class="fas fa-edit"></i></small></a></td>
+  <td>{{ item[0] }}</td>
+  <td>{{ item[1] }}</td>
+  <td>{{ item[2] }}</td>
+</tr>
+{% endfor %}
+<tr><td><a href="/condition/add/{{ actionid }}"><small><i class="fas fa-plus"></i></small></a></td></tr>
+</table>
+<h3>Aktion</h3>
+<table id="T"><tr>
+  <th></th>
+  <th>Typ</th>
+  <th>Arg 1</th>
+  <th>Arg 2</th>
+</tr>
+{% for item in action %}
+<tr>
+  <td><a href="/edit/action/{{ item[3] }}"><small><i class="fas fa-edit"></i></small></a></td>
+  <td>{{ item[0] }}</td>
+  <td>{{ item[1] }}</td>
+  <td>{{ item[2] }}</td>
+</tr>
+{% endfor %}
+</table>
+<p><a href="/actions">zurück</a></p>
+</body>
+</html>

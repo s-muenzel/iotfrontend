@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<style>
+h1 {
+	text-shadow: 1px 1px grey;
+}
+td:nth-child(even) {
+  background-color: #f0f0f0;
+}
+td:nth-child(4) {
+  text-align: center;
+}
+tr:hover {
+ background-color: #ffddee;
+}
+</style>
+<head>
+<meta charset="UTF-8">
+<title>Alte Rinne 14 - IOT Regeln</title>
+<body>
+<h1>
+	Alte Rinne 14 - IOT Regeln
+</h1>
+<table id="T"><tr><th>Regel</th></tr>
+{% for item in eintraege %}
+<tr><td><a id="L" href="/action/{{ item[1] }}">{{ item[0] }}</a></td>
+</tr>
+{% endfor %}
+</table>
+</body>
+</html>
