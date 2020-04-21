@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<style>
+h1 {
+	text-shadow: 1px 1px grey;
+}
+td:nth-child(even) {
+  background-color: #f0f0f0;
+}
+td:nth-child(4) {
+  text-align: center;
+}
+tr:hover {
+ background-color: #ffddee;
+}
+</style>
+<head>
+<meta charset="UTF-8">
+<title>Alte Rinne 14 - Add Condition</title>
+<body>
+<h1>
+	Alte Rinne 14 - Bedingung hinzufügen
+</h1>
+<form action="/addcond">
+<label for="a0">Typ:</label><br>
+<input type="list" list="liste" id="a0" name="a0" value="">
+<datalist id="liste">
+{% for item in eintraege %}
+<option value="{{ item }}">
+{% endfor %}
+</datalist>
+<br>
+<label for="a1">Mindestwert:</label><br>
+<input type="text" id="a1" name="a1" value=""><br>
+<label for="a2">Maximalwert:</label><br>
+<input type="text" id="a2" name="a2" value=""><br>
+<input type="hidden" id="action_id" name="action_id"  value="{{action_id}}">
+<input type="submit" value="Submit">
+</form>
+<a href="/action/{{action_id}}">zurück</a>
+</body>
+</html>
