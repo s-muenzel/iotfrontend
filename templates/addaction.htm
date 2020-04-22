@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Alte Rinne 14 - Add Actzivity</title>
+<body>
+<h1>
+	Alte Rinne 14 - neue Regel hinzufügen
+</h1>
+<form action="/addaktion">
+<fieldset>
+  <legend>Allgemeine Regel-Werte</legend>
+<label for="a_name">Regelname:</label><br>
+<input type="text" id="a_name" name="a_name" value="" required><br>
+<label for="a_desc">Beschreibung</label><br>
+<input type="text" id="a_desc" name="a_desc" value=""><br>
+<label for="a_dev">Mqtt-Präfix</label><br>
+<input type="list" list="liste" id="a_dev" name="a_dev" value="">
+<datalist id="liste">
+{% for item in devices %}
+<option value="{{ item }}">
+{% endfor %}
+</datalist>
+</fieldset>
+<fieldset>
+  <legend>Trigger</legend>
+<label for="t_topic">Topic</label><br>
+<input type="list" list="t_liste" id="t_topic" name="t_topic" value="">
+<datalist id="t_liste">
+{% for item in trigger %}
+<option value="{{ item }}">
+{% endfor %}
+</datalist><br>
+<label for="t_min">Mindestwert</label><br>
+<input type="text" id="t_min" name="t_min" value=""><br>
+<label for="t_max">Maximalwert</label><br>
+<input type="text" id="t_max" name="t_max" value=""><br>
+</fieldset>
+<fieldset>
+  <legend>Aktion</legend>
+<label for="ak_typ">Typ</label><br>
+<input type="list" list="a_liste" id="ak_typ" name="ak_typ" value="">
+<datalist id="a_liste">
+{% for item in actiontyp %}
+<option value="{{ item }}">
+{% endfor %}
+</datalist><br>
+<label for="ak_arg1">1. Argument</label><br>
+<input type="text" id="ak_arg1" name="ak_arg1" value=""><br>
+<label for="ak_arg2">2. Argument</label><br>
+<input type="text" id="ak_arg2" name="ak_arg2" value="">
+</fieldset>
+<fieldset>
+  <legend>Bedingungen</legend>
+  <label for="c_typ">Typ</label><br>
+  <input type="list" list="c_liste" id="c_typ" name="c_typ" value="">
+  <datalist id="c_liste">
+  {% for item in condtyp %}
+  <option value="{{ item }}">
+  {% endfor %}
+  </datalist><br>
+  <label for="c_arg1">1. Argument</label><br>
+  <input type="text" id="c_arg1" name="c_arg1" value=""><br>
+  <label for="c_arg2">2. Argument</label><br>
+  <input type="text" id="c_arg2" name="c_arg2" value="">
+  </fieldset>
+<input type="submit" value="Submit">
+</form>
+<a href="/actions">zurück</a>
+</body>
+</html>

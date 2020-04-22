@@ -13,6 +13,10 @@ case $key in
 	LOGS_CMD="sudo docker logs --follow"
     shift # past value
     ;;
+	*)
+	echo "Unknown option"
+	shift
+	;;
 esac
 done
 

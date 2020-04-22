@@ -62,8 +62,8 @@ def top():
         return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
                '<title>Fehler</title></head>'\
                '<body><h1>Datenbank Fehler</h1>{f}</h1></body>'.format(f=err)
-    except:  # pylint: disable=W0702
-        logging.error("General failure")
+    except Exception as err:  # pylint: disable=W0703
+        logging.warning("General failure %s", str(err))
         return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
                '<title>Fehler</title></head>'\
                '<body><h1>allgemeiner Fehler</h1></h1></body>'
@@ -89,8 +89,8 @@ def devices():
         return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
                '<title>Fehler</title></head>'\
                '<body><h1>Datenbank Fehler</h1>{f}</h1></body>'.format(f=err)
-    except:  # pylint: disable=W0702
-        logging.error("General failure")
+    except Exception as err:  # pylint: disable=W0703
+        logging.warning("General failure %s", str(err))
         return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
                '<title>Fehler</title></head>'\
                '<body><h1>allgemeiner Fehler</h1></body>'
@@ -119,14 +119,213 @@ def actions():
         return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
                '<title>Fehler</title></head>'\
                '<body><h1>Datenbank Fehler</h1>{f}</h1></body>'.format(f=err)
-    except:  # pylint: disable=W0702
-        logging.warning("General failure")
+    except Exception as err:  # pylint: disable=W0703
+        logging.warning("General failure %s", str(err))
         return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
                '<title>Fehler</title></head>'\
                '<body><h1>allgemeiner Fehler</h1></body>'
 
-### TODO: /aktion/add
-### TODO: /aktion/remove/id..
+
+@FLASK_APP.route('/aktion/add')
+def aktionadd():
+    """aktionadd: Füllt die Seite zum Erstellen einer Aktion."""
+    logging.warning("aktionadd")
+    try:
+        db_connection = mariadb.connect(option_files="db.cnf", database="iot")
+        cursor = db_connection.cursor()
+        cursor.execute("SELECT DISTINCT mqtt_name FROM device_description"
+                       " WHERE NOT mqtt_name = ''")
+        mqttdevices = []
+        for mqtt_name in cursor:
+            mqttdevices.append(mqtt_name[0])
+        cursor.close()
+        logging.warning("added devices: {}".format(mqttdevices))
+        cursor = db_connection.cursor()
+        cursor.execute("SELECT DISTINCT topic FROM mqtt_msgs"
+                       " WHERE max_age = 0")
+        trigger = []
+        for topic in cursor:
+            trigger.append(topic[0])
+        cursor.close()
+        logging.warning("added trigger: {}".format(trigger))
+        cursor = db_connection.cursor()
+        cursor.execute("SELECT DISTINCT typ FROM activity_actions")
+        actiontyp = []
+        for typ in cursor:
+            actiontyp.append(typ[0])
+        cursor.close()
+        logging.warning("added actiontyp: {}".format(actiontyp))
+        cursor = db_connection.cursor()
+        cursor.execute("SELECT DISTINCT typ FROM activity_conditions")
+        condtyp = []
+        for typ in cursor:
+            condtyp.append(typ[0])
+        cursor.close()
+        logging.warning("added condtyp: {}".format(condtyp))
+        return render_template('addaction.htm',
+                               devices=mqttdevices, trigger=trigger,
+                               actiontyp=actiontyp, condtyp=condtyp)
+    except mariadb.Error as err:
+        logging.warning("Database failure: %s", err)
+        return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
+               '<title>Fehler</title></head>'\
+               '<body><h1>Datenbank Fehler</h1>{f}</h1></body>'.format(f=err)
+    except Exception as err:  # pylint: disable=W0703
+        logging.warning("General failure %s", str(err))
+        return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
+               '<title>Fehler</title></head>'\
+               '<body><h1>allgemeiner Fehler</h1></body>'
+
+
+@FLASK_APP.route('/addaktion', methods=["GET"])
+def addaktion():
+    """addaktion.
+
+    Trägt eine neue Regel in die verschiedenen Tabellen ein."""
+    logging.warning("addaktion")
+
+    try:
+        a_name = request.values.get("a_name", "")
+        a_desc = request.values.get("a_desc", "")
+        a_dev = request.values.get("a_dev", "")
+
+        t_topic = request.values.get("t_topic", "")
+        t_min = request.values.get("t_min", "")
+        t_max = request.values.get("t_max", "")
+
+        ak_typ = request.values.get("ak_typ", "")
+        ak_arg1 = request.values.get("ak_arg1", "")
+        ak_arg2 = request.values.get("ak_arg2", "")
+
+        c_typ = request.values.get("c_typ", "")
+        c_arg1 = request.values.get("c_arg1", "")
+        c_arg2 = request.values.get("c_arg2", "")
+
+        db_connection = mariadb.connect(option_files="db.cnf", database="iot")
+        cursor = db_connection.cursor()
+        cursor.execute("SELECT MAX(id) FROM activities")
+        result = cursor.fetchall()
+        logging.warning("result {}".format(result))
+        new_id = result[0][0]+1
+        logging.warning("New Activity ID is %d", new_id)
+
+        cursor = db_connection.cursor()
+        sql_str = "INSERT INTO activities "\
+                  "(id, name, device, description) VALUES ({}, '{}',"\
+                  " '{}', '{}')".format(new_id, a_name, a_dev, a_desc)
+        logging.warning("activities: %s", sql_str)
+        cursor.execute(sql_str)
+        cursor.close()
+        cursor = db_connection.cursor()
+        sql_str = "INSERT INTO activity_trigger "\
+                  "(id, topic, min, max) VALUES ({}, '{}',"\
+                  " {}, '{}')".format(new_id, t_topic, t_min, t_max)
+        logging.warning("trigger: %s", sql_str)
+        cursor.execute(sql_str)
+        cursor.close()
+        cursor = db_connection.cursor()
+        sql_str = "INSERT INTO activity_actions "\
+                  "(id, typ, arg1, arg2) VALUES ({}, '{}',"\
+                  " '{}', '{}')".format(new_id, ak_typ, ak_arg1, ak_arg2)
+        logging.warning("actions: %s", sql_str)
+        cursor.execute(sql_str)
+        cursor.close()
+        cursor = db_connection.cursor()
+        sql_str = "INSERT INTO activity_conditions "\
+                  "(id, typ, min, max) VALUES ({}, '{}',"\
+                  " {}, {})".format(new_id, c_typ, c_arg1, ak_arg2)
+        logging.warning("conditions: %s", sql_str)
+        cursor.execute(sql_str)
+        cursor.close()
+        db_connection.commit()
+        return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
+               '<title>Neuer Eintrag bestätigt</title></head>'\
+               '<body><h1>Neue Bedingung unter {} eingetragen</h1>'\
+               'Hier geht es <a href="/actions">'\
+               'zurück</a></body>'.format(new_id)
+    except mariadb.Error as err:
+        logging.warning("Database failure: %s", err)
+        return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
+               '<title>Fehler</title></head>'\
+               '<body><h1>Datenbank Fehler</h1>{f}</h1></body>'.format(f=err)
+    except Exception as err:  # pylint: disable=W0703
+        logging.warning("General failure %s", str(err))
+        return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
+               '<title>Fehler</title></head>'\
+               '<body><h1>allgemeiner Fehler</h1></body>'
+
+
+@FLASK_APP.route('/aktion/remove/<int:actionid>')
+def aktion_remove(actionid):
+    """Webpage Generator: /aktion/remove/x.
+
+    Schritt 1: Bestätigunsseite.
+    Schritt 2: Tatsächlich löschen (siehe /akiondelete)
+    """
+    logging.warning("/aktion_remove, actionid: %d", actionid)
+    return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
+           '<title>Delete - Really?</title></head>'\
+           '<body><h1>Löschen bestätigen!</h1><form action="/akiondelete">'\
+           '<input type="hidden" name="actionid" value="{}">'\
+           '<input type="submit" name="confirm" value="doch nicht">'\
+           '<input type="submit" name="confirm" value="Ja"></form>'\
+           '</body>'.format(actionid)
+
+
+@FLASK_APP.route('/akiondelete', methods=["GET"])
+def aktiondelete():
+    """aktiondelete: Web-Handler für /aktiondelete."""
+    logging.debug("aktiondelete")
+    actionid = request.values.get("actionid", -1)
+    confirm = request.values.get("confirm", "")
+    logging.info("Bestätige Löschen der Aktion: %s %s", actionid, confirm)
+    try:
+        db_connection = mariadb.connect(option_files="db.cnf", database="iot")
+        if confirm == "Ja":
+            cursor = db_connection.cursor()
+            sql_str = "DELETE FROM activity_trigger "\
+                      "WHERE id='{}'".format(actionid)
+            logging.warning("Deleting: %s", sql_str)
+            cursor.execute(sql_str)
+            cursor.close()
+            cursor = db_connection.cursor()
+            sql_str = "DELETE FROM activity_conditions "\
+                      "WHERE id='{}'".format(actionid)
+            logging.warning("Deleting: %s", sql_str)
+            cursor.execute(sql_str)
+            cursor.close()
+            cursor = db_connection.cursor()
+            sql_str = "DELETE FROM activity_actions "\
+                      "WHERE id='{}'".format(actionid)
+            logging.warning("Deleting: %s", sql_str)
+            cursor.execute(sql_str)
+            cursor.close()
+            cursor = db_connection.cursor()
+            sql_str = "DELETE FROM activities "\
+                      "WHERE id='{}'".format(actionid)
+            logging.warning("Deleting: %s", sql_str)
+            cursor.execute(sql_str)
+            cursor.close()
+            db_connection.commit()
+            return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
+                   '<title>Bestätigt</title></head>'\
+                   '<body><h1>Regel gelöscht</h1>'\
+                   'Hier geht es <a href="/actions">'\
+                   'zurück</a></body>'
+        return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
+               '<title>Abbruch</title></head>'\
+               '<body><h1>abgebrochen</h1>Hier geht es <a href="/actions">'\
+               'zurück</a></body>'
+    except mariadb.Error as err:
+        logging.warning("Database failure: %s", err)
+        return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
+               '<title>Fehler</title></head>'\
+               '<body><h1>Datenbank Fehler</h1>{f}</h1></body>'.format(f=err)
+    except Exception as err:  # pylint: disable=W0703
+        logging.warning("General failure %s", str(err))
+        return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
+               '<title>Fehler</title></head>'\
+               '<body><h1>allgemeiner Fehler</h1></body>'
 
 
 @FLASK_APP.route('/action/<int:actionid>')
@@ -175,8 +374,8 @@ def action(actionid):  # pylint: disable=R0914
         return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
                '<title>Fehler</title></head>'\
                '<body><h1>Datenbank Fehler</h1>{f}</h1></body>'.format(f=err)
-    except:  # pylint: disable=W0702
-        logging.warning("General failure")
+    except Exception as err:  # pylint: disable=W0703
+        logging.warning("General failure %s", str(err))
         return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
                '<title>Fehler</title></head>'\
                '<body><h1>allgemeiner Fehler</h1></body>'
@@ -220,8 +419,8 @@ def edit(typ, lfdnr):
         return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
                '<title>Fehler</title></head>'\
                '<body><h1>Datenbank Fehler</h1>{f}</h1></body>'.format(f=err)
-    except:  # pylint: disable=W0702
-        logging.warning("General failure")
+    except Exception as err:  # pylint: disable=W0703
+        logging.warning("General failure %s", str(err))
         return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
                '<title>Fehler</title></head>'\
                '<body><h1>allgemeiner Fehler</h1></body>'
@@ -258,9 +457,9 @@ def delete():
         logging.debug("id:{}".format(local_id))
         if confirm == "Ja":
             cursor = db_connection.cursor()
-            str = "DELETE FROM activity_conditions "\
-                  "WHERE lfdnr='{}'".format(lfdnr)
-            logging.warning("Deleting: %s", str)
+            sql_str = "DELETE FROM activity_conditions "\
+                      "WHERE lfdnr='{}'".format(lfdnr)
+            logging.warning("Deleting: %s", sql_str)
             cursor.execute("DELETE FROM activity_conditions "
                            "WHERE lfdnr={}".format(lfdnr))
             db_connection.commit()
@@ -279,8 +478,8 @@ def delete():
         return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
                '<title>Fehler</title></head>'\
                '<body><h1>Datenbank Fehler</h1>{f}</h1></body>'.format(f=err)
-    except:  # pylint: disable=W0702
-        logging.warning("General failure")
+    except Exception as err:  # pylint: disable=W0703
+        logging.warning("General failure %s", str(err))
         return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
                '<title>Fehler</title></head>'\
                '<body><h1>allgemeiner Fehler</h1></body>'
@@ -300,16 +499,13 @@ def addcondition(actionid):
         cursor.close()
         return render_template('addentry.htm', action_id=2,
                                eintraege=eintraege)
-        return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
-               '<title>TODO</title></head>'\
-               '<body><h1>TODO</h1>addcondition {}</body>'.format(actionid)
     except mariadb.Error as err:
         logging.warning("Database failure: %s", err)
         return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
                '<title>Fehler</title></head>'\
                '<body><h1>Datenbank Fehler</h1>{f}</h1></body>'.format(f=err)
-    except:  # pylint: disable=W0702
-        logging.warning("General failure")
+    except Exception as err:  # pylint: disable=W0703
+        logging.warning("General failure %s", str(err))
         return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
                '<title>Fehler</title></head>'\
                '<body><h1>allgemeiner Fehler</h1></body>'
@@ -342,8 +538,8 @@ def addcond():
         return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
                '<title>Fehler</title></head>'\
                '<body><h1>Datenbank Fehler</h1>{f}</h1></body>'.format(f=err)
-    except:  # pylint: disable=W0702
-        logging.warning("General failure")
+    except Exception as err:  # pylint: disable=W0703
+        logging.warning("General failure %s", str(err))
         return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
                '<title>Fehler</title></head>'\
                '<body><h1>allgemeiner Fehler</h1></body>'

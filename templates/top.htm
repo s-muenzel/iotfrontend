@@ -1,22 +1,5 @@
 <!DOCTYPE html>
 <html>
-<style>
-h1 {
-	text-shadow: 1px 1px grey;
-}
-.nav td {
-  display: inline-block;
-}
-.nav td {
-  text-align: center;
-}
-th {
-  text-align: left;
-}
-.nav td {
-  text-align: center;
-}
-</style>
 <head>
 <meta charset="UTF-8">
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -89,7 +72,7 @@ Aktuelles Wetter
 <table id="T">
 <tr>
  <th class="nav">Temperatur</th>
- <th class="nav">Rel. Feuchtigkeit</th>
+ <th class="nav">Relative<br>Feuchtigkeit</th>
  <th class="nav">Helligkeit</th>
 </tr>
 <tr>
@@ -99,11 +82,11 @@ Aktuelles Wetter
 </tr>
 </table>
 <h2>
-	IOT Devices
+	IOT Geräte
 </h2>
 <table id="T">
 <tr>
- <th><a href="/devices">Device</a></th>
+ <th>Gerät <a href="/devices"><small>...</small></a></th>
  <th>Beschreibung</th>
 </tr>
 {% for item in eintraege %}
@@ -112,5 +95,9 @@ Aktuelles Wetter
  <td>{{ item[2] }}</td>
 </tr>
 {% endfor %}
-</table></body>
+</table>
+<p>
+	Konfigurierte Regeln <a href="/actions"><small>...</small></a>
+</p>
+</body>
 </html>
