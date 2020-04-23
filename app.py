@@ -10,6 +10,8 @@ from os import _exit, X_OK
 from signal import signal, SIGTERM, SIGINT
 from flask import Flask, render_template, request
 import mysql.connector as mariadb
+import paho.mqtt.publish as publish
+import yaml
 
 
 def cb_signal_handler(signum, frame):
@@ -391,6 +393,13 @@ SELECT_TEXTE = {
     "fehler": ""
 }
 
+EDIT_LABELS = {
+    "trigger": {"a": "Topic", "b": "Minimum", "c": "Maximum"},
+    "condition":  {"a": "Typ", "b": "Minimum", "c": "Maximum"},
+    "action":  {"a": "Typ", "b": "1. Argument", "c": "2. Argument"},
+    "fehler":  {"a": "???", "b": "???", "c": "???"}
+}
+
 
 @FLASK_APP.route('/edit/<string:typ>/<int:lfdnr>')
 def edit(typ, lfdnr):
@@ -410,9 +419,9 @@ def edit(typ, lfdnr):
         logging.warning("Edit:Values: %s %s %s", arg0, arg1, arg2)
         cursor.close()
         return render_template('editentry.htm', typ=typ, lfdnr=lfdnr,
-                               label0="a", arg0=arg0,
-                               label1="b", arg1=arg1,
-                               label2="c", arg2=arg2
+                               label0=EDIT_LABELS[typ]["a"], arg0=arg0,
+                               label1=EDIT_LABELS[typ]["b"], arg1=arg1,
+                               label2=EDIT_LABELS[typ]["c"], arg2=arg2
                                )
     except mariadb.Error as err:
         logging.warning("Database failure: %s", err)
@@ -497,7 +506,7 @@ def addcondition(actionid):
         for typ in cursor:
             eintraege.append(typ[0])
         cursor.close()
-        return render_template('addentry.htm', action_id=2,
+        return render_template('addentry.htm', action_id=actionid,
                                eintraege=eintraege)
     except mariadb.Error as err:
         logging.warning("Database failure: %s", err)
@@ -579,6 +588,20 @@ def submitchange():
     return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
            '<title>Ok</title></head>'\
            '<body><h1>Gespeichert</h1><a href="/actions">'\
+           'zurück zur Übersicht</a></body>'
+
+
+@FLASK_APP.route('/reloadaktions')
+def reloadaktions():
+    """reloadaktions: Web-Handler für /reloadaktions."""
+    logging.warning("reloadaktions")
+    mqtt_config = yaml.safe_load(open("mq.cnf"))
+    publish.single("DB", payload="AKTION",
+                   hostname=mqtt_config["mqtt"]["mqttserver"],
+                   port=mqtt_config["mqtt"]["mqttport"])
+    return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
+           '<title>Ok</title></head>'\
+           '<body><h1>Update getriggert</h1><a href="/actions">'\
            'zurück zur Übersicht</a></body>'
 
 
