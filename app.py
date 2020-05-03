@@ -8,7 +8,7 @@ Listet alle konfigurierte Aktionen und
 import logging
 from os import _exit, X_OK
 from signal import signal, SIGTERM, SIGINT
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 import mysql.connector as mariadb
 import paho.mqtt.publish as publish
 import yaml
@@ -110,10 +110,10 @@ def actions():
         logging.warning("/actions")
         db_connection = mariadb.connect(option_files="db.cnf", database="iot")
         cursor = db_connection.cursor()
-        cursor.execute("SELECT id, name FROM activities")
-        for id, name in cursor:  # pylint: disable=W0622,C0103
+        cursor.execute("SELECT id, name, activ FROM activities ORDER BY name")
+        for id, name, activ in cursor:  # pylint: disable=W0622,C0103
             logging.warning("DB result: %d %s", id, name)
-            aktionen.append([name, id])
+            aktionen.append([name, id, activ])
         cursor.close()
         return render_template('actions.htm', eintraege=aktionen)
     except mariadb.Error as err:
@@ -141,7 +141,6 @@ def aktionadd():
         for mqtt_name in cursor:
             mqttdevices.append(mqtt_name[0])
         cursor.close()
-        logging.warning("added devices: {}".format(mqttdevices))
         cursor = db_connection.cursor()
         cursor.execute("SELECT DISTINCT topic FROM mqtt_msgs"
                        " WHERE max_age = 0")
@@ -149,21 +148,18 @@ def aktionadd():
         for topic in cursor:
             trigger.append(topic[0])
         cursor.close()
-        logging.warning("added trigger: {}".format(trigger))
         cursor = db_connection.cursor()
         cursor.execute("SELECT DISTINCT typ FROM activity_actions")
         actiontyp = []
         for typ in cursor:
             actiontyp.append(typ[0])
         cursor.close()
-        logging.warning("added actiontyp: {}".format(actiontyp))
         cursor = db_connection.cursor()
         cursor.execute("SELECT DISTINCT typ FROM activity_conditions")
         condtyp = []
         for typ in cursor:
             condtyp.append(typ[0])
         cursor.close()
-        logging.warning("added condtyp: {}".format(condtyp))
         return render_template('addaction.htm',
                                devices=mqttdevices, trigger=trigger,
                                actiontyp=actiontyp, condtyp=condtyp)
@@ -235,16 +231,12 @@ def addaktion():
         cursor = db_connection.cursor()
         sql_str = "INSERT INTO activity_conditions "\
                   "(id, typ, min, max) VALUES ({}, '{}',"\
-                  " {}, {})".format(new_id, c_typ, c_arg1, ak_arg2)
+                  " {}, {})".format(new_id, c_typ, c_arg1, c_arg2)
         logging.warning("conditions: %s", sql_str)
         cursor.execute(sql_str)
         cursor.close()
         db_connection.commit()
-        return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
-               '<title>Neuer Eintrag bestätigt</title></head>'\
-               '<body><h1>Neue Bedingung unter {} eingetragen</h1>'\
-               'Hier geht es <a href="/actions">'\
-               'zurück</a></body>'.format(new_id)
+        return redirect("/actions", code=307)
     except mariadb.Error as err:
         logging.warning("Database failure: %s", err)
         return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
@@ -274,7 +266,36 @@ def aktion_remove(actionid):
            '</body>'.format(actionid)
 
 
-@FLASK_APP.route('/akiondelete', methods=["GET"])
+@FLASK_APP.route('/aktion/SchalteUm/<int:actionid>')
+def aktion_schalte_an_aus(actionid):
+    """Webpage Generator: /aktion/SchalteAn/x.
+
+    Setzt den Wert der Aktion auf das Gegenteil des aktuellen Wertes
+    """
+    logging.warning("/aktion/SchalteAn/actionid: %d", actionid)
+    try:
+        db_connection = mariadb.connect(option_files="db.cnf", database="iot")
+        cursor = db_connection.cursor()
+        sql_str = "UPDATE activities "\
+                    "SET activ = ( SELECT COUNT(activ) FROM activities "\
+                    "WHERE id='{}' AND activ=0 ) WHERE id='{}'".format(actionid,actionid)
+        logging.warning("Sql Update activ: %s", sql_str)
+        cursor.execute(sql_str)
+        cursor.close()
+        db_connection.commit()
+        return redirect("/actions", code=307)
+    except mariadb.Error as err:
+        logging.warning("Database failure: %s", err)
+        return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
+               '<title>Fehler</title></head>'\
+               '<body><h1>Datenbank Fehler</h1>{f}</h1></body>'.format(f=err)
+    except Exception as err:  # pylint: disable=W0703
+        logging.warning("General failure %s", str(err))
+        return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
+               '<title>Fehler</title></head>'\
+               '<body><h1>allgemeiner Fehler</h1></body>'
+
+@FLASK_APP.route('/aktiondelete', methods=["GET"])
 def aktiondelete():
     """aktiondelete: Web-Handler für /aktiondelete."""
     logging.debug("aktiondelete")
@@ -383,6 +404,13 @@ def action(actionid):  # pylint: disable=R0914
                '<body><h1>allgemeiner Fehler</h1></body>'
 
 
+@FLASK_APP.route('/test')
+def meintest():  # pylint: disable=R0914
+    logging.warning("in test")
+    content = {'target': 'nothing to see here'}
+    return redirect("/", code=307)
+
+
 SELECT_TEXTE = {
     "trigger": "SELECT topic AS a_0, min AS a_1, max AS a_2"
                " FROM activity_trigger",
@@ -401,10 +429,10 @@ EDIT_LABELS = {
 }
 
 
-@FLASK_APP.route('/edit/<string:typ>/<int:lfdnr>')
-def edit(typ, lfdnr):
+@FLASK_APP.route('/edit/<string:typ>/<int:lfdnr>/<int:actionid>')
+def edit(typ, lfdnr, actionid):
     """editentry: Web-Handler für /edittrigger/x."""
-    logging.debug("edit %d %s", lfdnr, typ)
+    logging.debug("edit Nr. %d vom Typ %s zur Aktion %d", lfdnr, typ, actionid)
     try:
         db_connection = mariadb.connect(option_files="db.cnf", database="iot")
         cursor = db_connection.cursor()
@@ -419,6 +447,7 @@ def edit(typ, lfdnr):
         logging.warning("Edit:Values: %s %s %s", arg0, arg1, arg2)
         cursor.close()
         return render_template('editentry.htm', typ=typ, lfdnr=lfdnr,
+                               actionid=actionid,
                                label0=EDIT_LABELS[typ]["a"], arg0=arg0,
                                label1=EDIT_LABELS[typ]["b"], arg1=arg1,
                                label2=EDIT_LABELS[typ]["c"], arg2=arg2
@@ -574,6 +603,7 @@ def submitchange():
     arg2 = request.values.get("a2", "")
     typ = request.values.get("typ", "fehler")
     lfdnr = request.values.get("lfdnr", -1)
+    actionid = request.values.get("actionid", -1)
     try:
         db_connection = mariadb.connect(option_files="db.cnf", database="iot")
         cursor = db_connection.cursor()
@@ -585,10 +615,13 @@ def submitchange():
         return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
                '<title>Fehler</title></head>'\
                '<body><h1>Datenbank Fehler</h1>{f}</h1></body>'.format(f=err)
-    return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
-           '<title>Ok</title></head>'\
-           '<body><h1>Gespeichert</h1><a href="/actions">'\
-           'zurück zur Übersicht</a></body>'
+    # return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
+    #        '<title>Ok</title></head>'\
+    #        '<body><h1>Gespeichert</h1><a href="/actions">'\
+    #        'zurück zur Übersicht</a></body>'
+    # TODO: eigentlich zurück zu Action-Seite, brauche aber die Action-ID dafür
+    return redirect("/action/{}".format(actionid), code=307)
+    return redirect("/actions", code=307)
 
 
 @FLASK_APP.route('/reloadaktions')

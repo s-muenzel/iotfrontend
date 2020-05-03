@@ -13,7 +13,14 @@
 {% for item in eintraege %}
 <tr>
   <td><a href="/aktion/remove/{{ item[1] }}"><small><i class="fas fa-minus"></i></small></a></td>
-  <td><a id="L" href="/action/{{ item[1] }}">{{ item[0] }}</a></td>
+  <td><a href="/action/{{ item[1] }}">{{ item[0] }}</a></td>
+  <td> 
+  {% if item[2]>0 %}
+    <a href="/aktion/SchalteUm/{{ item[1] }}"><i class="fas fa-toggle-on" style="color:green"></i></a>
+  {% else %}
+  <a href="/aktion/SchalteUm/{{ item[1] }}"><i class="fas fa-toggle-off" style="color:red"></i></a>
+  {% endif %}
+  </td>
 </tr>
 {% endfor %}
 <tr><td><a href="/aktion/add"><small><i class="fas fa-plus"></i></small></a></td></tr>

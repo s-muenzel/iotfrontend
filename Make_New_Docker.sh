@@ -28,11 +28,11 @@ sudo docker stop $DOCKER_NAME
 
 sudo docker container rm $DOCKER_NAME
 
-sudo docker image rm $DOCKER_NAME
+#sudo docker image rm $DOCKER_NAME
 
 sudo docker build -t $DOCKER_NAME .
 
-CONTAINER=`sudo docker run -d $RUN_CMD_ARGS --name $DOCKER_NAME $DOCKER_NAME`
+CONTAINER=`sudo docker run -d $RUN_CMD_ARGS --restart unless-stopped --name $DOCKER_NAME $DOCKER_NAME`
 
 $LOGS_CMD $CONTAINER
 
