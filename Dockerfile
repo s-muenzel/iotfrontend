@@ -15,10 +15,8 @@ COPY mq.cnf .
 COPY templates/top.htm /templates/top.htm
 COPY templates/devices.htm /templates/devices.htm
 COPY templates/actions.htm /templates/actions.htm
-COPY templates/action.htm /templates/action.htm
-COPY templates/editentry.htm /templates/editentry.htm
-COPY templates/addentry.htm /templates/addentry.htm
 COPY templates/addaction.htm /templates/addaction.htm
+COPY templates/action.htm /templates/action.htm
 
 EXPOSE 80/tcp
 

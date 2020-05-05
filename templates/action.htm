@@ -10,9 +10,13 @@
 	Alte Rinne 14 - IOT Regel-Details
 </h1>
 <h2>Regel: {{ actionname }}</h2>
+<p>Gerät:{{ device }} ({{ deviceid }})</p>
 <h3>Trigger</h3>
+<datalist id="trigger_liste">
+{% for item in trigger_liste %}<option value="{{ item }}">{% endfor %}
+</datalist>
 <form action="/submitchange">
-  <table>
+<table>
     <tr>
       <th></th>
       <th>Topic</th>
@@ -20,20 +24,20 @@
       <th>Max</th>
     </tr>
 <script>
-  var max_cond = 2;
-  var edit_cond = [0,0];
+  var max_cond = 3;
+  var edit_cond = [0,0,0];
 </script>
 {% for item in trigger %}
     <tr>
-      <td><i onclick="cond_edit(0)" class="fas fa-edit"></i></td>
-      <td><input onchange="a0_change(0)" type="text" id="cond_0a0" name="a0" value="{{ item[0] }}" disabled></td>
-      <td><input type="text" id="cond_0a1" name="a1" value="{{ item[1] }}" disabled>
-          <input onchange="t_change(0,1)" type="time" id="cond_0t1" value="" style="display:none" disabled>
-          <input onchange="n_change(0,1)" type="number" id="cond_0n1" value="" style="display:none" disabled></td>
-      <td><input type="text" id="cond_0a2" name="a2" value="{{ item[2] }}" disabled>
-          <input onchange="t_change(0,2)" type="time" id="cond_0t2" value="" style="display:none" disabled>
-          <input onchange="n_change(0,2)" type="number" id="cond_0n2" value="" style="display:none" disabled></td>
-      <td><input type="submit" id="cond_0submit" value="ok" style="display:none"></td>
+      <td><i onclick="cond_edit(1)" class="fas fa-edit"></i></td>
+      <td><input onchange="a0_change(1)"  type="list"   id="cond_1a0" name="a0" value="{{ item[0] }}" list="trigger_liste" disabled></td>
+      <td><input onchange="a_change(1,1)" type="text"   id="cond_1a1" name="a1" value="{{ item[1] }}" disabled>
+          <input onchange="t_change(1,1)" type="time"   id="cond_1t1" value="" style="display:none" disabled>
+          <input onchange="n_change(1,1)" type="number" id="cond_1n1" value="" style="display:none" disabled></td>
+      <td><input onchange="a_change(1,2)" type="text"   id="cond_1a2" name="a2" value="{{ item[2] }}" disabled>
+          <input onchange="t_change(1,2)" type="time"   id="cond_1t2" value="" style="display:none" disabled>
+          <input onchange="n_change(1,2)" type="number" id="cond_1n2" value="" style="display:none" disabled></td>
+      <td><input type="submit"                          id="cond_1submit" value="ok" style="display:none"></td>
     </tr>
     <input type="hidden" id="typ" name="typ"  value="trigger">
     <input type="hidden" id="lfdnr" name="lfdnr"  value="{{item[3]}}">
@@ -42,6 +46,9 @@
   </table>
 </form>
 <h3>Bedingungen</h3>
+<datalist id="cond_liste">
+  {% for item in cond_liste %}<option value="{{ item }}">{% endfor %}
+</datalist>
 <table id="T">
 <tr>
   <th></th>
@@ -52,19 +59,18 @@
 {% for item in conditions %}
 <form action="/submitchange">
 <tr>
-  <td>
-    <a href="/condition/remove/{{ item[3] }}"><small><i class="fas fa-minus"></i></small></a>
-    <i onclick="cond_edit({{-loop.index+1-}})" class="fas fa-edit"></i></td>
-  <td><input onchange="a0_change({{-loop.index+1-}})" type="text" id="cond_{{-loop.index+1-}}a0" name="a0" value="{{ item[0] }}" disabled></td>
-  <td><input type="text" id="cond_{{-loop.index+1-}}a1" name="a1" value="{{ item[1] }}" disabled>
-      <input onchange="t_change({{-loop.index+1-}},1)" type="time" id="cond_{{-loop.index+1-}}t1" value="" style="display:none" disabled>
-      <input onchange="n_change({{-loop.index+1-}},1)" type="number" id="cond_{{-loop.index+1-}}n1" value="" style="display:none" disabled></td>
-  <td><input type="text" id="cond_{{-loop.index+1-}}a2" name="a2" value="{{ item[2] }}" disabled>
-      <input onchange="t_change({{-loop.index+1-}},2)" type="time" id="cond_{{-loop.index+1-}}t2" value="" style="display:none" disabled>
-      <input onchange="n_change({{-loop.index+1-}},2)" type="number" id="cond_{{-loop.index+1-}}n2" value="" style="display:none" disabled></td>
-  <td><input type="submit" id="cond_{{-loop.index+1-}}submit" value="ok" style="display:none"></td>
+  <td><i onclick="cond_remove({{ item[3] }})" class="fas fa-minus"></i>
+      <i onclick="cond_edit({{-loop.index+2-}})" class="fas fa-edit"></i></td>
+  <td><input onchange="a0_change({{-loop.index+2-}})"  type="list"   id="cond_{{-loop.index+2-}}a0" name="a0" value="{{ item[0] }}" list="cond_liste" disabled></td>
+  <td><input onchange="a_change({{-loop.index+2-}},1)" type="text"   id="cond_{{-loop.index+2-}}a1" name="a1" value="{{ item[1] }}" disabled>
+      <input onchange="t_change({{-loop.index+2-}},1)" type="time"   id="cond_{{-loop.index+2-}}t1" value="" style="display:none" disabled>
+      <input onchange="n_change({{-loop.index+2-}},1)" type="number" id="cond_{{-loop.index+2-}}n1" value="" style="display:none" disabled></td>
+  <td><input onchange="a_change({{-loop.index+2-}},2)" type="text"   id="cond_{{-loop.index+2-}}a2" name="a2" value="{{ item[2] }}" disabled>
+      <input onchange="t_change({{-loop.index+2-}},2)" type="time"   id="cond_{{-loop.index+2-}}t2" value="" style="display:none" disabled>
+      <input onchange="n_change({{-loop.index+2-}},2)" type="number" id="cond_{{-loop.index+2-}}n2" value="" style="display:none" disabled></td>
+  <td><input type="submit"                                           id="cond_{{-loop.index+2-}}submit" value="ok" style="display:none"></td>
 </tr>
-<input type="hidden" id="typ" name="typ"  value="action">
+<input type="hidden" id="typ" name="typ"  value="condition">
 <input type="hidden" id="lfdnr" name="lfdnr"  value="{{item[3]}}">
 <input type="hidden" id="actionid" name="actionid"  value="{{actionid}}">
 </form>
@@ -73,9 +79,28 @@
   edit_cond.push(0);
 </script>
 {% endfor %}
-<tr><td><a href="/condition/add/{{ actionid }}"><small><i class="fas fa-plus"></i></small></a></td></tr>
+<!-- <tr><td><a href="/condition/add/{{ actionid }}"><small><i class="fas fa-plus"></i></small></a></td></tr> -->
+<form action="/add_condition">
+  <tr>
+  <td>
+    <i onclick="cond_edit(0)" class="fas fa-plus"></i>
+  </td>
+  <td><input onchange="a0_change(0)" type="list"    id="cond_0a0" name="a0" value="" style="display:none" list="cond_liste" disabled></td>
+  <td><input onchange="a_change(0,1)" type="text"   id="cond_0a1" name="a1" value="" style="display:none" disabled>
+      <input onchange="t_change(0,1)" type="time"   id="cond_0t1" value="" style="display:none" disabled>
+      <input onchange="n_change(0,1)" type="number" id="cond_0n1" value="" style="display:none" disabled></td>
+  <td><input onchange="a_change(0,2)" type="text"   id="cond_0a2" name="a2" value="" style="display:none" disabled>
+      <input onchange="t_change(0,2)" type="time"   id="cond_0t2" value="" style="display:none" disabled>
+      <input onchange="n_change(0,2)" type="number" id="cond_0n2" value="" style="display:none" disabled></td>
+      <input type="hidden" name="actionid" value="{{ actionid }}">
+  <td><input type="submit"                          id="cond_0submit" value="ok" style="display:none"></td>
+</tr>
+</form>
 </table>
 <h3>Aktion</h3>
+<datalist id="action_liste">
+  {% for item in action_liste %}<option value="{{ item }}">{% endfor %}
+</datalist>
 <form action="/submitchange">
   <table id="T">
     <tr>
@@ -86,15 +111,15 @@
     </tr>
 {% for item in action %}
     <tr>
-      <td><i onclick="cond_edit(1)" class="fas fa-edit"></i></td>
-      <td><input onchange="a0_change(1)" type="text" id="cond_1a0" name="a0" value="{{ item[0] }}" disabled></td>
-      <td><input onchange="a_change(1,1)" type="text" id="cond_1a1" name="a1" value="{{ item[1] }}" disabled>
-          <input onchange="t_change(1,1)" type="time" id="cond_1t1" value="" style="display:none" disabled>
-          <input onchange="n_change(1,1)" type="number" id="cond_1n1" value="" style="display:none" disabled></td>
-      <td><input onchange="a_change(1,2)" type="text" id="cond_1a2" name="a2" value="{{ item[2] }}" disabled>
-          <input onchange="t_change(1,2)" type="time" id="cond_1t2" value="" style="display:none" disabled>
-          <input onchange="n_change(1,2)" type="number" id="cond_1n2" value="" style="display:none" disabled></td>
-      <td><input type="submit" id="cond_1submit" value="ok" style="display:none"></td>
+      <td><i onclick="cond_edit(2)" class="fas fa-edit"></i></td>
+      <td><input onchange="a0_change(2)"  type="text"   id="cond_2a0" name="a0" value="{{ item[0] }}" disabled></td>
+      <td><input onchange="a_change(2,1)" type="list"   id="cond_2a1" name="a1" value="{{ item[1] }}" list="action_liste" disabled>
+          <input onchange="t_change(2,1)" type="time"   id="cond_2t1" value="" style="display:none" disabled>
+          <input onchange="n_change(2,1)" type="number" id="cond_2n1" value="" style="display:none" disabled></td>
+      <td><input onchange="a_change(2,2)" type="text"   id="cond_2a2" name="a2" value="{{ item[2] }}" disabled>
+          <input onchange="t_change(2,2)" type="time"   id="cond_2t2" value="" style="display:none" disabled>
+          <input onchange="n_change(2,2)" type="number" id="cond_2n2" value="" style="display:none" disabled></td>
+      <td><input type="submit"                          id="cond_2submit" value="ok" style="display:none"></td>
     </tr>
     <input type="hidden" id="typ" name="typ"  value="action">
     <input type="hidden" id="lfdnr" name="lfdnr"  value="{{item[3]}}">
@@ -108,145 +133,92 @@
   function all_edits_off() {
     for (i = 0; i < max_cond; i++) {
       sub = document.getElementById("cond_"+i+"submit");
-      sub.style.display = "none";
+      sub.style.display = (edit_cond[i] == 1)?"inline":"none"; 
       a0 = document.getElementById("cond_"+i+"a0");
-      a0.disabled=1;
-      a1 = document.getElementById("cond_"+i+"a1");
-      a1.disabled=1;
-      t1 = document.getElementById("cond_"+i+"t1");
-      t1.disabled=1;
-      n1 = document.getElementById("cond_"+i+"n1");
-      n1.disabled=1;
-      a2 = document.getElementById("cond_"+i+"a2");
-      a2.disabled=1;
-      t2 = document.getElementById("cond_"+i+"t2");
-      t2.disabled=1;
-      n2 = document.getElementById("cond_"+i+"n2");
-      n2.disabled=1;
-      switch(a0.value) {
-        case "zeit":
-        a1.style.display = "none";
-        t1.style.display = "inline";
-        n1.style.display = "none";
-        a2.style.display = "none";
-        t2.style.display = "inline";
-        n2.style.display = "none";
-      break;
-        case "hell":
-        n1.min ="0";
-        n1.max="4000";
-        n1.step="1";
-        n1.min ="0";
-        n1.max="4000"; 
-        n1.step="1";
-        a1.style.display = "none";
-        t1.style.display = "none";
-        n1.style.display = "inline";
-        a2.style.display = "none";
-        t2.style.display = "none";
-        n2.style.display = "inline";
-      break;
-        case "temp":
-        n1.min ="-30";
-        n1.max="50"; 
-        n1.step="0.1";
-        n2.min ="-30";
-        n2.max="50"; 
-        n2.step="0.1";
-        a1.style.display = "none";
-        t1.style.display = "none";
-        n1.style.display = "inline";
-        a2.style.display = "none";
-        t2.style.display = "none";
-        n2.style.display = "inline";
-      break;
-        case "rollo_last_move":
-        n1.min ="0";
-        n1.max=1000*86400; 
-        n1.step="100";
-        n2.min ="0";
-        n2.max=1000*86400; 
-        n2.step="100";
-        a1.style.display = "none";
-        t1.style.display = "none";
-        n1.style.display = "inline";
-        a2.style.display = "none";
-        t2.style.display = "none";
-        n2.style.display = "inline";
-      break;
-        case "rollo_pos":
-        n1.min ="-1";
-        n1.max="100"; 
-        n1.step="1";
-        n2.min ="-1";
-        n2.max="100"; 
-        n2.step="1";
-        a1.style.display = "none";
-        t1.style.display = "none";
-        n1.style.display = "inline";
-        a2.style.display = "none";
-        t2.style.display = "none";
-        n2.style.display = "inline";
-      break;
-        case "rollo_mode":
-        n1.min ="0";
-        n1.max="1"; 
-        n1.step="1";
-        n2.min ="0";
-        n2.max="1"; 
-        n2.step="1";
-        a1.style.display = "none";
-        t1.style.display = "none";
-        n1.style.display = "inline";
-        a2.style.display = "none";
-        t2.style.display = "none";
-        n2.style.display = "inline";
-      break;
-      default:
-        a1.style.display = "inline";
-        t1.style.display = "none";
-        n1.style.display = "none";
-        a2.style.display = "inline";
-        t2.style.display = "none";
-        n2.style.display = "none";
-      break;
+      a0.disabled=(edit_cond[i] == 1)?0:1;
+      a0.style.display = ((i>0) || (edit_cond[i] == 1))?"inline":"none";        
+      for (j = 1; j < 3; j++ ) {
+        a = document.getElementById("cond_"+i+"a"+j);
+        a.disabled=(edit_cond[i] == 1)?0:1;
+        t = document.getElementById("cond_"+i+"t"+j);
+        t.disabled=(edit_cond[i] == 1)?0:1;
+        n = document.getElementById("cond_"+i+"n"+j);
+        n.disabled=(edit_cond[i] == 1)?0:1;
+        switch(a0.value) {
+          case "zeit":
+          a.style.display = "none";
+          t.style.display = ((i>0) || (edit_cond[i] == 1))?"inline":"none";
+          n.style.display = "none";
+        break;
+          case "hell":
+          n.min ="0";
+          n.max="4096";
+          n.step="1";
+          a.style.display = "none";
+          t.style.display = "none";
+          n.style.display = ((i>0) || (edit_cond[i] == 1))?"inline":"none";
+        break;
+          case "temp":
+          n.min ="-30";
+          n.max="50"; 
+          n.step="0.1";
+          a.style.display = "none";
+          t.style.display = "none";
+          n.style.display = ((i>0) || (edit_cond[i] == 1))?"inline":"none";
+        break;
+          case "rollo_last_move":
+          n.min ="0";
+          n.max=1000*86400; 
+          n.step="100";
+          a.style.display = "none";
+          t.style.display = "none";
+          n.style.display = ((i>0) || (edit_cond[i] == 1))?"inline":"none";
+        break;
+          case "rollo_pos":
+          n.min ="-1";
+          n.max="100"; 
+          n.step="1";
+          a.style.display = "none";
+          t.style.display = "none";
+          n.style.display = ((i>0) || (edit_cond[i] == 1))?"inline":"none";
+        break;
+          case "rollo_mode":
+          n.min ="0";
+          n.max="1"; 
+          n.step="1";
+          a.style.display = "none";
+          t.style.display = "none";
+          n.style.display = ((i>0) || (edit_cond[i] == 1))?"inline":"none";
+        break;
+        default:
+          a.style.display = ((i>0) || (edit_cond[i] == 1))?"inline":"none";
+          t.style.display = "none";
+          n.style.display = "none";
+        break;
+        }
       }
-      edit_cond[i] = 0;
     }
   }
 
-  function switch_edit_on(n) {
-    x = document.getElementById("cond_"+n+"submit");
-    x.style.display = "inline";
-    x = document.getElementById("cond_"+n+"a0");
-    x.disabled=0;
-    x = document.getElementById("cond_"+n+"a1");
-    x.disabled=0;
-    x = document.getElementById("cond_"+n+"t1");
-    x.disabled=0;
-    x = document.getElementById("cond_"+n+"n1");
-    x.disabled=0;
-    x = document.getElementById("cond_"+n+"a2");
-    x.disabled=0;
-    x = document.getElementById("cond_"+n+"t2");
-    x.disabled=0;
-    x = document.getElementById("cond_"+n+"n2");
-    x.disabled=0;
+  function cond_edit(n) {
+    for(i = 0; i < max_cond; i++) {
+      if((i == n) && (edit_cond[i] == 0)) {
+        edit_cond[i] = 1;
+      } else {
+        edit_cond[i] = 0;
+      }
+    }
+    all_edits_off();
   }
 
-  function cond_edit(n) {
-    if (edit_cond[n] == 1) {
-      all_edits_off();
-    } else {
-      all_edits_off();
-      switch_edit_on(n);
-      edit_cond[n] = 1;
+  function cond_remove(n) {
+    if ( confirm("Bedingung löschen (kein Undo!)") ) {
+      window.location.assign("/delete_condition?lfdnr="+n);
     }
   }
 
   function a0_change(n) {
     all_edits_off();
-    switch_edit_on(n);
   }
 
   function a_change(n,m) {
@@ -292,29 +264,6 @@
     n = document.getElementById("cond_"+n+"n"+m);
 		a.value = n.value;
   }
-
-  // var td_liste = document.getElementsByTagName("td");
-  // var n = 0, jetzt = 0;
-  // for (item in td_liste) {
-  //     n++;
-  //     if(jetzt != 0) {
-  //         sek = parseInt(td_liste[item].innerHTML);
-  //         stunde = Math.floor(sek/3600);
-  //         sek -= stunde*3600;
-  //         minute = Math.floor(sek/60);
-  //         if (minute<10)
-  //           minute = "0"+minute;
-  //         sek -= minute*60;
-  //         if (sek<10)
-  //           sek = "0"+sek;
-  //         zeit = stunde + ":" + minute + ":"+ sek; 
-  //         td_liste[item].innerHTML = zeit;
-  //         jetzt--;
-  //     }
-  //   if (td_liste[item].innerHTML == "zeit") {
-  //         jetzt = 2;
-  //     }
-  // }
 
   all_edits_off();
   for (i = 0; i < max_cond; i++) {

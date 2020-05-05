@@ -12,7 +12,7 @@
 <table id="T"><tr><th></th><th>Regel</th></tr>
 {% for item in eintraege %}
 <tr>
-  <td><a href="/aktion/remove/{{ item[1] }}"><small><i class="fas fa-minus"></i></small></a></td>
+  <td><i onclick="aktion_remove({{ item[1] }})" class="fas fa-minus"></i></td>
   <td><a href="/action/{{ item[1] }}">{{ item[0] }}</a></td>
   <td> 
   {% if item[2]>0 %}
@@ -25,6 +25,14 @@
 {% endfor %}
 <tr><td><a href="/aktion/add"><small><i class="fas fa-plus"></i></small></a></td></tr>
 </table>
-Regeln geändert? Dann <a href="/reloadaktions">hier</a> neu laden
+<p>Regeln geändert? Dann <a href="/reloadaktions">hier</a> neu laden</p>
+<p><a href="/">zurück</a></p>
+<script>
+  function aktion_remove(n) {
+    if ( confirm("Regel löschen (kein Undo!)") ) {
+      window.location.assign("/aktiondelete?actionid="+n);
+    }
+  }
+</script>
 </body>
 </html>
