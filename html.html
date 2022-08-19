@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+<title>W3.CSS</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-teal.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<!-- <script src="https://kit.fontawesome.com/a076d05399.js"></script> -->
+<style>
+body {font-family: "Roboto", sans-serif}
+.w3-bar-block .w3-bar-item {
+  padding: 16px;
+  font-weight: bold;
+}
+</style>
+<style>
+.slidecontainer {
+  width: 135px; /*100%; /* Width of the outside container */
+  -ms-transform: rotate(90deg); /* IE 9 */
+  transform: rotate(90deg); /* Standard syntax */
+}
+/* The slider itself */
+.slider {
+  -webkit-appearance: none;  /* Override default CSS styles */
+  appearance: none;
+  width: 100%;/*75px; /* Full-width: 100% */
+  height: 125px; /* Specified height */
+  background: #d3d3d3; /* Grey background */
+  /* outline: none; Remove outline */
+  opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
+  -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+  transition: opacity .2s;
+}
+
+/* Mouse-over effects */
+.slider:hover {
+  opacity: 1; /* Fully shown on mouse-over */
+}
+
+/* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none; /* Override default look */
+  appearance: none;
+  width: 25px; /* Set a specific slider handle width */
+  height: 25px; /* Slider handle height */
+  background: #4CAF50; /* Green background */
+  cursor: pointer; /* Cursor on hover */
+  border-radius: 0px;
+}
+
+.slider::-moz-range-thumb {
+  width: 45px; /* Set a specific slider handle width */
+  height: 100%; /*25px; /* Slider handle height */
+  background: #4CAF50; /* Green background */
+  cursor: pointer; /* Cursor on hover */
+  border-radius: 0px;
+}
+</style>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+	google.charts.load('current', {'packages':['gauge']});
+	google.charts.setOnLoadCallback(drawChart);
+
+	function drawChart() {
+		var data_T = google.visualization.arrayToDataTable([
+			  ['Label', 'Value'],
+			  ['°C', 1.5],
+			]);
+		var data_F = google.visualization.arrayToDataTable([
+			  ['Label', 'Value'],
+			  ['%', 78.6],
+			]);
+		var data_H = google.visualization.arrayToDataTable([
+			  ['Label', 'Value'],
+			  [' ', 0]
+			]);
+
+		var options_T = {
+			width: 400, height: 120,
+			greenColor: '#0010a0', greenFrom: -20, greenTo: 0,
+			redFrom: 30, redTo: 50,
+			yellowFrom:15, yellowTo: 30,
+			min: -20, max: 50,
+			minorTicks: 5,
+			majorTicks: ['-20','-10','0','10','20','30','40','50']
+		};
+
+		var options_F = {
+			width: 400, height: 120,
+			yellowFrom:0, yellowTo: 40,
+			greenFrom: 40, greenTo: 65,
+			redFrom: 65, redTo: 100,
+			min: 0, max: 100,
+			minorTicks: 5,
+			majorTicks: ['0','20','40','60','80','100']
+		};
+
+		var options_H = {
+			width: 400, height: 120,
+			redColor: '#101010', redFrom: 0, redTo: 400,
+			yellowColor: '#a0a0a0', yellowFrom:400, yellowTo: 2047,
+			min: 0, max: 4095,
+			minorTicks: 5,
+			majorTicks: ['0','50%','100%']
+		};
+
+		var chart_T = new google.visualization.Gauge(document.getElementById('chart_div_T'));
+		var chart_F = new google.visualization.Gauge(document.getElementById('chart_div_F'));
+		var chart_H = new google.visualization.Gauge(document.getElementById('chart_div_H'));
+
+        chart_T.draw(data_T, options_T);
+        chart_F.draw(data_F, options_F);
+        chart_H.draw(data_H, options_H);
+      }
+</script>
+<title>Alte Rinne 14</title>
+<body>
+
+<nav class="w3-sidebar w3-bar-block w3-collapse w3-animate-left w3-card" style="z-index:3;width:250px;" id="mySidebar">
+<!--  <a class="w3-bar-item w3-button w3-border-bottom w3-large" href="#"><img src="bild" style="width:80%;"></a> -->
+  <a class="w3-bar-item w3-button w3-hide-large w3-large" href="javascript:void(0)" onclick="w3_close()">Schliessen <i class="fa fa-remove"></i></a>
+  <a class="w3-bar-item w3-button w3-teal" href="#">Home</a>
+  <a class="w3-bar-item w3-button" href="#wetter">Wetter</a>
+  <a class="w3-bar-item w3-button" href="#rollos">Rollos</a>
+  <a class="w3-bar-item w3-button" href="#iot">Geräte</a>
+</nav>
+
+<div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="w3_close()" style="cursor:pointer" id="myOverlay"></div>
+
+<div class="w3-main" style="margin-left:250px;">
+
+<div id="myTop" class="w3-container w3-top w3-theme w3-large">
+  <p><i class="fa fa-bars w3-button w3-teal w3-hide-large w3-xlarge" onclick="w3_open()"></i>
+  <span id="myIntro" class="w3-hide">Alte Rinne 14</span></p>
+</div>
+
+<header class="w3-container w3-theme" style="padding:64px 32px">
+  <h1 class="w3-xxxlarge">Alte Rinne 14</h1>
+</header>
+
+<div class="w3-container" style="padding:32px">
+
+<h2 id="wetter">
+Aktuelles Wetter
+</h2>
+<div class="w3-container w3-red w3-cell w3-mobile">
+ <p>Temperatur</p>
+ <p class="nav" id="chart_div_T">Temperatur</p>
+</div>
+<div class="w3-container w3-green w3-cell w3-mobile">
+ <p>Feuchtigkeit</p>
+ <p class="nav" id="chart_div_F">Feuchtigkeit</p>
+</div>
+<div class="w3-container w3-blue w3-cell w3-mobile">
+ <p>Helligkeit</p>
+ <p class="nav" id="chart_div_H">Helligkeit</p>
+</div>
+<!-- <table id="T">
+<tr>
+ <th class="nav">Temperatur</th>
+ <th class="nav">Relative<br>Feuchtigkeit</th>
+ <th class="nav">Helligkeit</th>
+</tr>
+<tr>
+ <td class="nav" id="chart_div_T">Temperatur</td>
+ <td class="nav" id="chart_div_F">Feuchtigkeit</td>
+ <td class="nav" id="chart_div_H">Helligkeit</td>
+</tr>
+</table> -->
+
+<hr>
+<h2 id="rollos">
+	Rolläden
+</h2>
+<div class="w3-container w3-cell w3-mobile">
+<a id="L" href="http://shellyswitch25-B8AFC3.fritz.box/">Rollo Bad</a></td>
+ <td><i class="fa fa-caret-up" aria-hidden="true"></i>
+     <input type="number" min="0" max="100" value="25" style="width:50px"></i>
+     <i class="fa fa-caret-down" aria-hidden="true"></i>
+  <div class="slidecontainer">
+    <input type="range" min="0" max="100" value="25" class="slider" id="myRange">
+  </div>
+</div>
+<table id="T">
+<tr>
+ <td><a id="L" href="http://shellyswitch25-B8AFC3.fritz.box/">Rollo Bad</a></td>
+ <td><i class="fa fa-caret-up" aria-hidden="true"></i>
+     <input type="number" min="0" max="100" value="25" style="width:50px"></i>
+     <i class="fa fa-caret-down" aria-hidden="true"></i></td>
+ <td>
+<div class="slidecontainer">
+  <input type="range" min="0" max="100" value="25" class="slider" id="myRange">
+</div>
+</td>
+</tr>
+</table>
+<!-- <i class="fas fa-window-restore"></i> -->
+
+<hr>
+<h2 id="iot">
+	IOT Geräte und Regeln
+</h2>
+<table id="T">
+<tr>
+ <th>Gerät <a href="/devices"><small>...</small></a></th>
+ <th>Beschreibung</th>
+</tr>
+
+<tr>
+ <td><a id="L" href="http://Wecker.fritz.box">Lichtwecker (Eltern)</a></td>
+ <td>Lichtwecker im Schlafzimmer</td>
+</tr>
+
+<tr>
+ <td><a id="L" href="http://Evawecker.fritz.box">Lichtwecker (Eva)</a></td>
+ <td>Lichtwecker bei Eva im Zimmer.</td>
+</tr>
+
+<tr>
+ <td><a id="L" href="http://shellyswitch25-B8AFC3.fritz.box/">Rollo Bad</a></td>
+ <td>Shelly 2.5 im Bad im OG für die Rollo-Steuerung</td>
+</tr>
+
+<tr>
+ <td><a id="L" href="http://shellyswitch25-68666D.fritz.box/">Rollo Eva</a></td>
+ <td>Shelly 2.5 in Evas Zimmer für die Rollo-Steuerung</td>
+</tr>
+
+<tr>
+ <td><a id="L" href="http://shellyswitch25-745815.fritz.box/">Rollo Schlafzimmer</a></td>
+ <td>Shelly 2.5 im Schlafzimmer für die Rollo-Steuerung</td>
+</tr>
+
+<tr>
+ <td><a id="L" href="http://shellyswitch25-B8A5AD.fritz.box/">Rollo Tim</a></td>
+ <td>Shelly 2.5 in Tims Zimmer für die Rollo-Steuerung</td>
+</tr>
+
+<tr>
+ <td><a id="L" href="">Wetterstation</a></td>
+ <td>Sensor an der Holzhütte</td>
+</tr>
+
+<tr>
+ <td><a id="L" href="http://192.168.2.23/">WZ-Lampe</a></td>
+ <td>ESP32-basierender Dimmer für die Wohnzimmer-Stehlampe</td>
+</tr>
+
+<tr>
+ <td><a id="L" href="http://shelly1-E0F02D.fritz.box">WZ-Lampen-Schalter</a></td>
+ <td>Shelly 1 hinter dem Schalter im Eingang, zur Steuerung der WZ-Lampe</td>
+</tr>
+
+</table>
+<p>
+	Konfigurierte Regeln <a href="/actions"><small>...</small></a>
+</p>
+</div>
+</body>
+<script>
+// Open and close the sidebar on medium and small screens
+function w3_open() {
+  document.getElementById("mySidebar").style.display = "block";
+  document.getElementById("myOverlay").style.display = "block";
+}
+
+function w3_close() {
+  document.getElementById("mySidebar").style.display = "none";
+  document.getElementById("myOverlay").style.display = "none";
+}
+
+// Change style of top container on scroll
+window.onscroll = function() {myFunction()};
+function myFunction() {
+  if (document.body.scrollTop > 80 || document.documentElement.scrollTop > 80) {
+    document.getElementById("myTop").classList.add("w3-card-4", "w3-animate-opacity");
+    document.getElementById("myIntro").classList.add("w3-show-inline-block");
+  } else {
+    document.getElementById("myIntro").classList.remove("w3-show-inline-block");
+    document.getElementById("myTop").classList.remove("w3-card-4", "w3-animate-opacity");
+  }
+}
+// Accordions
+function myAccordion(id) {
+  var x = document.getElementById(id);
+  if (x.className.indexOf("w3-show") == -1) {
+    x.className += " w3-show";
+    x.previousElementSibling.className += " w3-theme";
+  } else { 
+    x.className = x.className.replace("w3-show", "");
+    x.previousElementSibling.className = 
+    x.previousElementSibling.className.replace(" w3-theme", "");
+  }
+}
+</script>
+</html>

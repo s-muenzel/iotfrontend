@@ -1,103 +1,428 @@
 <!DOCTYPE html>
 <html>
-<head>
-<meta charset="UTF-8">
-<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-<script type="text/javascript">
-	google.charts.load('current', {'packages':['gauge']});
-	google.charts.setOnLoadCallback(drawChart);
 
-	function drawChart() {
-		var data_T = google.visualization.arrayToDataTable([
-			  ['Label', 'Value'],
-			  ['°C', {{ T }}],
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+	<link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-teal.css">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+	<style>
+		body {
+			font-family: "Roboto", sans-serif
+		}
+
+		.w3-bar-block .w3-bar-item {
+			padding: 16px;
+			font-weight: bold;
+		}
+	</style>
+	<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+	<script type="text/javascript">
+		google.charts.load('current', { 'packages': ['gauge'] });
+		google.charts.setOnLoadCallback(drawChart);
+
+		function drawChart() {
+			var data_T = google.visualization.arrayToDataTable([
+				['Label', 'Value'],
+				['°C', {{ T }}],
 			]);
 		var data_F = google.visualization.arrayToDataTable([
-			  ['Label', 'Value'],
-			  ['%', {{ F }}],
+			['Label', 'Value'],
+			['%', {{ F }}],
 			]);
 		var data_H = google.visualization.arrayToDataTable([
-			  ['Label', 'Value'],
-			  [' ', {{ H }}]
+			['Label', 'Value'],
+			[' ', {{ H }}]
+			]);
+		var data_P = google.visualization.arrayToDataTable([
+			['Label', 'Value'],
+			['%', {{ P }}]
 			]);
 
 		var options_T = {
 			width: 400, height: 120,
 			greenColor: '#0010a0', greenFrom: -20, greenTo: 0,
 			redFrom: 30, redTo: 50,
-			yellowFrom:15, yellowTo: 30,
+			yellowFrom: 15, yellowTo: 30,
 			min: -20, max: 50,
 			minorTicks: 5,
-			majorTicks: ['-20','-10','0','10','20','30','40','50']
+			majorTicks: ['-20', '-10', '0', '10', '20', '30', '40', '50']
 		};
 
 		var options_F = {
 			width: 400, height: 120,
-			yellowFrom:0, yellowTo: 40,
+			yellowFrom: 0, yellowTo: 40,
 			greenFrom: 40, greenTo: 65,
 			redFrom: 65, redTo: 100,
 			min: 0, max: 100,
 			minorTicks: 5,
-			majorTicks: ['0','20','40','60','80','100']
+			majorTicks: ['0', '20', '40', '60', '80', '100']
 		};
 
 		var options_H = {
 			width: 400, height: 120,
 			redColor: '#101010', redFrom: 0, redTo: 400,
-			yellowColor: '#a0a0a0', yellowFrom:400, yellowTo: 2047,
+			yellowColor: '#a0a0a0', yellowFrom: 400, yellowTo: 2047,
 			min: 0, max: 4095,
 			minorTicks: 5,
-			majorTicks: ['0','50%','100%']
+			majorTicks: ['0', '50%', '100%']
 		};
+
+		var options_P = {
+			width: 400, height: 120,
+			redFrom: 0, redTo: 5,
+			yellowColor: '#00ff00', yellowFrom: 95, yellowTo: 100,
+			min: 0, max: 100,
+			minorTicks: 5,
+			majorTicks: ['0', '20', '40', '60', '80', '100']
+		};
+
 
 		var chart_T = new google.visualization.Gauge(document.getElementById('chart_div_T'));
 		var chart_F = new google.visualization.Gauge(document.getElementById('chart_div_F'));
 		var chart_H = new google.visualization.Gauge(document.getElementById('chart_div_H'));
+		var chart_P = new google.visualization.Gauge(document.getElementById('chart_div_P'));
 
-        chart_T.draw(data_T, options_T);
-        chart_F.draw(data_F, options_F);
-        chart_H.draw(data_H, options_H);
+		chart_T.draw(data_T, options_T);
+		chart_F.draw(data_F, options_F);
+		chart_H.draw(data_H, options_H);
+		chart_P.draw(data_P, options_P);
       }
+	</script>
+	<script type="text/javascript">
+		function Rollo_Hoch(zimmer_url) {
+			fahre_Rollo(zimmer_url, 100);
+		}
+		function Rollo_Runter(zimmer_url) {
+			fahre_Rollo(zimmer_url, 0);
+		}
+		function Rollo_Wert(zimmer, zimmer_url) {
+			wert = document.getElementById("rollo_" + zimmer + "_wert").value;
+			fahre_Rollo(zimmer_url, wert);
+			Rollo_Img(zimmer); // auf aktive Rückmeldung warten...
+		}
+		function fahre_Rollo(rollo_url, pos) {
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function () { };
+			xhttp.open("GET", rollo_url + 'roller/0?go=to_pos&roller_pos=' + pos, true);
+			xhttp.send();
+		}
+		function Rollo_Img(zimmer) {
+			wert = document.getElementById("rollo_" + zimmer + "_wert").value;
+			if (wert > 90) {
+				document.getElementById("rollo_" + zimmer).style.backgroundImage = 'url(static/shutter-0.png)';
+			} else if (wert > 80) {
+				document.getElementById("rollo_" + zimmer).style.backgroundImage = 'url(static/shutter-10.png)';
+			} else if (wert > 70) {
+				document.getElementById("rollo_" + zimmer).style.backgroundImage = 'url(static/shutter-20.png)';
+			} else if (wert > 60) {
+				document.getElementById("rollo_" + zimmer).style.backgroundImage = 'url(static/shutter-30.png)';
+			} else if (wert > 50) {
+				document.getElementById("rollo_" + zimmer).style.backgroundImage = 'url(static/shutter-40.png)';
+			} else if (wert > 40) {
+				document.getElementById("rollo_" + zimmer).style.backgroundImage = 'url(static/shutter-50.png)';
+			} else if (wert > 30) {
+				document.getElementById("rollo_" + zimmer).style.backgroundImage = 'url(static/shutter-60.png)';
+			} else if (wert > 20) {
+				document.getElementById("rollo_" + zimmer).style.backgroundImage = 'url(static/shutter-70.png)';
+			} else if (wert > 10) {
+				document.getElementById("rollo_" + zimmer).style.backgroundImage = 'url(static/shutter-80.png)';
+			} else if (wert > 0) {
+				document.getElementById("rollo_" + zimmer).style.backgroundImage = 'url(static/shutter-90.png)';
+			} else {
+				document.getElementById("rollo_" + zimmer).style.backgroundImage = 'url(static/shutter-100.png)';
+			}
+		}
+		function Garage_Img(wert) {
+			if (wert == 0) {
+				document.getElementById("garage_tor").style.backgroundImage = 'url(static/offen.png)';
+			} else if (wert == 1) {
+				document.getElementById("garage_tor").style.backgroundImage = 'url(static/zu.png)';
+			} else {
+				document.getElementById("garage_tor").style.backgroundImage = 'url(static/unklar.png)';
+			}
+		}
+		function fahre_Garagentor(wert) {
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function () { };
+			xhttp.open("GET", "http://192.168.2.97/"+ wert, true);
+			xhttp.send();
+		}
+		function Lampe_Wert(zimmer, zimmer_url) {
+			wert = document.getElementById("lampe_" + zimmer + "_wert").value;
+			setze_Lampe(zimmer_url, wert);
+			Lampe_Img(zimmer);
+		}
+		function setze_Lampe(lampe_url, wert) {
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function () { };
+			xhttp.open("GET", lampe_url + 'SetzeWert?Wert=' + wert, true);
+			xhttp.send();
+		}
+		function anaus_Lampe(zimmer, lampe_url) {
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function () { };
+			xhttp.open("GET", lampe_url + "Wechsel", true);
+			xhttp.send();
+		}
+		function Lampe_Img(zimmer) {
+			wert = document.getElementById("lampe_" + zimmer + "_wert").value;
+			if (wert > 0) {
+				document.getElementById("lampe_" + zimmer + "_schalter").style.color = "red";
+			} else {
+				document.getElementById("lampe_" + zimmer + "_schalter").style.color = "black";
+			}
+		}
+
+		var myTimer = setInterval(Werte_Init, 10000);
+
+		function Werte_Init() {
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function () {
+				if (this.readyState == 4 && this.status == 200) {
+					var obj = JSON.parse(this.responseText);
+					document.getElementById("rollo_tim_wert").value = obj.rollo_tim;
+					Rollo_Img("tim");
+					document.getElementById("rollo_eva_wert").value = obj.rollo_eva;
+					Rollo_Img("eva");
+					document.getElementById("rollo_sz_wert").value = obj.rollo_sz;
+					Rollo_Img("sz");
+					document.getElementById("rollo_bad_wert").value = obj.rollo_bad;
+					Rollo_Img("bad");
+					document.getElementById("lampe_wz_wert").value = obj.wz_lampe;
+					Lampe_Img("wz");
+					Garage_Img(obj.garage_tor);
+				}
+			}
+			xhttp.open("GET", "status", true);
+			xhttp.send();
+		}
+	</script>
+	<title>Alte Rinne 14</title>
+</head>
+
+<body onload="Werte_Init()">
+
+	<nav class="w3-sidebar w3-bar-block w3-collapse w3-animate-left w3-card" style="z-index:3;width:250px;"
+		id="mySidebar">
+		<a class="w3-bar-item w3-button w3-hide-large w3-large" href="javascript:void(0)"
+			onclick="w3_close()">Schliessen <i class="fa fa-remove"></i></a>
+		<a class="w3-bar-item w3-button w3-teal" href="#">Home</a>
+		<a class="w3-bar-item w3-button" href="#wetter">Wetter</a>
+		<a class="w3-bar-item w3-button" href="#rollos">Rollos</a>
+		<a class="w3-bar-item w3-button" href="#garage">Garage</a>
+		<a class="w3-bar-item w3-button" href="#leuchten">Leuchten</a>
+		<a class="w3-bar-item w3-button" href="#zisterne">Zisterne</a>
+		<a class="w3-bar-item w3-button" href="#iot">Geräte</a>
+	</nav>
+
+	<div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="w3_close()" style="cursor:pointer" id="myOverlay">
+	</div>
+
+	<div class="w3-main" style="margin-left:250px;">
+
+		<div id="myTop" class="w3-container w3-top w3-theme w3-large">
+			<p><i class="fa fa-bars w3-button w3-teal w3-hide-large w3-xlarge" onclick="w3_open()"></i>
+				<span id="myIntro" class="w3-hide">Alte Rinne 14</span>
+			</p>
+		</div>
+
+		<header class="w3-container w3-theme" style="padding:64px 32px">
+			<h1 class="w3-xxxlarge">Alte Rinne 14</h1>
+		</header>
+
+		<div class="w3-container" style="padding:32px">
+
+			<h2 id="wetter">
+				Aktuelles Wetter
+			</h2>
+			<div class="w3-container w3-red w3-cell w3-mobile w3-centered">
+				<p>Temperatur</p>
+				<p class="nav" id="chart_div_T">Temperatur</p>
+			</div>
+			<div class="w3-container w3-green w3-cell w3-mobile w3-auto">
+				<p>Feuchtigkeit</p>
+				<p class="nav" id="chart_div_F">Feuchtigkeit</p>
+			</div>
+			<div class="w3-container w3-blue w3-cell w3-mobile">
+				<p>Helligkeit</p>
+				<p class="nav" id="chart_div_H">Helligkeit</p>
+			</div>
+			<div class="w3-container w3-mobile"><a
+					href="http://diskstation.fritz.box:3000/d/7Uo7fi5Mz/wetterdaten?orgId=1&refresh=5m">Langfristige
+					Wetterdaten</a></div>
+
+			<hr>
+			<h2 id="rollos">
+				Rolläden
+			</h2>
+			<div class="w3-container w3-cell w3-mobile">
+				<div class="w3-container w3-third">
+					<p><a id="L" href="http://shellyswitch25-B8AFC3.fritz.box/">Bad</a></p>
+					<p><button class="w3-button w3-black"
+							onclick="Rollo_Hoch('http://shellyswitch25-B8AFC3.fritz.box/');">
+							<i class="fa fa-caret-up"></i></button>
+						<input type="number" min="0" max="100" value=""
+							onchange="Rollo_Wert('bad','http://shellyswitch25-B8AFC3.fritz.box/');" id="rollo_bad_wert"
+							style="width:50px"></i>
+						<button class="w3-button w3-black"
+							onclick="Rollo_Runter('http://shellyswitch25-B8AFC3.fritz.box/');">
+							<i class="fa fa-caret-down"></i></button>
+					</p>
+				</div>
+				<div class="w3-content w3-twothird" id="rollo_bad"
+					style="background-image:url('static/shutter-30.png');width:160px;height:160px; background-repeat:no-repeat;">
+				</div>
+			</div>
+
+			<div class="w3-container w3-cell w3-mobile">
+				<div class="w3-container w3-third">
+					<p><a id="L" href="http://shellyswitch25-68666D.fritz.box/">Eva</a></p>
+					<p><button class="w3-button w3-black"
+							onclick="Rollo_Hoch('http://shellyswitch25-68666D.fritz.box/');">
+							<i class="fa fa-caret-up"></i></button>
+						<input type="number" min="0" max="100" value=""
+							onchange="Rollo_Wert('eva','http://shellyswitch25-68666D.fritz.box/');" id="rollo_eva_wert"
+							style="width:50px"></i>
+						<button class="w3-button w3-black"
+							onclick="Rollo_Runter('http://shellyswitch25-68666D.fritz.box/');">
+							<i class="fa fa-caret-down"></i></button>
+					</p>
+				</div>
+				<div class="w3-container w3-twothird" id="rollo_eva"
+					style="background-image:url('static/shutter-30.png');width:160px;height:160px; background-repeat:no-repeat;">
+				</div>
+			</div>
+
+			<div class="w3-container w3-cell w3-mobile">
+				<div class="w3-container w3-third">
+					<p><a id="L" href="http://shellyswitch25-745815.fritz.box/">Schlafzimmer</a></p>
+					<p><button class="w3-button w3-black"
+							onclick="Rollo_Hoch('http://shellyswitch25-745815.fritz.box/');">
+							<i class="fa fa-caret-up"></i></button>
+						<input type="number" min="0" max="100" value=""
+							onchange="Rollo_Wert('sz','http://shellyswitch25-745815.fritz.box/');" id="rollo_sz_wert"
+							style="width:50px"></i>
+						<button class="w3-button w3-black"
+							onclick="Rollo_Runter('http://shellyswitch25-745815.fritz.box/');">
+							<i class="fa fa-caret-down"></i></button>
+					</p>
+				</div>
+				<div class="w3-container w3-twothird" id="rollo_sz"
+					style="background-image:url('static/shutter-30.png');width:160px;height:160px; background-repeat:no-repeat;">
+				</div>
+			</div>
+
+			<div class="w3-container w3-cell w3-mobile">
+				<div class="w3-container w3-third">
+					<p><a id="L" href="http://shellyswitch25-B8A5AD.fritz.box/">Tim</a></p>
+					</p><button class="w3-button w3-black"
+						onclick="Rollo_Hoch('http://shellyswitch25-B8A5AD.fritz.box/');">
+						<i class="fa fa-caret-up"></i></button>
+					<input type="number" min="0" max="100" value=""
+						onchange="Rollo_Wert('tim','http://shellyswitch25-B8A5AD.fritz.box/');" id="rollo_tim_wert"
+						style="width:50px"></i>
+					<button class="w3-button w3-black"
+						onclick="Rollo_Runter('http://shellyswitch25-B8A5AD.fritz.box/');">
+						<i class="fa fa-caret-down"></i></button></p>
+				</div>
+				<div class="w3-container w3-twothird" id="rollo_tim"
+					style="background-image:url('static/shutter-30.png');width:160px;height:160px; background-repeat:no-repeat;">
+				</div>
+			</div>
+
+			<hr>
+			<h2 id="garage">
+				Garage
+			</h2>
+			<div class="w3-container w3-cell w3-mobile">
+				<p><a href="http://192.168.2.97/">Garage</a></p>
+				<div class="w3-content w3-twothird" id="garage_tor"
+					style="background-image:url('static/unklar.png');width:300px;height:300px; background-repeat:no-repeat;">
+				</div>
+				<button class="w3-button w3-round-xlarge w3-green" id="B_Auf"
+					onclick="fahre_Garagentor('Auf');">Öffnen</button>
+					<button class="w3-button w3-round-xlarge w3-green" id="B_Zu"
+					onclick="fahre_Garagentor('Zu');">Schliessen</button>
+			</div>
+			<hr>
+
+			<h2 id="leuchten">
+				Leuchten
+			</h2>
+			<div class="w3-container w3-cell w3-mobile">
+				<p><a id="L" href="http://192.168.2.23/">Wohnzimmer-Stehlampe</a></p>
+				<button class="w3-button" onclick="anaus_Lampe('wz','http://wz-lampe.fritz.box/')">
+					<i class="fa fa-power-off" style="font-size:24px;color:grey" id="lampe_wz_schalter"></i></button>
+				<input type="number" min="0" max="100" value="" onchange="Lampe_Wert('wz','http://wz-lampe.fritz.box/')"
+					id="lampe_wz_wert" style="width:50px"></i>
+			</div>
+			<div class="w3-container w3-cell w3-mobile">
+				<p><a id="L" href="http://aussenled.fritz.box">Terassenbeleuchtung</a></p>
+				<div id="TL_Div"><!-- <iframe src="http://aussenled.fritz.box/Control"
+						style="border:none; height:220px"></iframe> --></div>
+			</div>
+			<hr>
+			<hr>
+			<h2 id="zisterne">
+				Zisterne
+			</h2>
+			<div class="w3-container w3-cell w3-mobile">
+				<p><a href="http://192.168.2.97/">Zisterne</a></p>
+				<div class="w3-container w3-blue w3-cell w3-mobile">
+					<p>Wasserlevel in Zisterne</p>
+					<p class="nav" id="chart_div_P">WasserLevel</p>
+				</div>
+			</div>
+			<div class="w3-container w3-mobile"><a
+					href="http://diskstation.fritz.box:3000/d/J2w7Ym5Mk/zisterne?orgId=1">Verlauf Zisterne</a></div>
+			<hr>
+			<h2 id="iot">
+				IOT Geräte und Regeln
+			</h2>
+			<table id="T">
+				<tr>
+					<th>Gerät <a href="/devices"><small>...</small></a></th>
+					<th>Beschreibung</th>
+				</tr>
+
+				{% for item in eintraege %}
+				<tr>
+					<td><a id="L" href="{{ item[1] }}">{{ item[0] }}</a></td>
+					<td>{{ item[2] }}</td>
+				</tr>
+				{% endfor %}
+			</table>
+			<p>
+				Konfigurierte Regeln <a href="/actions"><small>...</small></a>
+			</p>
+</body>
+<script>
+	// Open and close the sidebar on medium and small screens
+	function w3_open() {
+		document.getElementById("mySidebar").style.display = "block";
+		document.getElementById("myOverlay").style.display = "block";
+	}
+
+	function w3_close() {
+		document.getElementById("mySidebar").style.display = "none";
+		document.getElementById("myOverlay").style.display = "none";
+	}
+
+	// Change style of top container on scroll
+	window.onscroll = function () { myFunction() };
+	function myFunction() {
+		if (document.body.scrollTop > 80 || document.documentElement.scrollTop > 80) {
+			document.getElementById("myTop").classList.add("w3-card-4", "w3-animate-opacity");
+			document.getElementById("myIntro").classList.add("w3-show-inline-block");
+		} else {
+			document.getElementById("myIntro").classList.remove("w3-show-inline-block");
+			document.getElementById("myTop").classList.remove("w3-card-4", "w3-animate-opacity");
+		}
+	}
+
 </script>
 
-<title>Alte Rinne 14</title>
-</head>
-<body>
-<h1>
-	Alte Rinne 14
-</h1>
-<h2>
-Aktuelles Wetter
-</h2>
-<table id="T">
-<tr>
- <th class="nav">Temperatur</th>
- <th class="nav">Relative<br>Feuchtigkeit</th>
- <th class="nav">Helligkeit</th>
-</tr>
-<tr>
- <td class="nav" id="chart_div_T">Temperatur</td>
- <td class="nav" id="chart_div_F">Feuchtigkeit</td>
- <td class="nav" id="chart_div_H">Helligkeit</td>
-</tr>
-</table>
-<h2>
-	IOT Geräte
-</h2>
-<table id="T">
-<tr>
- <th>Gerät <a href="/devices"><small>...</small></a></th>
- <th>Beschreibung</th>
-</tr>
-{% for item in eintraege %}
-<tr>
- <td><a id="L" href="{{ item[1] }}">{{ item[0] }}</a></td>
- <td>{{ item[2] }}</td>
-</tr>
-{% endfor %}
-</table>
-<p>
-	Konfigurierte Regeln <a href="/actions"><small>...</small></a>
-</p>
-</body>
 </html>

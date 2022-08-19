@@ -8,10 +8,12 @@ Listet alle konfigurierte Aktionen und
 import logging
 from os import _exit, X_OK
 from signal import signal, SIGTERM, SIGINT
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, send_from_directory
 import mysql.connector as mariadb
 import paho.mqtt.publish as publish
 import yaml
+import urllib.request
+import json
 
 
 def cb_signal_handler(signum, frame):
@@ -47,6 +49,12 @@ def top():
             hell = message[0]
         cursor.close()
         cursor = db_connection.cursor()
+        cursor.execute("SELECT message FROM mqtt_msgs "
+                       "WHERE topic='Sensor/Garage/Zisterne///P'")
+        for message in cursor:
+            proz = message[0]
+        cursor.close()
+        cursor = db_connection.cursor()
         cursor.execute("SELECT device.name AS name, device.url AS url,"
                        " device_description.description AS description "
                        "FROM device INNER JOIN `device_description` "
@@ -57,7 +65,7 @@ def top():
             entries.append([name, url, description])
         cursor.close()
         db_connection.close()
-        return render_template('top.htm', T=temp, F=feucht, H=hell,
+        return render_template('top.htm', T=temp, F=feucht, H=hell, P=proz,
                                eintraege=entries)
     except mariadb.Error as err:
         logging.warning("Database failure: %s", err)
@@ -107,12 +115,12 @@ def actions():
     """
     try:
         aktionen = []
-        logging.warning("/actions")
+        logging.debug("/actions")
         db_connection = mariadb.connect(option_files="db.cnf", database="iot")
         cursor = db_connection.cursor()
         cursor.execute("SELECT id, name, activ FROM activities ORDER BY name")
         for id, name, activ in cursor:  # pylint: disable=W0622,C0103
-            logging.warning("DB result: %d %s", id, name)
+            logging.debug("DB result: %d %s", id, name)
             aktionen.append([name, id, activ])
         cursor.close()
         return render_template('actions.htm', eintraege=aktionen)
@@ -131,7 +139,7 @@ def actions():
 @FLASK_APP.route('/aktion/add')
 def aktionadd():
     """aktionadd: Füllt die Seite zum Erstellen einer Aktion."""
-    logging.warning("aktionadd")
+    logging.info("aktionadd")
     try:
         db_connection = mariadb.connect(option_files="db.cnf", database="iot")
         cursor = db_connection.cursor()
@@ -180,7 +188,7 @@ def addaktion():
     """addaktion.
 
     Trägt eine neue Regel in die verschiedenen Tabellen ein."""
-    logging.warning("addaktion")
+    logging.info("addaktion")
 
     try:
         a_name = request.values.get("a_name", "")
@@ -204,34 +212,34 @@ def addaktion():
         cursor.execute("SELECT MAX(id) FROM activities")
         result = cursor.fetchall()
         new_id = result[0][0]+1
-        logging.warning("New Activity ID is %d", new_id)
+        logging.info("New Activity ID is %d", new_id)
         cursor.close()
         cursor = db_connection.cursor()
         sql_str = "INSERT INTO activities "\
                   "(id, name, device, description) VALUES ({}, '{}',"\
                   " '{}', '{}')".format(new_id, a_name, a_dev, a_desc)
-        logging.warning("activities: %s", sql_str)
+        logging.debug("activities: %s", sql_str)
         cursor.execute(sql_str)
         cursor.close()
         cursor = db_connection.cursor()
         sql_str = "INSERT INTO activity_trigger "\
                   "(id, topic, min, max) VALUES ({}, '{}',"\
                   " {}, '{}')".format(new_id, t_topic, t_min, t_max)
-        logging.warning("trigger: %s", sql_str)
+        logging.debug("trigger: %s", sql_str)
         cursor.execute(sql_str)
         cursor.close()
         cursor = db_connection.cursor()
         sql_str = "INSERT INTO activity_actions "\
                   "(id, typ, arg1, arg2) VALUES ({}, '{}',"\
                   " '{}', '{}')".format(new_id, ak_typ, ak_arg1, ak_arg2)
-        logging.warning("actions: %s", sql_str)
+        logging.debug("actions: %s", sql_str)
         cursor.execute(sql_str)
         cursor.close()
         cursor = db_connection.cursor()
         sql_str = "INSERT INTO activity_conditions "\
                   "(id, typ, min, max) VALUES ({}, '{}',"\
                   " {}, {})".format(new_id, c_typ, c_arg1, c_arg2)
-        logging.warning("conditions: %s", sql_str)
+        logging.debug("conditions: %s", sql_str)
         cursor.execute(sql_str)
         cursor.close()
         db_connection.commit()
@@ -254,7 +262,7 @@ def aktion_schalte_an_aus(actionid):
 
     Setzt den Wert der Aktion auf das Gegenteil des aktuellen Wertes
     """
-    logging.warning("/aktion/SchalteAn/actionid: %d", actionid)
+    logging.info("/aktion/SchalteAn/actionid: %d", actionid)
     try:
         db_connection = mariadb.connect(option_files="db.cnf", database="iot")
         cursor = db_connection.cursor()
@@ -262,7 +270,7 @@ def aktion_schalte_an_aus(actionid):
                   "SET activ = ( SELECT COUNT(activ) FROM activities "\
                   "WHERE id='{actionid}' AND activ=0 ) "\
                   "WHERE id='{actionid}'".format(actionid=actionid)
-        logging.warning("Sql Update activ: %s", sql_str)
+        logging.debug("Sql Update activ: %s", sql_str)
         cursor.execute(sql_str)
         cursor.close()
         db_connection.commit()
@@ -290,25 +298,25 @@ def aktiondelete():
         cursor = db_connection.cursor()
         sql_str = "DELETE FROM activity_trigger "\
                   "WHERE id='{}'".format(actionid)
-        logging.warning("Deleting: %s", sql_str)
+        logging.debug("Deleting: %s", sql_str)
         cursor.execute(sql_str)
         cursor.close()
         cursor = db_connection.cursor()
         sql_str = "DELETE FROM activity_conditions "\
                   "WHERE id='{}'".format(actionid)
-        logging.warning("Deleting: %s", sql_str)
+        logging.debug("Deleting: %s", sql_str)
         cursor.execute(sql_str)
         cursor.close()
         cursor = db_connection.cursor()
         sql_str = "DELETE FROM activity_actions "\
                   "WHERE id='{}'".format(actionid)
-        logging.warning("Deleting: %s", sql_str)
+        logging.debug("Deleting: %s", sql_str)
         cursor.execute(sql_str)
         cursor.close()
         cursor = db_connection.cursor()
         sql_str = "DELETE FROM activities "\
                   "WHERE id='{}'".format(actionid)
-        logging.warning("Deleting: %s", sql_str)
+        logging.debug("Deleting: %s", sql_str)
         cursor.execute(sql_str)
         cursor.close()
         db_connection.commit()
@@ -332,16 +340,19 @@ def action(actionid):  # pylint: disable=R0914
     Web-Handler für /action/x: listet die Details für die
     Aktion x auf
     """
-    logging.warning("/action, actionid: %d", actionid)
+    logging.debug("/action, actionid: %d", actionid)
     try:
         db_connection = mariadb.connect(option_files="db.cnf", database="iot")
         cursor = db_connection.cursor()
-        cursor.execute("SELECT activities.name, activities.device,"
+        cursor.execute("SELECT activities.name as name,"
+                       " activities.device as device,"
                        " device_description.name as geraet "
                        "FROM activities INNER JOIN device_description ON"
                        " activities.device = device_description.mqtt_name "
                        "WHERE id='{}'".format(actionid))
         actionname = "unbekannt"
+        devicename = "unbekannt"
+        geraetname = "unbekannt"
         for name, device, geraet in cursor:  # pylint: disable=W0622
             actionname = name
             devicename = device
@@ -386,9 +397,10 @@ def action(actionid):  # pylint: disable=R0914
         for lfdnr, typ, arg1, arg2 in cursor:
             aktion.append([typ, arg1, arg2, lfdnr])
         cursor.close()
-        return render_template('action.htm', device=geraetname, deviceid=devicename,
+        return render_template('action.htm',
+                               device=geraetname, deviceid=devicename,
                                trigger_liste=trigger_liste, trigger=trigger,
-                               cond_liste=cond_liste, conditions=conditions, 
+                               cond_liste=cond_liste, conditions=conditions,
                                action_liste=action_liste, action=aktion,
                                actionid=actionid, actionname=actionname)
     except mariadb.Error as err:
@@ -449,19 +461,20 @@ def delete_condition():
 @FLASK_APP.route('/add_condition', methods=["GET"])
 def add_condition():
     """add_condition: Web-Handler für /addcond."""
-    logging.warning("addcond")
+    logging.debug("addcond")
     arg0 = request.values.get("a0", "")
     arg1 = request.values.get("a1", "")
     arg2 = request.values.get("a2", "")
     actionid = request.values.get("actionid", "")
-    logging.warning("add: a0=%s a1=%s a2=%s id=%s", arg0, arg1, arg2, actionid)
+    logging.info("adding condition: a0=%s a1=%s a2=%s id=%s",
+                 arg0, arg1, arg2, actionid)
     try:
         db_connection = mariadb.connect(option_files="db.cnf", database="iot")
         cursor = db_connection.cursor()
         sql_str = "INSERT INTO activity_conditions "\
                   "(id, typ, min, max) VALUES ({}, '{}',"\
                   " '{}', '{}' )".format(actionid, arg0, arg1, arg2)
-        logging.warning("Neue bedingung: %s", sql_str)
+        logging.debug("Neue bedingung: %s", sql_str)
         cursor.execute("INSERT INTO activity_conditions "
                        "(id, typ, min, max) VALUES ({}, '{}',"
                        " '{}', '{}' )".format(actionid, arg0, arg1, arg2))
@@ -494,17 +507,17 @@ UPDATE_TEXTE = {
 @FLASK_APP.route('/submitchange', methods=["GET"])
 def submitchange():
     """submitchange: Web-Handler für /submitchange."""
-    logging.warning("submitchange")
     arg0 = request.values.get("a0", "")
     arg1 = request.values.get("a1", "")
     arg2 = request.values.get("a2", "")
     typ = request.values.get("typ", "fehler")
     lfdnr = request.values.get("lfdnr", -1)
     actionid = request.values.get("actionid", -1)
+    logging.info("change of %s: %s %s %s", typ, arg0, arg1, arg2)
     try:
         db_connection = mariadb.connect(option_files="db.cnf", database="iot")
         cursor = db_connection.cursor()
-        logging.warning(UPDATE_TEXTE[typ].format(arg0, arg1, arg2, lfdnr))
+        logging.debug(UPDATE_TEXTE[typ].format(arg0, arg1, arg2, lfdnr))
         cursor.execute(UPDATE_TEXTE[typ].format(arg0, arg1, arg2, lfdnr))
         db_connection.commit()
     except mariadb.Error as err:
@@ -518,13 +531,74 @@ def submitchange():
 @FLASK_APP.route('/reloadaktions')
 def reloadaktions():
     """reloadaktions: Web-Handler für /reloadaktions."""
-    logging.warning("reloadaktions")
+    logging.info("reloadaktions")
     mqtt_config = yaml.safe_load(open("mq.cnf"))
     publish.single("DB", payload="AKTION",
                    hostname=mqtt_config["mqtt"]["mqttserver"],
                    port=mqtt_config["mqtt"]["mqttport"])
     return redirect("/actions", code=307)
-
+    
+@FLASK_APP.route('/status')
+def send_status():
+    x = {
+        "wz_lampe": "?",
+        "rollo_bad": "?",
+        "rollo_eva": "?",
+        "rollo_sz": "?",
+        "rollo_tim": "?",
+        "garage_tor": "?",
+    }
+    try:
+        with urllib.request.urlopen("http://wz-lampe.fritz.box",
+                                    timeout=5) as response:
+            html = response.read().decode('utf-8')
+            if html == "Aus":
+                x["wz_lampe"] = "0"
+            else:
+                x["wz_lampe"] = html
+    except urllib.error.URLError as err:
+        logging.debug("URL Error: %s", err.reason)
+    try:
+        with urllib.request.urlopen("http://shellyswitch25-b8afc3.fritz.box/roller/0",
+                                    timeout=5) as response:
+            html = response.read().decode('utf-8')
+            rollerstat = json.loads(html)
+            x["rollo_bad"] = rollerstat["current_pos"]
+    except urllib.error.URLError as err:
+        logging.debug("URL Error: %s", err.reason)
+    try:
+        with urllib.request.urlopen("http://shellyswitch25-68666D.fritz.box/roller/0",
+                                    timeout=5) as response:
+            html = response.read().decode('utf-8')
+            rollerstat = json.loads(html)
+            x["rollo_eva"] = rollerstat["current_pos"]
+    except urllib.error.URLError as err:
+        logging.debug("URL Error: %s", err.reason)
+    try:
+        with urllib.request.urlopen("http://shellyswitch25-745815.fritz.box/roller/0",
+                                    timeout=5) as response:
+            html = response.read().decode('utf-8')
+            rollerstat = json.loads(html)
+            x["rollo_sz"] = rollerstat["current_pos"]
+    except urllib.error.URLError as err:
+        logging.debug("URL Error: %s", err.reason)
+    try:
+        with urllib.request.urlopen("http://shellyswitch25-B8A5AD.fritz.box/roller/0",
+                                    timeout=5) as response:
+            html = response.read().decode('utf-8')
+            rollerstat = json.loads(html)
+            x["rollo_tim"] = rollerstat["current_pos"]
+    except urllib.error.URLError as err:
+        logging.debug("URL Error: %s", err.reason)
+    try:
+        with urllib.request.urlopen("http://192.168.2.97/Status",
+                                    timeout=5) as response:
+            html = response.read().decode('utf-8')
+            rollerstat = json.loads(html)
+            x["garage_tor"] = rollerstat["Tor"]
+    except urllib.error.URLError as err:
+        logging.debug("URL Error: %s", err.reason)
+    return json.dumps(x)
 
 if __name__ == '__main__':
     signal(SIGTERM, cb_signal_handler)

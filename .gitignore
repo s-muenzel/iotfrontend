@@ -1,1 +1,4 @@
 *.cnf
+static/Thumbs.db
+*.bak
+templates/top-Org.htm
