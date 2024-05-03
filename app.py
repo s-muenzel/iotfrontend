@@ -575,7 +575,7 @@ def send_status():
     except urllib.error.URLError as err:
         logging.debug("URL Error: %s", err.reason)
     try:
-        with urllib.request.urlopen("http://shellyswitch25-745815.fritz.box/roller/0",
+        with urllib.request.urlopen("http://shellyswitch25-B8AC9B.fritz.box/roller/0",
                                     timeout=5) as response:
             html = response.read().decode('utf-8')
             rollerstat = json.loads(html)
