@@ -147,7 +147,7 @@
 		function fahre_Garagentor(wert) {
 			var xhttp = new XMLHttpRequest();
 			xhttp.onreadystatechange = function () { };
-			xhttp.open("GET", "http://192.168.2.97/"+ wert, true);
+			xhttp.open("GET", "http://192.168.2.97/" + wert, true);
 			xhttp.send();
 		}
 		function Lampe_Wert(zimmer, zimmer_url) {
@@ -214,8 +214,8 @@
 		<a class="w3-bar-item w3-button" href="#rollos">Rollos</a>
 		<a class="w3-bar-item w3-button" href="#garage">Garage</a>
 		<a class="w3-bar-item w3-button" href="#leuchten">Leuchten</a>
-		<a class="w3-bar-item w3-button" href="#zisterne">Zisterne</a>
-		<a class="w3-bar-item w3-button" href="#iot">Geräte</a>
+		<a class="w3-bar-item w3-button" href="#wasser">Wasser</a>
+		<a class="w3-bar-item w3-button" href="#iot">Ger&auml;te</a>
 	</nav>
 
 	<div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="w3_close()" style="cursor:pointer" id="myOverlay">
@@ -344,7 +344,7 @@
 				</div>
 				<button class="w3-button w3-round-xlarge w3-green" id="B_Auf"
 					onclick="fahre_Garagentor('Auf');">Öffnen</button>
-					<button class="w3-button w3-round-xlarge w3-green" id="B_Zu"
+				<button class="w3-button w3-round-xlarge w3-green" id="B_Zu"
 					onclick="fahre_Garagentor('Zu');">Schliessen</button>
 			</div>
 			<hr>
@@ -366,9 +366,10 @@
 			</div>
 			<hr>
 			<hr>
-			<h2 id="zisterne">
-				Zisterne
+			<h2 id="wasser">
+				Wasser
 			</h2>
+			<h3>Zisterne</h3>
 			<div class="w3-container w3-cell w3-mobile">
 				<p><a href="http://192.168.2.97/">Zisterne</a></p>
 				<div class="w3-container w3-blue w3-cell w3-mobile">
@@ -378,6 +379,10 @@
 			</div>
 			<div class="w3-container w3-mobile"><a
 					href="http://diskstation.fritz.box:3000/d/J2w7Ym5Mk/zisterne?orgId=1">Verlauf Zisterne</a></div>
+			<h3>Bew&auml;sserung</h3>
+			<div class="w3-container w3-cell w3-mobile">
+				<p><a href="/bewaesserung">Bew&auml;sserung</a></p>
+			</div>
 			<hr>
 			<h2 id="iot">
 				IOT Geräte und Regeln

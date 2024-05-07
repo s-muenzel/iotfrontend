@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>Alte Rinne 14 - Bew&auml;sserung</title>
+
+<body>
+	<script>
+		function upt(was) {
+			val = document.getElementById(was).value;
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function () { };
+			xhttp.open("GET", "/set_bew?was=" + was + "&wieviel=" + val, true);
+			xhttp.send();
+		}
+	</script>
+	<h1>
+		Alte Rinne 14 - Bew&auml;sserung
+	</h1>
+	<table id="T">
+		<tr>
+			<th>Dauer</th>
+			<th>Periode</th>
+			<th>Wann wieder</th>
+			<th>Wasser</th>
+		</tr>
+		<tr>
+			<td><input id="Dauer" type="number" min="0" max="180" onChange="upt('Dauer')" value="{{ D }}"></td>
+			<td><input id="Frequenz" type="number" min="0" max="180" onChange="upt('Frequenz')" value="{{ F }}"></td>
+			<td><input id="Next" type="number" min="0" max="180" onChange="upt('Next')" value="{{ N }}"></td>
+			<td>{{ W }}</td>
+		</tr>
+	</table>
+	<p><a href="/">zurück</a></p>
+</body>
+
+</html>

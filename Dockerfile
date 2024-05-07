@@ -17,6 +17,7 @@ COPY templates/devices.htm /templates/devices.htm
 COPY templates/actions.htm /templates/actions.htm
 COPY templates/addaction.htm /templates/addaction.htm
 COPY templates/action.htm /templates/action.htm
+COPY templates/bewaesserung.htm /templates/bewaesserung.htm
 
 RUN mkdir static
 COPY static/shutter-0.png  static/shutter-0.png

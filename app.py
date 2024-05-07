@@ -8,12 +8,13 @@ Listet alle konfigurierte Aktionen und
 import logging
 from os import _exit, X_OK
 from signal import signal, SIGTERM, SIGINT
-from flask import Flask, render_template, request, redirect, send_from_directory
-import mysql.connector as mariadb
-import paho.mqtt.publish as publish
-import yaml
 import urllib.request
 import json
+from flask import Flask, render_template, request, redirect
+# , send_from_directory
+import mysql.connector as mariadb
+import paho.mqtt.client as mqtt_client
+import yaml
 
 
 def cb_signal_handler(signum, frame):
@@ -532,14 +533,21 @@ def submitchange():
 def reloadaktions():
     """reloadaktions: Web-Handler für /reloadaktions."""
     logging.info("reloadaktions")
-    mqtt_config = yaml.safe_load(open("mq.cnf"))
-    publish.single("DB", payload="AKTION",
-                   hostname=mqtt_config["mqtt"]["mqttserver"],
-                   port=mqtt_config["mqtt"]["mqttport"])
+    # mqtt_config = yaml.safe_load(open("mq.cnf"))
+    # publish.single("DB", payload="AKTION",
+    #                hostname=mqtt_config["mqtt"]["mqttserver"],
+    #                port=mqtt_config["mqtt"]["mqttport"])
+    mqtt_client.publish(topic="DB", payload="AKTION")
     return redirect("/actions", code=307)
-    
+
+
 @FLASK_APP.route('/status')
 def send_status():
+    """send_status: asynchrones Laden der aktuellen Status-Infos
+
+    Returns:
+        String: JSON mit den Daten
+    """
     x = {
         "wz_lampe": "?",
         "rollo_bad": "?",
@@ -600,8 +608,84 @@ def send_status():
         logging.debug("URL Error: %s", err.reason)
     return json.dumps(x)
 
+
+@FLASK_APP.route('/bewaesserung')
+def bewaesserung():
+    """bewaesserung: Web-Handler für /bewaesserung
+    Füllt die letzten bekannten "Ist" Werte ein und zeigt die Webseite
+    """
+    # global _bewaesserung_dauer, _bewaesserung_frequenz, _bewaesserung_next, _bewaesserung_wasser
+    logging.debug("bewaesserung")
+    try:
+        if _bewaesserung_dauer == -1:
+            mqtt_client.publish("Bewaesserung/Ist", "{}")
+        return render_template('bewaesserung.htm', D=_bewaesserung_dauer,
+                               F=_bewaesserung_frequenz, N=_bewaesserung_next, W=_bewaesserung_wasser)
+    except Exception as err:  # pylint: disable=W0703
+        logging.warning("General failure %s", str(err))
+        return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
+               '<title>Fehler</title></head>'\
+               '<body><h1>allgemeiner Fehler</h1></h1></body>'
+
+
+@FLASK_APP.route('/set_bew', methods=["GET"])
+def set_bew():
+    """submitchange: Web-Handler für /set_ber.
+    Neue Werte für die Bewässerung:
+    Wert 0: Dauer
+    Wert 1: Frequenz (ist eigentlich Periode)
+    Wert 2: Next"""
+    was = request.values.get("was", "?")
+    wieviel = request.values.get("wieviel", "-1")
+    logging.info(
+        "Neue Bewaesesrungswerte WaS:%s wieviel:%d", was, wieviel)
+    if was != "?":
+        mqtt_client.publish("Bewaesserung/Soll", '{"'+was+'":'+wieviel+'}')
+    return "{'ok'}"
+
+
+def on_message(client, userdata, msg):
+    """on_message: callback für MQTT Nachricht
+    Nach Empfang einer MQTT Nachricht topic "Bewaesserung/Ist" die Daten merken
+    """
+    global _bewaesserung_dauer, _bewaesserung_frequenz, _bewaesserung_next, _bewaesserung_wasser
+    print("Thema %s Msg %s", msg.topic, msg.payload.decode())
+    logging.debug("Received topic %s Msg %s", msg.topic, msg.payload.decode())
+    bew = json.loads(msg.payload.decode())
+    if "Dauer" in bew:
+        _bewaesserung_dauer = bew["Dauer"]
+        _bewaesserung_frequenz = bew["Frequenz"]
+        _bewaesserung_next = bew["Next"]
+        _bewaesserung_wasser = bew["Wasser"]
+
+
+# def on_connect(client, userdata, flags, rc):
+#     print("on_connect")
+
+
+# def on_subscribe(client, userdata, mid, granted_qos):
+#     print("on_subscribe")
+
+
 if __name__ == '__main__':
     signal(SIGTERM, cb_signal_handler)
     signal(SIGINT, cb_signal_handler)
 
+# {"Dauer":20,"Frequenz":10800,"Next":4769,"Wasser":"ok"}
+    _bewaesserung_dauer = -1
+    _bewaesserung_frequenz = -1
+    _bewaesserung_next = -1
+    _bewaesserung_wasser = False
+    mqtt_config = yaml.safe_load(open("mq.cnf"))
+    mqtt_client = mqtt_client.Client(client_id="bew-test")
+    mqtt_client.on_message = on_message
+    erg = mqtt_client.connect(host=mqtt_config["mqtt"]["mqttserver"],
+                              port=mqtt_config["mqtt"]["mqttport"])
+    print("connect:", erg)
+    erg = mqtt_client.subscribe("Bewaesserung/Ist")
+    print("subscribe:", erg)
+    mqtt_client.loop_start()
+
     FLASK_APP.run(host='0.0.0.0', port=80)
+
+    mqtt_client.loop_stop()
