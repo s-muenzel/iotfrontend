@@ -620,7 +620,7 @@ def bewaesserung():
         if _bewaesserung_dauer == -1:
             mqtt_client.publish("Bewaesserung/Ist", "{}")
         return render_template('bewaesserung.htm', D=_bewaesserung_dauer,
-                               F=_bewaesserung_frequenz, N=_bewaesserung_next, W=_bewaesserung_wasser)
+                               F=_bewaesserung_frequenz/3600., N=_bewaesserung_next/3600., W=_bewaesserung_wasser)
     except Exception as err:  # pylint: disable=W0703
         logging.warning("General failure %s", str(err))
         return '<!DOCTYPE html><html><head><meta charset="UTF-8">'\
