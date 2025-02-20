@@ -3,10 +3,11 @@ FROM alpine
 LABEL maintainer=s.a.muenzel@gmail.com
 
 RUN apk add python3 
-RUN pip3 install Flask 
-RUN pip3 install mysql-connector-python
-RUN pip3 install paho-mqtt
-RUN pip3 install pyyaml
+RUN apk add py3-pip
+RUN pip3 install --break-system-packages --root-user-action ignore Flask 
+RUN pip3 install --break-system-packages --root-user-action ignore mysql-connector-python
+RUN pip3 install --break-system-packages --root-user-action ignore paho-mqtt
+RUN pip3 install --break-system-packages --root-user-action ignore pyyaml
 
 COPY app.py .
 COPY db.cnf .
