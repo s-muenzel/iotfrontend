@@ -176,11 +176,18 @@
 			}
 		}
 
-		var myTimer = setInterval(Werte_Init, 10000);
+		var myTimer_r = setInterval(Werte_Init_Rollo, 10000);
+		var myTimer_g = setInterval(Werte_Init_Garage, 10000);
+		var myTimer_l = setInterval(Werte_Init_Leuchte, 10000);
 
 		function Werte_Init() {
-			var xhttp = new XMLHttpRequest();
-			xhttp.onreadystatechange = function () {
+			Werte_Init_Rollo();
+			Werte_Init_Garage();
+			Werte_Init_Leuchte();
+		}
+		function Werte_Init_Rollo() {
+			var xhttp_rollo = new XMLHttpRequest();
+			xhttp_rollo.onreadystatechange = function () {
 				if (this.readyState == 4 && this.status == 200) {
 					var obj = JSON.parse(this.responseText);
 					document.getElementById("rollo_tim_wert").value = obj.rollo_tim;
@@ -193,11 +200,33 @@
 					Rollo_Img("bad");
 					document.getElementById("lampe_wz_wert").value = obj.wz_lampe;
 					Lampe_Img("wz");
+					// Garage_Img(obj.garage_tor);
+				}
+			}
+			xhttp_rollo.open("GET", "status_r", true);
+			xhttp_rollo.send();
+		}
+		function Werte_Init_Garage() {
+			var xhttp_garage = new XMLHttpRequest();
+			xhttp_garage.onreadystatechange = function () {
+				if (this.readyState == 4 && this.status == 200) {
+					var obj = JSON.parse(this.responseText);
 					Garage_Img(obj.garage_tor);
 				}
 			}
-			xhttp.open("GET", "status", true);
-			xhttp.send();
+			xhttp_garage.open("GET", "status_g", true);
+			xhttp_garage.send();
+		}
+		function Werte_Init_Leuchte() {
+			var xhttp_lampe = new XMLHttpRequest();
+			xhttp_lampe.onreadystatechange = function () {
+				if (this.readyState == 4 && this.status == 200) {
+					var obj = JSON.parse(this.responseText);
+					Garage_Img(obj.garage_tor);
+				}
+			}
+			xhttp_lampe.open("GET", "status_l", true);
+			xhttp_lampe.send();
 		}
 	</script>
 	<title>Alte Rinne 14</title>
@@ -215,7 +244,8 @@
 		<a class="w3-bar-item w3-button" href="#garage">Garage</a>
 		<a class="w3-bar-item w3-button" href="#leuchten">Leuchten</a>
 		<a class="w3-bar-item w3-button" href="#wasser">Wasser</a>
-		<a class="w3-bar-item w3-button" href="#iot">Ger&auml;te</a>
+		<a class="w3-bar-item w3-button" href="/strom.htm">Strom</a>
+		<a class="w3-bar-item w3-button" href="/iot.htm">Ger&auml;te</a>
 	</nav>
 
 	<div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="w3_close()" style="cursor:pointer" id="myOverlay">
@@ -387,26 +417,6 @@
             <div class="w3-container w3-cell w3-mobile">
 			<p><a href="http://192.168.2.139">Bew&auml;sserung Vorgarten</a></p>
 			</div>
-			<hr>
-			<h2 id="iot">
-				IOT Geräte und Regeln
-			</h2>
-			<table id="T">
-				<tr>
-					<th>Gerät <a href="/devices"><small>...</small></a></th>
-					<th>Beschreibung</th>
-				</tr>
-
-				{% for item in eintraege %}
-				<tr>
-					<td><a id="L" href="{{ item[1] }}">{{ item[0] }}</a></td>
-					<td>{{ item[2] }}</td>
-				</tr>
-				{% endfor %}
-			</table>
-			<p>
-				Konfigurierte Regeln <a href="/actions"><small>...</small></a>
-			</p>
 </body>
 <script>
 	// Open and close the sidebar on medium and small screens

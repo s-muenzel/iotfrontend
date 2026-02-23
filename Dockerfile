@@ -4,10 +4,12 @@ LABEL maintainer=s.a.muenzel@gmail.com
 
 RUN apk add python3 
 RUN apk add py3-pip
+RUN pip3 install --break-system-packages --root-user-action ignore matplotlib
 RUN pip3 install --break-system-packages --root-user-action ignore Flask 
 RUN pip3 install --break-system-packages --root-user-action ignore mysql-connector-python
 RUN pip3 install --break-system-packages --root-user-action ignore paho-mqtt
 RUN pip3 install --break-system-packages --root-user-action ignore pyyaml
+RUN pip3 install --break-system-packages --root-user-action ignore pymodbus
 
 COPY app.py .
 COPY db.cnf .
@@ -19,6 +21,7 @@ COPY templates/actions.htm /templates/actions.htm
 COPY templates/addaction.htm /templates/addaction.htm
 COPY templates/action.htm /templates/action.htm
 COPY templates/bewaesserung.htm /templates/bewaesserung.htm
+COPY templates/iot.htm /templates/iot.htm
 
 RUN mkdir static
 COPY static/shutter-0.png  static/shutter-0.png
