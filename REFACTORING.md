@@ -58,7 +58,7 @@ The monolithic `app.py` (1020 lines) has been successfully split into 7 focused,
   - `/status_l` - Lamp status
   - `/bewaesserung` - Irrigation system page
   - `/set_bew` - Set irrigation parameters
-  - `/strom.htm` - Solar/house power information
+  - `/status_s` - Solar/house power information
 
 ## Benefits
 

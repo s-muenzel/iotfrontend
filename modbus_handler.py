@@ -27,16 +27,20 @@ def get_power_status():
             values = modclient.convert_from_registers(rr.registers, data_type=modclient.DATATYPE.INT16)
             p_solar = values[0] * (10 ** values[1])
             
-            # Read house power
+            # Read grid power
             rr = modclient.read_holding_registers(0x9d0e, count=5)
             values = modclient.convert_from_registers(rr.registers, data_type=modclient.DATATYPE.INT16)
-            p_haus = values[0] * (10 ** values[4])
+            p_grid = values[0] * (10 ** values[4])
+            
+            p_battery = 0  # Placeholder for battery power, as it's not read from Modbus in this example
+            soc = 50  # Placeholder for state of charge, as it's not read from Modbus in this example
             
             return {
                 'p_solar': p_solar,
-                'p_haus': p_haus,
-                'p_grid': p_haus - p_solar,
-                'p_battery': 0
+                'p_haus': p_grid - p_solar - p_battery,
+                'p_grid': p_grid,
+                'p_battery': p_battery,
+                'soc': soc
             }
         except ModbusException as exc:
             logging.error("Received ModbusException: %s", exc)

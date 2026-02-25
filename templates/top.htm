@@ -198,8 +198,8 @@
 					Rollo_Img("sz");
 					document.getElementById("rollo_bad_wert").value = obj.rollo_bad;
 					Rollo_Img("bad");
-					document.getElementById("lampe_wz_wert").value = obj.wz_lampe;
-					Lampe_Img("wz");
+					// document.getElementById("lampe_wz_wert").value = obj.wz_lampe;
+					// Lampe_Img("wz");
 					// Garage_Img(obj.garage_tor);
 				}
 			}
@@ -222,7 +222,7 @@
 			xhttp_lampe.onreadystatechange = function () {
 				if (this.readyState == 4 && this.status == 200) {
 					var obj = JSON.parse(this.responseText);
-					Garage_Img(obj.garage_tor);
+					Lampe_Img(obj.wz_lampe);
 				}
 			}
 			xhttp_lampe.open("GET", "status_l", true);
@@ -244,7 +244,7 @@
 		<a class="w3-bar-item w3-button" href="#garage">Garage</a>
 		<a class="w3-bar-item w3-button" href="#leuchten">Leuchten</a>
 		<a class="w3-bar-item w3-button" href="#wasser">Wasser</a>
-		<a class="w3-bar-item w3-button" href="/strom.htm">Strom</a>
+		<a class="w3-bar-item w3-button" href="/strom">Strom</a>
 		<a class="w3-bar-item w3-button" href="/iot.htm">Ger&auml;te</a>
 	</nav>
 
@@ -415,8 +415,10 @@
 				<p><a href="http://192.168.2.61">Bew&auml;sserung Holzschuppen (html) - noch unfertig</a></p>
 			</div>
             <div class="w3-container w3-cell w3-mobile">
-			<p><a href="http://192.168.2.139">Bew&auml;sserung Vorgarten</a></p>
+				<p><a href="http://192.168.2.139">Bew&auml;sserung Vorgarten</a></p>
 			</div>
+		</div>
+	</div>
 </body>
 <script>
 	// Open and close the sidebar on medium and small screens

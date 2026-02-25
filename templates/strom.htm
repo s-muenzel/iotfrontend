@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-teal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://kit.fontawesome.com/d76bf21353.js" crossorigin="anonymous"></script>
+    <style>
+        body {
+            font-family: "Roboto", sans-serif
+        }
+
+        .w3-bar-block .w3-bar-item {
+            padding: 16px;
+            font-weight: bold;
+        }
+    </style>
+    <script>
+        var data = {
+            p_solar: 1,
+            p_haus: 1,
+            p_grid: 1,
+            p_battery: 1,
+            soc: 50
+        };
+        function ErzeugePText(p) {
+            if (p >= 1000) {
+                return (p / 1000).toPrecision(3) + "kW";
+            } else {
+                return p.toPrecision(3) + "W";
+            }
+        }
+        function Init() {
+            Resize();
+            UpdatePfeile(data);
+            HoleWerte();
+            var myTimer = setInterval(HoleWerte, 10000);
+        }
+        function Resize() {
+            let w = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+            let h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+
+            document.getElementById("mySvg").width.baseVal.value = w * 0.8;
+            document.getElementById("mySvg").height.baseVal.value = w * 0.8 * 0.75;
+            document.getElementById("scale_group").setAttribute("transform", "scale(" + document.getElementById("mySvg").width.baseVal.value / 800 + ")");
+        }
+        function HoleWerte() {
+            fetch('/status_s')
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Received data:", data);
+                    // Update the UI with the received data
+                    UpdatePfeile(data);
+                })
+                .catch(error => console.error('Error fetching power status:', error));
+        }
+        function UpdatePfeile(data) {
+            document.getElementById("battery_per").textContent = data.soc + "%";
+            document.getElementById("battery_fill").setAttribute("height", 70 * (data.soc / 100));
+            document.getElementById("battery_fill").setAttribute("y", 10 + 70 * (1 - data.soc / 100));
+            document.getElementById("battery_p").textContent = ErzeugePText(data.p_battery);
+            if (data.p_battery > 0) {
+                document.getElementById("battery_arrow_lade").setAttribute("fill", "green");
+                document.getElementById("battery_arrow_entlade").setAttribute("fill", "none");
+            } else if (data.p_battery < 0) {
+                document.getElementById("battery_arrow_lade").setAttribute("fill", "none");
+                document.getElementById("battery_arrow_entlade").setAttribute("fill", "red");
+            } else {
+                document.getElementById("battery_arrow_lade").setAttribute("fill", "none");
+                document.getElementById("battery_arrow_entlade").setAttribute("fill", "none");
+            }
+            document.getElementById("solar_p").textContent = ErzeugePText(data.p_solar);
+            if (data.p_solar > 0) {
+                document.getElementById("solar_arrow_lade").setAttribute("fill", "green");
+            } else {
+                document.getElementById("solar_arrow_lade").setAttribute("fill", "none");
+            }
+            document.getElementById("haus_p").textContent = ErzeugePText(data.p_haus);
+            if (data.p_haus > 0) {
+                document.getElementById("haus_arrow_lade").setAttribute("fill", "red");
+            } else {
+                document.getElementById("haus_arrow_lade").setAttribute("fill", "none");
+            }
+            document.getElementById("grid_p").textContent = ErzeugePText(data.p_grid);
+            if (data.p_grid > 0) {
+                document.getElementById("grid_arrow_lade").setAttribute("fill", "red");
+                document.getElementById("grid_arrow_entlade").setAttribute("fill", "none");
+            } else if (data.p_grid < 0) {
+                document.getElementById("grid_arrow_lade").setAttribute("fill", "none");
+                document.getElementById("grid_arrow_entlade").setAttribute("fill", "green");
+            } else {
+                document.getElementById("grid_arrow_lade").setAttribute("fill", "none");
+                document.getElementById("grid_arrow_entlade").setAttribute("fill", "none");
+            }
+        }
+    </script>
+</head>
+
+<body onload="Init();" onresize="Resize();">
+
+
+    <nav class="w3-sidebar w3-bar-block w3-collapse w3-animate-left w3-card" style="z-index:3;width:250px;"
+        id="mySidebar">
+        <a class="w3-bar-item w3-button w3-hide-large w3-large" href="javascript:void(0)"
+            onclick="w3_close()">Schliessen <i class="fa fa-remove"></i></a>
+        <a class="w3-bar-item w3-button w3-teal" href="/">Home</a>
+        <a class="w3-bar-item w3-button" href="/#wetter">Wetter</a>
+        <a class="w3-bar-item w3-button" href="/#rollos">Rollos</a>
+        <a class="w3-bar-item w3-button" href="/#garage">Garage</a>
+        <a class="w3-bar-item w3-button" href="/#leuchten">Leuchten</a>
+        <a class="w3-bar-item w3-button" href="/#wasser">Wasser</a>
+        <a class="w3-bar-item w3-button" href="/strom">Strom</a>
+        <a class="w3-bar-item w3-button" href="/iot.htm">Ger&auml;te</a>
+    </nav>
+
+    <div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="w3_close()" style="cursor:pointer" id="myOverlay">
+    </div>
+
+    <div class="w3-main" style="margin-left:250px;">
+
+        <div id="myTop" class="w3-container w3-top w3-theme w3-large">
+            <p><i class="fa fa-bars w3-button w3-teal w3-hide-large w3-xlarge" onclick="w3_open()"></i>
+                <span id="myIntro" class="w3-hide">Alte Rinne 14</span>
+            </p>
+        </div>
+        <header class="w3-container w3-theme" style="padding:64px 32px">
+            <h1 class="w3-xxxlarge">Alte Rinne 14</h1>
+            <h2 class="w3-xlarge">Strom</h2>
+        </header>
+        <div class="w3-container w3-padding-32" id="strom">
+            <svg id="mySvg" width="800px" height="600px" xmlns="http://www.w3.org/2000/svg">
+                <g id="scale_group" transform="scale(1)">
+                    <defs>
+                        <!-- Pfeil-Objekt -->
+                        <g id="Pfeil">
+                            <defs>
+                                <mask id="pfeil_mask">
+                                    <rect x="0" y="0" width="80" height="30" fill="red" />
+                                </mask>
+                            </defs>
+                            <g id="pfeilgruppe" mask="url(#pfeil_mask)">
+                                <defs>
+                                    <g id="einzelpfeil">
+                                        <polygon points="0,15 20,0 20,30">
+                                            <animateTransform attributeName="transform" type="translate"
+                                                values="20,0; 0,0;" dur="1s" repeatCount="indefinite" />
+                                        </polygon>
+                                    </g>
+                                </defs>
+                                <use href="#einzelpfeil" x="0" y="0" />
+                                <use href="#einzelpfeil" x="20" y="0" />
+                                <use href="#einzelpfeil" x="40" y="0" />
+                                <use href="#einzelpfeil" x="60" y="0" />
+                            </g>
+                        </g>
+                        <!-- Batteriezeichnung -->
+                        <g id="Batterie">
+                            <rect x="10" y="0" width="10" height="15" rx="3" ry="3" fill="black" />
+                            <rect x="55" y="0" width="10" height="15" rx="2" ry="2" fill="black" />
+                            <rect x="0" y="10" width="80" height="70" rx="2" ry="2" fill="white" stroke="black" />
+                            <!-- Hier Füllstand Hintergrund -->
+                            <rect x="0" y="10" width="80" height="0" rx="0" ry="2" fill="green" id="battery_fill" />
+                            <text x="7" y="35" fill="red" font-size="36" font-weight="bold">+</text>
+                            <text x="53" y="35" fill="white" font-size="36" font-weight="bold" stroke="black">-</text>
+                            <!-- Hier Füllstand Text -->
+                            <text x="22" y="60" fill="white" stroke="black" font-size="24" font-weight="bold"
+                                id="battery_per">100%</text>
+                        </g>
+                        <!-- Solar -->
+                        <filter id="f1" width="12" height="12">
+                            <feOffset in="SourceGraphic" dx="12" dy="12" />
+                            <feGaussianBlur stdDeviation="7" />
+                            <feBlend in="SourceGraphic" in2="blurOut" />
+                        </filter>
+                        <rect id="solar_rect" x="0" y="0" width="20" height="20" fill="white" stroke="black"
+                            stroke-width="1" transform="skewX(-5)" />
+                        <g id="solar_reihe">
+                            <use href="#solar_rect" x="0" y="0" />
+                            <use href="#solar_rect" x="20" y="0" />
+                            <use href="#solar_rect" x="40" y="0" />
+                            <use href="#solar_rect" x="60" y="0" />
+                        </g>
+                        <g id="Solar">
+                            <g id="solar_panel_group" filter="url(#f1)" transform="skewX(-5)">
+                                <!-- Hier Solarpanel -->
+                                <use href="#solar_reihe" x="0" y="0" />
+                                <use href="#solar_reihe" x="0" y="20" />
+                                <use href="#solar_reihe" x="0" y="40" />
+                                <use href="#solar_reihe" x="0" y="60" />
+                            </g>
+                        </g>
+                        <!-- Haus -->
+                        <g id="Haus">
+                            <rect x="0" y="50" width="100" height="75" fill="white" stroke="black" stroke-width="3" />
+                            <polygon points="0,50 50,0 100,50" fill="white" stroke="black" stroke-width="3" />
+                            <rect x="25" y="75" width="25" height="50" fill="white" stroke="black" stroke-width="3" />
+                        </g>
+                    </defs>
+                    
+                    <use href="#Batterie" x="5" y="150" />
+                    <!-- Hier Batterieleistung -->
+                    <text id="battery_p" x="110" y="230" fill="white" stroke="black" font-size="24"
+                        font-weight="bold">0W</text>
+                    <!-- Hier Pfeil -->
+                    <use id="battery_arrow_lade" href="#Pfeil" x="110" y="180" fill="green" />
+                    <use id="battery_arrow_entlade" href="#Pfeil" x="110" y="180" fill="red"
+                        transform="translate(300,390) rotate(180)" />
+
+
+                    <use href="#Solar" x="320" y="0" />
+                    <!-- Hier Solarleistung -->
+                    <text id="solar_p" x="350" y="95" fill="white" stroke="black" font-size="24"
+                        font-weight="bold">1W</text>
+                    <!-- Hier Pfeil -->
+                    <use id="solar_arrow_lade" href="#Pfeil" x="140" y="325" fill="green"
+                        transform="translate(0,320) rotate(-90)" />
+
+                    <use href="#Haus" x="300" y="300" />
+                    <!-- Hier Hausleistung -->
+                    <text id="haus_p" x="350" y="290" fill="white" stroke="black" font-size="24"
+                        font-weight="bold">1W</text>
+                    <!-- Hier Pfeil -->
+                    <use id="haus_arrow_lade" href="#Pfeil" x="40" y="325" fill="red"
+                        transform="translate(0,320) rotate(-90)" />
+
+                    <!-- Grid -->
+                    <image x="600" y="130" height="120" width="160" href="../static/powerline.png" />
+                    <!-- Hier Gridleistung -->
+                    <text id="grid_p" x="530" y="230" fill="white" stroke="black" font-size="24"
+                        font-weight="bold">1W</text>
+                    <!-- Hier Pfeil -->
+                    <use id="grid_arrow_lade" href="#Pfeil" x="500" y="180" fill="red" />
+                    <use id="grid_arrow_entlade" href="#Pfeil" x="0" y="180" fill="green"
+                        transform="translate(580,390) rotate(180)" />
+                </g>
+            </svg>
+        </div>
+    </div>
+</body>
+<script>
+    // Open and close the sidebar on medium and small screens
+    function w3_open() {
+        document.getElementById("mySidebar").style.display = "block";
+        document.getElementById("myOverlay").style.display = "block";
+    }
+
+    function w3_close() {
+        document.getElementById("mySidebar").style.display = "none";
+        document.getElementById("myOverlay").style.display = "none";
+    }
+
+    // Change style of top container on scroll
+    window.onscroll = function () { myFunction() };
+    function myFunction() {
+        if (document.body.scrollTop > 80 || document.documentElement.scrollTop > 80) {
+            document.getElementById("myTop").classList.add("w3-card-4", "w3-animate-opacity");
+            document.getElementById("myIntro").classList.add("w3-show-inline-block");
+        } else {
+            document.getElementById("myIntro").classList.remove("w3-show-inline-block");
+            document.getElementById("myTop").classList.remove("w3-card-4", "w3-animate-opacity");
+        }
+    }
+
+</script>
+
+</html>

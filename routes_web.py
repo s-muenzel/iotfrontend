@@ -49,6 +49,16 @@ def devices():
         return _error_response("allgemeiner Fehler")
 
 
+@web_bp.route('/strom')
+def strom():
+    """Web handler for /strom - Show power information."""
+    try:
+        return render_template('strom.htm')
+    except Exception as err:
+        logging.warning("Error in strom(): %s", str(err))
+        return _error_response("allgemeiner Fehler")
+
+
 def _error_response(message):
     """Generate error response HTML.
     
