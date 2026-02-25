@@ -4,10 +4,11 @@ Main application entry point that combines all modules and blueprints.
 Zeigt die aktuellen Wetter-Daten
 Listet alle IOT-Devices
 Listet alle konfigurierte Aktionen und bietet die Möglichtkeit zum Editieren
+
+WSGI Compliant: This module exports an 'app' object at module level for WSGI servers.
 """
 import logging
-from os import _exit, X_OK
-from signal import signal, SIGTERM, SIGINT
+import atexit
 from flask import Flask
 
 import mqtt_handler
@@ -20,13 +21,7 @@ logging.basicConfig(
     level=logging.DEBUG,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
-
-
-def cb_signal_handler(signum, frame):
-    """Signal handler: terminate the program when signals arrive."""
-    logging.info("ACHTUNG SIG %d, exiting", signum)
-    mqtt_handler.stop_mqtt()
-    _exit(X_OK)
+logger = logging.getLogger(__name__)
 
 
 def create_app():
@@ -35,27 +30,33 @@ def create_app():
     Returns:
         Flask: Configured Flask application
     """
-    FLASK_APP = Flask(import_name=__name__)
+    flask_app = Flask(import_name=__name__)
     
     # Register blueprints
-    FLASK_APP.register_blueprint(web_bp)
-    FLASK_APP.register_blueprint(actions_bp)
-    FLASK_APP.register_blueprint(status_bp)
+    flask_app.register_blueprint(web_bp)
+    flask_app.register_blueprint(actions_bp)
+    flask_app.register_blueprint(status_bp)
     
-    return FLASK_APP
+    return flask_app
+
+
+# Create the WSGI application instance
+app = create_app()
+
+# Initialize MQTT at module load time
+mqtt_handler.init_mqtt()
+
+# Register cleanup function to be called on exit
+atexit.register(mqtt_handler.stop_mqtt)
 
 
 if __name__ == '__main__':
-    signal(SIGTERM, cb_signal_handler)
-    signal(SIGINT, cb_signal_handler)
-    
-    # Initialize MQTT
-    mqtt_handler.init_mqtt()
-    
-    # Create and run the Flask application
-    app = create_app()
-    app.run(host='0.0.0.0', port=80)
-    
-    # Cleanup
-    mqtt_handler.stop_mqtt()
+    # Development server only
+    try:
+        app.run(host='0.0.0.0', port=80)
+    except KeyboardInterrupt:
+        logger.info("Keyboard interrupt received, shutting down")
+    except Exception as e:
+        logger.error("Error running development server: %s", e)
+        raise
 
