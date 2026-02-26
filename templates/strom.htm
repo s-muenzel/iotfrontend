@@ -138,7 +138,7 @@
                         <g id="Pfeil">
                             <defs>
                                 <mask id="pfeil_mask">
-                                    <rect x="0" y="0" width="80" height="30" fill="red" />
+                                    <rect x="-40" y="-15" width="80" height="30" fill="red" />
                                 </mask>
                             </defs>
                             <g id="pfeilgruppe" mask="url(#pfeil_mask)">
@@ -150,10 +150,10 @@
                                         </polygon>
                                     </g>
                                 </defs>
-                                <use href="#einzelpfeil" x="0" y="0" />
-                                <use href="#einzelpfeil" x="20" y="0" />
-                                <use href="#einzelpfeil" x="40" y="0" />
-                                <use href="#einzelpfeil" x="60" y="0" />
+                                <use href="#einzelpfeil" x="-40" y="-15" />
+                                <use href="#einzelpfeil" x="-20" y="-15" />
+                                <use href="#einzelpfeil" x="0" y="-15" />
+                                <use href="#einzelpfeil" x="20" y="-15" />
                             </g>
                         </g>
                         <!-- Batteriezeichnung -->
@@ -166,7 +166,7 @@
                             <text x="7" y="35" fill="red" font-size="36" font-weight="bold">+</text>
                             <text x="53" y="35" fill="white" font-size="36" font-weight="bold" stroke="black">-</text>
                             <!-- Hier Füllstand Text -->
-                            <text x="22" y="60" fill="white" stroke="black" font-size="24" font-weight="bold"
+                            <text x="15" y="60" fill="white" stroke="black" font-size="24" font-weight="bold"
                                 id="battery_per">100%</text>
                         </g>
                         <!-- Solar -->
@@ -199,42 +199,50 @@
                             <rect x="25" y="75" width="25" height="50" fill="white" stroke="black" stroke-width="3" />
                         </g>
                     </defs>
-                    
-                    <use href="#Batterie" x="5" y="150" />
+
+                    <use href="#Batterie" x="5" y="170" />
                     <!-- Hier Batterieleistung -->
-                    <text id="battery_p" x="110" y="230" fill="white" stroke="black" font-size="24"
-                        font-weight="bold">0W</text>
+                    <text id="battery_p" x="110" y="240" fill="white" stroke="black" font-size="24"
+                        font-weight="bold">1234W</text>
                     <!-- Hier Pfeil -->
-                    <use id="battery_arrow_lade" href="#Pfeil" x="110" y="180" fill="green" />
-                    <use id="battery_arrow_entlade" href="#Pfeil" x="110" y="180" fill="red"
-                        transform="translate(300,390) rotate(180)" />
+                    <g transform="translate(150,200)">
+                        <use id="battery_arrow_lade" href="#Pfeil" fill="green" transform="rotate(0)" />
+                    </g>
+                    <g transform="translate(150,200)">
+                        <use id="battery_arrow_entlade" href="#Pfeil" fill="red" transform="rotate(180)" />
+                    </g>
 
 
                     <use href="#Solar" x="320" y="0" />
                     <!-- Hier Solarleistung -->
-                    <text id="solar_p" x="350" y="95" fill="white" stroke="black" font-size="24"
-                        font-weight="bold">1W</text>
+                    <text id="solar_p" x="320" y="115" fill="white" stroke="black" font-size="24"
+                        font-weight="bold">1234W</text>
                     <!-- Hier Pfeil -->
-                    <use id="solar_arrow_lade" href="#Pfeil" x="140" y="325" fill="green"
-                        transform="translate(0,320) rotate(-90)" />
+                    <g transform="translate(350,160)">
+                        <use id="solar_arrow_lade" href="#Pfeil" fill="green" transform="rotate(-90)" />
+                    </g>
 
-                    <use href="#Haus" x="300" y="300" />
+                    <use href="#Haus" x="300" y="350" />
                     <!-- Hier Hausleistung -->
-                    <text id="haus_p" x="350" y="290" fill="white" stroke="black" font-size="24"
-                        font-weight="bold">1W</text>
+                    <text id="haus_p" x="320" y="330" fill="white" stroke="black" font-size="24"
+                        font-weight="bold">1234W</text>
                     <!-- Hier Pfeil -->
-                    <use id="haus_arrow_lade" href="#Pfeil" x="40" y="325" fill="red"
-                        transform="translate(0,320) rotate(-90)" />
+                    <g transform="translate(350,270)">
+                        <use id="haus_arrow_lade" href="#Pfeil" fill="red" transform="rotate(-90)" />
+                    </g>
 
                     <!-- Grid -->
-                    <image x="600" y="130" height="120" width="160" href="../static/powerline.png" />
+                    <image x="580" y="140" height="120" width="160" href="../static/powerline.png" />
                     <!-- Hier Gridleistung -->
-                    <text id="grid_p" x="530" y="230" fill="white" stroke="black" font-size="24"
-                        font-weight="bold">1W</text>
+                    <text id="grid_p" x="460" y="240" fill="white" stroke="black" font-size="24"
+                        font-weight="bold">1234W</text>
                     <!-- Hier Pfeil -->
-                    <use id="grid_arrow_lade" href="#Pfeil" x="500" y="180" fill="red" />
-                    <use id="grid_arrow_entlade" href="#Pfeil" x="0" y="180" fill="green"
-                        transform="translate(580,390) rotate(180)" />
+                    <g transform="translate(500,200)">
+                        <use id="grid_arrow_lade" href="#Pfeil" fill="red" transform="rotate(0)" />
+                    </g>
+                    <g transform="translate(500,200)">
+                        <use id="grid_arrow_entlade" href="#Pfeil" fill="green" transform="rotate(180)" />
+                    </g>
                 </g>
             </svg>
         </div>

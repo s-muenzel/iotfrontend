@@ -2,3 +2,5 @@
 static/Thumbs.db
 *.bak
 templates/top-Org.htm
+__pycache__/
+alt/
