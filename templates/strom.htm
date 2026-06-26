@@ -27,7 +27,7 @@
             soc: 50
         };
         function ErzeugePText(p) {
-            if (p >= 1000) {
+            if (p >= 1000 || p <= -1000) {
                 return (p / 1000).toPrecision(3) + "kW";
             } else {
                 return p.toPrecision(3) + "W";

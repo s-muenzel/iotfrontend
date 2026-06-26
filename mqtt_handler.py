@@ -77,6 +77,7 @@ def publish_message(topic, payload):
     """
     if mqtt_client_instance:
         mqtt_client_instance.publish(topic=topic, payload=payload)
+        logging.debug("Published to topic %s: %s", topic, payload)
     else:
         logging.warning("MQTT client not initialized")
 
@@ -116,4 +117,5 @@ def set_bewaesserung_value(parameter, value):
 
 def reload_actions():
     """Send reload signal to action processor."""
+    logging.debug("MQTT reload action")
     publish_message("DB", "AKTION")
