@@ -5,25 +5,39 @@ import paho.mqtt.client as mqtt_client
 import yaml
 
 # Global state variables for Bewässerung
-_bewaesserung_dauer = -1
-_bewaesserung_frequenz = -1
-_bewaesserung_next = -1
-_bewaesserung_wasser = False
+_bewaesserung_state = {
+    'dauer': -1,
+    'frequenz': -1,
+    'next': -1,
+    'wasser': False,
+}
 mqtt_client_instance = None
 
+# Global state variable for Solar/Electricity data
+_solar_data = {
+    'p_solar': 0,
+    'p_haus': 0,
+    'p_grid': 0,
+    'p_battery': 0,
+    'soc': 0,
+}
+
+
+MQTT_TOPICS = ["Bewaesserung/Ist", "Sensor/Solar/////+"]
 
 def on_message(client, userdata, msg):
     """Callback for MQTT messages.
     
-    Processes MQTT messages, particularly for "Bewaesserung/Ist" topic
-    to update irrigation system state.
+    Processes MQTT messages, particularly for
+    "Bewaesserung/Ist" topic to update irrigation system state
+    "Sensor/Solar/////S*" topic to update solar/electricity data.
     
     Args:
         client: MQTT client instance
         userdata: User data
         msg: MQTT message
     """
-    global _bewaesserung_dauer, _bewaesserung_frequenz, _bewaesserung_next, _bewaesserung_wasser
+    global _bewaesserung_state
     
     logging.debug("Received topic %s Msg %s", msg.topic, msg.payload.decode())
     
@@ -31,13 +45,22 @@ def on_message(client, userdata, msg):
         try:
             bew = json.loads(msg.payload.decode())
             if "Dauer" in bew:
-                _bewaesserung_dauer = bew["Dauer"]
-                _bewaesserung_frequenz = bew["Frequenz"]
-                _bewaesserung_next = bew["Next"]
-                _bewaesserung_wasser = bew["Wasser"]
+                _bewaesserung_state['dauer'] = bew["Dauer"]
+                _bewaesserung_state['frequenz'] = bew["Frequenz"]
+                _bewaesserung_state['next'] = bew["Next"]
+                _bewaesserung_state['wasser'] = bew["Wasser"]
         except json.JSONDecodeError as err:
             logging.warning("Failed to decode MQTT message: %s", err)
-
+    if msg.topic == "Sensor/Solar/////SSs":
+        _solar_data['p_solar'] = float(msg.payload.decode())
+    if msg.topic == "Sensor/Solar/////SSh":
+        _solar_data['p_haus'] = float(msg.payload.decode())
+    if msg.topic == "Sensor/Solar/////SSn":
+        _solar_data['p_grid'] = float(msg.payload.decode())
+    if msg.topic == "Sensor/Solar/////SGc":
+        _solar_data['p_battery'] = float(msg.payload.decode())
+    if msg.topic == "Sensor/Solar/////SGs":
+        _solar_data['soc'] = float(msg.payload.decode())
 
 def init_mqtt():
     """Initialize MQTT client and connect to broker.
@@ -58,8 +81,11 @@ def init_mqtt():
         )
         logging.info("MQTT connect result: %s", erg)
         
-        erg = mqtt_client_instance.subscribe("Bewaesserung/Ist")
-        logging.info("MQTT subscribe result: %s", erg)
+        for topic in MQTT_TOPICS:
+            mqtt_client_instance.subscribe(topic)
+            logging.info("Subscribed to topic: %s", topic)
+        # erg = mqtt_client_instance.subscribe("Bewaesserung/Ist")
+        # logging.info("MQTT subscribe result: %s", erg)
         
         mqtt_client_instance.loop_start()
         return mqtt_client_instance
@@ -96,13 +122,21 @@ def get_bewaesserung_status():
     Returns:
         dict: Dictionary with Dauer, Frequenz, Next, Wasser
     """
-    return {
-        'dauer': _bewaesserung_dauer,
-        'frequenz': _bewaesserung_frequenz,
-        'next': _bewaesserung_next,
-        'wasser': _bewaesserung_wasser
-    }
+    return _bewaesserung_state
+# {
+#         'dauer': _bewaesserung_state['dauer'],
+#         'frequenz': _bewaesserung_state['frequenz'],
+#         'next': _bewaesserung_state['next'],
+#         'wasser': _bewaesserung_state['wasser'],
+#     }
 
+def get_solar_status():
+    """Get current solar status from Modbus handler.
+    
+    Returns:
+        dict: Dictionary with solar data or None if unavailable
+    """
+    return _solar_data
 
 def set_bewaesserung_value(parameter, value):
     """Set a new value for irrigation system.

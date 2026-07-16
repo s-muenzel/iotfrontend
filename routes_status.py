@@ -138,7 +138,8 @@ def status_s():
     logging.debug("status_s")
     
     try:
-        power_data = modbus_handler.get_power_status()
+        # power_data = modbus_handler.get_power_status()
+        power_data = mqtt_handler.get_solar_status()
         
         if power_data is None:
             return _error_response("keine Verbindung zum Solaredge")
