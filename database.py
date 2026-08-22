@@ -79,10 +79,9 @@ def get_devices():
     try:
         db_connection = get_connection()
         cursor = db_connection.cursor()
-        cursor.execute("SELECT device.name AS name, device.url AS url,"
-                       " device_description.description AS description "
-                       "FROM device INNER JOIN `device_description` "
-                       "ON device.name = device_description.name "
+        cursor.execute("SELECT device.name AS name, device.url AS url, "
+                       "device.description AS description "
+                       "FROM device "
                        "WHERE device.status = 'up'")
         for name, url, description in cursor:
             entries.append([name, url, description])
@@ -162,10 +161,10 @@ def get_activity_details(action_id):
         
         # Get activity info
         cursor = db_connection.cursor()
-        cursor.execute("SELECT activities.name as name, activities.device as device,"
-                       " device_description.name as geraet "
-                       "FROM activities INNER JOIN device_description ON"
-                       " activities.device = device_description.mqtt_name "
+        cursor.execute("SELECT activities.name as name, activities.device as device, "
+                       "device.name as geraet "
+                       "FROM activities INNER JOIN device ON "
+                       "activities.device = device.mqtt_name "
                        "WHERE id='{}'".format(action_id))
         for name, device, geraet in cursor:
             result['actionname'] = name
@@ -226,7 +225,7 @@ def get_mqtt_devices():
     try:
         db_connection = get_connection()
         cursor = db_connection.cursor()
-        cursor.execute("SELECT DISTINCT mqtt_name FROM device_description WHERE NOT mqtt_name = ''")
+        cursor.execute("SELECT DISTINCT mqtt_name FROM device WHERE NOT mqtt_name = ''")
         devices = [mqtt_name[0] for mqtt_name in cursor]
         cursor.close()
         db_connection.close()
