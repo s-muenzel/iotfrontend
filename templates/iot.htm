@@ -6,8 +6,8 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 	<link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-teal.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <script src="https://kit.fontawesome.com/d76bf21353.js" crossorigin="anonymous"></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+	<script src="https://kit.fontawesome.com/d76bf21353.js" crossorigin="anonymous"></script>
 	<style>
 		body {
 			font-family: "Roboto", sans-serif
@@ -18,54 +18,39 @@
 			font-weight: bold;
 		}
 	</style>
-	<script type="text/javascript">
-
-		var myTimer = setInterval(Werte_Init, 10000);
-
-		function Werte_Init() {
-			var xhttp = new XMLHttpRequest();
-			xhttp.onreadystatechange = function () {
-				if (this.readyState == 4 && this.status == 200) {
-					var obj = JSON.parse(this.responseText);
-				}
-			}
-			xhttp.open("GET", "status", true);
-			xhttp.send();
-		}
-	</script>
 	<title>Alte Rinne 14 - Iot Geräte</title>
 </head>
 
 <body onload="Werte_Init()">
 
-    <nav class="w3-sidebar w3-bar-block w3-collapse w3-animate-left w3-card" style="z-index:3;width:250px;"
-        id="mySidebar">
-        <a class="w3-bar-item w3-button w3-hide-large w3-large" href="javascript:void(0)"
-            onclick="w3_close()">Schliessen <i class="fa fa-remove"></i></a>
-        <a class="w3-bar-item w3-button w3-teal" href="/">Home</a>
-        <a class="w3-bar-item w3-button" href="/#wetter">Wetter</a>
-        <a class="w3-bar-item w3-button" href="/#rollos">Rollos</a>
-        <a class="w3-bar-item w3-button" href="/#garage">Garage</a>
-        <a class="w3-bar-item w3-button" href="/#leuchten">Leuchten</a>
-        <a class="w3-bar-item w3-button" href="/#wasser">Wasser</a>
-        <a class="w3-bar-item w3-button" href="/strom">Strom</a>
-        <a class="w3-bar-item w3-button" href="/iot.htm">Ger&auml;te</a>
-    </nav>
+	<nav class="w3-sidebar w3-bar-block w3-collapse w3-animate-left w3-card" style="z-index:3;width:250px;"
+		id="mySidebar">
+		<a class="w3-bar-item w3-button w3-hide-large w3-large" href="javascript:void(0)"
+			onclick="w3_close()">Schliessen <i class="fa fa-remove"></i></a>
+		<a class="w3-bar-item w3-button w3-teal" href="/">Home</a>
+		<a class="w3-bar-item w3-button" href="/#wetter">Wetter</a>
+		<a class="w3-bar-item w3-button" href="/#rollos">Rollos</a>
+		<a class="w3-bar-item w3-button" href="/#garage">Garage</a>
+		<a class="w3-bar-item w3-button" href="/#leuchten">Leuchten</a>
+		<a class="w3-bar-item w3-button" href="/#wasser">Wasser</a>
+		<a class="w3-bar-item w3-button" href="/strom">Strom</a>
+		<a class="w3-bar-item w3-button" href="/iot.htm">Ger&auml;te</a>
+	</nav>
 
-    <div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="w3_close()" style="cursor:pointer" id="myOverlay">
-    </div>
-	
-    <div class="w3-main" style="margin-left:250px;">
+	<div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="w3_close()" style="cursor:pointer" id="myOverlay">
+	</div>
 
-        <div id="myTop" class="w3-container w3-top w3-theme w3-large">
-            <p><i class="fa fa-bars w3-button w3-teal w3-hide-large w3-xlarge" onclick="w3_open()"></i>
-                <span id="myIntro" class="w3-hide">Alte Rinne 14</span>
-            </p>
-        </div>
-        <header class="w3-container w3-theme" style="padding:64px 32px">
-            <h1 class="w3-xxxlarge">Alte Rinne 14</h1>
-            <h2 class="w3-xlarge">IOT Geräte und Regeln</h2>
-        </header>
+	<div class="w3-main" style="margin-left:250px;">
+
+		<div id="myTop" class="w3-container w3-top w3-theme w3-large">
+			<p><i class="fa fa-bars w3-button w3-teal w3-hide-large w3-xlarge" onclick="w3_open()"></i>
+				<span id="myIntro" class="w3-hide">Alte Rinne 14</span>
+			</p>
+		</div>
+		<header class="w3-container w3-theme" style="padding:64px 32px">
+			<h1 class="w3-xxxlarge">Alte Rinne 14</h1>
+			<h2 class="w3-xlarge">IOT Geräte und Regeln</h2>
+		</header>
 		<!-- <header class="w3-container w3-theme" style="padding:64px 32px">
 			<h1 class="w3-xxxlarge">Alte Rinne 14</h1>
 		</header>
@@ -74,47 +59,141 @@
 			<h2 id="iot">
 				IOT Geräte und Regeln
 			</h2> -->
-			<table id="T">
-				<tr>
-					<th>Gerät <a href="/devices"><small>...</small></a></th>
-					<th>Beschreibung</th>
-				</tr>
+		<table id="T" class="w3-table-all w3-hoverable w3-card-4">
+			<tr>
+				<th onclick="sortTable(0)">Gerät <i class="fa sort-indicator" data-column="0" aria-hidden="true"></i>
+				</th>
+				<th onclick="sortTable(1)">Status <i class="fa sort-indicator" data-column="1" aria-hidden="true"></i>
+				</th>
+				<th onclick="sortTable(2)">Beschreibung <i class="fa sort-indicator" data-column="2"
+						aria-hidden="true"></i></th>
+				<th onclick="sortTable(3)">URL <i class="fa sort-indicator" data-column="3" aria-hidden="true"></i></th>
+				<th onclick="sortTable(4)">IPv4 <i class="fa sort-indicator" data-column="4" aria-hidden="true"></i>
+				</th>
+				<th onclick="sortTable(5)">MAC <i class="fa sort-indicator" data-column="5" aria-hidden="true"></i></th>
+				<th onclick="sortTable(6)">Typ <i class="fa sort-indicator" data-column="6" aria-hidden="true"></i></th>
+				<th onclick="sortTable(7)">Com-Typ <i class="fa sort-indicator" data-column="7" aria-hidden="true"></i>
+				</th>
+				<th onclick="sortTable(8)">MQTT-Name <i class="fa sort-indicator" data-column="8"
+						aria-hidden="true"></i></th>
+				<th onclick="sortTable(9)">Letzter Update <i class="fa sort-indicator" data-column="9"
+						aria-hidden="true"></i></th>	
+			</tr>
 
-				{% for item in eintraege %}
-				<tr>
-					<td><a id="L" href="{{ item[1] }}">{{ item[0] }}</a></td>
-					<td>{{ item[2] }}</td>
-				</tr>
-				{% endfor %}
-			</table>
-			<p>
-				Konfigurierte Regeln <a href="/actions"><small>...</small></a>
-			</p>
-	<!-- <footer><a href="/">zurück</a></footer> -->
+			{% for item in eintraege %}
+			<tr>
+				<td>
+					{{ item[0] }}
+				</td>
+				<td>
+					{% if item[11]=="up" %}
+					<i class="fa-regular fa-thumbs-up" style="color: rgb(0, 255, 0);"></i>
+					{% elif item[11]=="down" %}
+					<i class="fa-regular fa-thumbs-down" style="color: rgb(255, 0, 0);"></i>
+					{% else %}
+					<i class="fa-regular fa-regular fa-circle-question"></i>"
+					{% endif %}
+				</td>
+				<td>{{ item[7] }}</td>
+				<td>
+					{% if item[11] == "up"%}
+					{% if item[9] == "http" %}
+					<a href="{{ item[1] }}">{{ item[1] }}</a>
+					{%else%}
+					{{ item[1] }}
+					{%endif%}
+					{% else %}
+					{{ item[1] }}
+					{% endif %}
+				</td>
+				<td>{{- item[2] -}}.{{- item[3] -}}.{{- item[4] -}}.{{- item[5] -}}</td>
+				<td>{{ item[6] }}</td>
+				<td>{{ item[8] }}</td>
+				<td>{{ item[9] }}</td>
+				<td>{{ item[10] }}</td>
+				<td>{{ item[12] }}</td>
+			</tr>
+			{% endfor %}
+		</table>
+		<p>
+			Konfigurierte Regeln <a href="/actions"><small>...</small></a>
+		</p>
+		<!-- <footer><a href="/">zurück</a></footer> -->
 </body>
 <script>
-    // Open and close the sidebar on medium and small screens
-    function w3_open() {
-        document.getElementById("mySidebar").style.display = "block";
-        document.getElementById("myOverlay").style.display = "block";
-    }
+	var sortierSpalte = -1;
+	var aufsteigend = true;
+	function sortTable(col) {
+		if (sortierSpalte === col) {
+			aufsteigend = !aufsteigend;
+		} else {
+			sortierSpalte = col;
+			aufsteigend = true;
+		}
+		var indicators = document.querySelectorAll(".sort-indicator");
+		for (var indicator of indicators) {
+			indicator.classList.remove("fa-sort-asc", "fa-sort-desc");
+			if (Number(indicator.dataset.column) === col) {
+				indicator.classList.add(aufsteigend ? "fa-sort-desc" : "fa-sort-asc");
+			}
+		}
+		var table, rows, switching, i, x, y, shouldSwitch;
+		table = document.getElementById("T");
+		switching = true;
+		/*Make a loop that will continue until
+		no switching has been done:*/
+		while (switching) {
+			//start by saying: no switching is done:
+			switching = false;
+			rows = table.rows;
+			/*Loop through all table rows (except the
+			first, which contains table headers):*/
+			for (i = 1; i < (rows.length - 1); i++) {
+				//start by saying there should be no switching:
+				shouldSwitch = false;
+				/*Get the two elements you want to compare,
+				one from current row and one from the next:*/
+				x = rows[i].getElementsByTagName("TD")[col];
+				y = rows[i + 1].getElementsByTagName("TD")[col];
+				//check if the two rows should switch place:
+				if ((aufsteigend && x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) ||
+					(!aufsteigend && x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase())) {
+					//if so, mark as a switch and break the loop:
+					shouldSwitch = true;
+					break;
+				}
+			}
+			if (shouldSwitch) {
+				/*If a switch has been marked, make the switch
+				and mark that a switch has been done:*/
+				rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+				switching = true;
+			}
+		}
+	}
+	// Open and close the sidebar on medium and small screens
+	function w3_open() {
+		document.getElementById("mySidebar").style.display = "block";
+		document.getElementById("myOverlay").style.display = "block";
+	}
 
-    function w3_close() {
-        document.getElementById("mySidebar").style.display = "none";
-        document.getElementById("myOverlay").style.display = "none";
-    }
+	function w3_close() {
+		document.getElementById("mySidebar").style.display = "none";
+		document.getElementById("myOverlay").style.display = "none";
+	}
 
-    // Change style of top container on scroll
-    window.onscroll = function () { myFunction() };
-    function myFunction() {
-        if (document.body.scrollTop > 80 || document.documentElement.scrollTop > 80) {
-            document.getElementById("myTop").classList.add("w3-card-4", "w3-animate-opacity");
-            document.getElementById("myIntro").classList.add("w3-show-inline-block");
-        } else {
-            document.getElementById("myIntro").classList.remove("w3-show-inline-block");
-            document.getElementById("myTop").classList.remove("w3-card-4", "w3-animate-opacity");
-        }
-    }
+	// Change style of top container on scroll
+	window.onscroll = function () { myFunction() };
+	function myFunction() {
+		if (document.body.scrollTop > 80 || document.documentElement.scrollTop > 80) {
+			document.getElementById("myTop").classList.add("w3-card-4", "w3-animate-opacity");
+			document.getElementById("myIntro").classList.add("w3-show-inline-block");
+		} else {
+			document.getElementById("myIntro").classList.remove("w3-show-inline-block");
+			document.getElementById("myTop").classList.remove("w3-card-4", "w3-animate-opacity");
+		}
+	}
 
 </script>
+
 </html>

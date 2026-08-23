@@ -24,10 +24,10 @@ def status_rollos():
     }
     
     shelly_devices = {
-        "rollo_bad": "http://shellyswitch25-4C752533F665.fritz.box/roller/0",
-        "rollo_eva": "http://shellyswitch25-68666D.fritz.box/roller/0",
-        "rollo_sz": "http://shellyswitch25-B8AC9B.fritz.box/roller/0",
-        "rollo_tim": "http://shellyswitch25-4C752534C604.fritz.box/roller/0",
+        "rollo_bad": "http://rollo-bad.ar14.s-muenzel.de/roller/0",
+        "rollo_eva": "http://rollo-eva.ar14.s-muenzel.de/roller/0",
+        "rollo_sz": "http://rollo-sz.ar14.s-muenzel.de/roller/0",
+        "rollo_tim": "http://rollo-tim.ar14.s-muenzel.de/roller/0",
     }
     
     for device_key, url in shelly_devices.items():
@@ -72,7 +72,7 @@ def status_lampen():
     result = {"wz_lampe": "?"}
     
     try:
-        with urllib.request.urlopen("http://wz-lampe.fritz.box/Status", timeout=5) as response:
+        with urllib.request.urlopen("http://wz-lampe.ar14.s-muenzel.de/Status", timeout=5) as response:
             html = response.read().decode('utf-8')
             lampe_stat = json.loads(html)
             result["wz_lampe"] = 1 if lampe_stat["An"] else 0

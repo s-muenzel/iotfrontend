@@ -69,43 +69,24 @@ def get_weather_data():
     return weather_data
 
 
-def get_devices():
-    """Fetch all active devices.
+def get_device_list():
+    """Fetch all devices with all their details from the database.
     
     Returns:
-        list: List of [name, url, description] for each device
+        list: List of [name, url, ip, mac, description, type, com_type, mqtt_name, status, timestamp] for each device
     """
     entries = []
     try:
         db_connection = get_connection()
         cursor = db_connection.cursor()
         cursor.execute("SELECT device.name AS name, device.url AS url, "
-                       "device.description AS description "
-                       "FROM device "
-                       "WHERE device.status = 'up'")
-        for name, url, description in cursor:
-            entries.append([name, url, description])
-        cursor.close()
-        db_connection.close()
-    except mariadb.Error as err:
-        logging.warning("Database failure: %s", err)
-    
-    return entries
-
-
-def get_all_devices():
-    """Fetch all devices with detailed information.
-    
-    Returns:
-        list: List of [name, url, ip_1, ip_2, ip_3, ip_4, status, timestamp]
-    """
-    entries = []
-    try:
-        db_connection = get_connection()
-        cursor = db_connection.cursor()
-        cursor.execute("SELECT name, url, ip_1, ip_2, ip_3, ip_4, status, timestamp FROM device")
-        for name, url, ip_1, ip_2, ip_3, ip_4, status, timestamp in cursor:
-            entries.append([name, url, ip_1, ip_2, ip_3, ip_4, status, timestamp])
+                       "device.ip_1 AS ip_1, device.ip_2 AS ip_2, device.ip_3 AS ip_3, device.ip_4 AS ip_4, "
+                       "HEX(device.mac) AS mac, device.description AS description, device.type AS type, "
+                       "device.com_type AS com_type, device.mqtt_name AS mqtt_name, device.status AS status, "
+                       "device.timestamp AS timestamp "
+                       "FROM device ")
+        for name, url, ip_1, ip_2, ip_3, ip_4, mac, description, type, com_type, mqtt_name, status, timestamp in cursor:
+            entries.append([name, url, ip_1, ip_2, ip_3, ip_4, mac, description, type, com_type, mqtt_name, status, timestamp])
         cursor.close()
         db_connection.close()
     except mariadb.Error as err:
