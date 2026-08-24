@@ -72,7 +72,10 @@ def init_mqtt():
     
     try:
         mqtt_config = yaml.safe_load(open("mq.cnf"))
-        mqtt_client_instance = mqtt_client.Client(client_id="iotfrontend")
+        mqtt_client_instance = mqtt_client.Client(
+            mqtt_client.CallbackAPIVersion.VERSION2,
+            client_id="iotfrontend"
+        )
         mqtt_client_instance.on_message = on_message
         
         erg = mqtt_client_instance.connect(
