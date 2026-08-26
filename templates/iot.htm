@@ -49,16 +49,19 @@
 		</div>
 		<header class="w3-container w3-theme" style="padding:64px 32px">
 			<h1 class="w3-xxxlarge">Alte Rinne 14</h1>
-			<h2 class="w3-xlarge">IOT Geräte und Regeln</h2>
-		</header>
-		<!-- <header class="w3-container w3-theme" style="padding:64px 32px">
-			<h1 class="w3-xxxlarge">Alte Rinne 14</h1>
+			<h2 class="w3-xlarge">Netzwerk: Geräte und Regeln</h2>
 		</header>
 
+		{% if netzfehler %}
 		<div class="w3-container" style="padding:32px">
-			<h2 id="iot">
-				IOT Geräte und Regeln
-			</h2> -->
+			<h2 class="w3-xlarge w3-red">Netzwerkfehler</h2>
+				<ul class="w3-ul w3-card-4 w3-hoverable">
+					{% for fehler in netzfehler %}
+						<li>{{ fehler.device }}: {{ fehler.fehler }} (soll: {{ fehler.soll }}, ist: {{ fehler.ist }})</li>
+					{% endfor %}
+				</ul>
+		</div>
+		{% endif %}
 		<table id="T" class="w3-table-all w3-hoverable w3-card-4">
 			<tr>
 				<th onclick="sortTable(0)">Gerät <i class="fa sort-indicator" data-column="0" aria-hidden="true"></i>

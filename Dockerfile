@@ -1,9 +1,7 @@
-FROM alpine
+FROM python:3
 
 LABEL maintainer=s.a.muenzel@gmail.com
 
-RUN apk add python3 
-RUN apk add py3-pip
 RUN pip3 install --break-system-packages --root-user-action ignore matplotlib
 RUN pip3 install --break-system-packages --root-user-action ignore Flask 
 RUN pip3 install --break-system-packages --root-user-action ignore mysql-connector-python
@@ -19,5 +17,5 @@ COPY static/*.png  static/
 
 EXPOSE 80/tcp
 
-##run_cmd_arg## --publish 8808:80
+##run_cmd_arg## --publish 8808:80  -v /etc/dhcpd:/tmp/dhcp:ro 
 CMD ["python3","app.py"]

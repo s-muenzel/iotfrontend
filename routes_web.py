@@ -3,6 +3,8 @@ import logging
 from flask import Blueprint, render_template
 import database as db
 import mqtt_handler
+from netzwerk import check_netzwerkfehler
+
 
 web_bp = Blueprint('web', __name__)
 
@@ -30,7 +32,8 @@ def iot():
     """Web handler for /iot.htm - List all devices and their information."""
     try:
         devices = db.get_device_list()
-        return render_template('iot.htm', eintraege=devices)
+        netzfehler = check_netzwerkfehler(devices)
+        return render_template('iot.htm', eintraege=devices, netzfehler=netzfehler)
     except Exception as err:
         logging.warning("Error in iot(): %s", str(err))
         return _error_response("allgemeiner Fehler")
