@@ -36,36 +36,36 @@ def check_netzwerkfehler(db_devices):
     for db_device in db_devices:
         found = False
         for dhcp_device in dhcp_devices:
-            if type(db_device[6]) == bytes:
-                db_mac = db_device[6].decode("ascii").lower()
+            if type(db_device[3]) == bytes:
+                db_mac = db_device[3].decode("ascii").lower()
             else:
-                db_mac = str(db_device[6]).lower()
+                db_mac = str(db_device[3]).lower()
             # Gutfall: Name in DB und DHCP und MACs gleich
             if db_device[0] == dhcp_device["hostname"]:
                 # 1. Fehlerfall: Name in DB und DHCP und MACs gleich, aber MACs unterschiedlich
                 if db_mac != dhcp_device["mac"]:
                     Netzwerkfehler.append(
-                        {"device": db_device[0], "fehler": "DHCP falsche MAC", "soll": db_device[6], "ist": dhcp_device["mac"]})
+                        {"device": db_device[0], "fehler": "DHCP falsche MAC", "soll": db_device[3], "ist": dhcp_device["mac"]})
                 found = True
                 break
             # 2. Fehlerfall: MAC in DCHP, aber Name in DB und DHCP unterschiedlich
             if db_mac == dhcp_device["mac"]:
                 Netzwerkfehler.append(
-                    {"device": db_device[0], "fehler": "DHCP falscher Name", "soll": db_device[6], "ist": dhcp_device["hostname"]})
+                    {"device": db_device[0], "fehler": "DHCP falscher Name", "soll": db_device[3], "ist": dhcp_device["hostname"]})
                 found = True
                 break
         if not found:
             # 3. Fehlerfall: Name in DB, aber kein Eintrag in DHCP
             Netzwerkfehler.append(
-                {"device": db_device[0], "fehler": "DHCP kein Eintrag", "soll": db_device[6], "ist": ""})
+                {"device": db_device[0], "fehler": "DHCP kein Eintrag", "soll": db_device[3], "ist": ""})
     # 4. Fehlerfall: Name in DHCP, aber kein Eintrag in DB
     for dhcp_device in dhcp_devices:
         found = False
         for db_device in db_devices:
-            if type(db_device[6]) == bytes:
-                db_mac = db_device[6].decode("ascii").lower()
+            if type(db_device[3]) == bytes:
+                db_mac = db_device[3].decode("ascii").lower()
             else:
-                db_mac = str(db_device[6]).lower()
+                db_mac = str(db_device[3]).lower()
             if dhcp_device["hostname"] == db_device[0]:
                 found = True
                 break
@@ -74,7 +74,7 @@ def check_netzwerkfehler(db_devices):
                 {"device": dhcp_device["hostname"], "fehler": "DB kein Eintrag", "soll": "", "ist": dhcp_device["mac"]})
     # prüfe die DNS Einträge der Devices
     for db_device in db_devices:
-        db_ip = f"{db_device[2]}.{db_device[3]}.{db_device[4]}.{db_device[5]}"
+        db_ip = db_device[2]
         try:
             import socket
             dns_ips = socket.gethostbyname_ex(

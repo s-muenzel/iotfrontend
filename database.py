@@ -80,13 +80,13 @@ def get_device_list():
         db_connection = get_connection()
         cursor = db_connection.cursor()
         cursor.execute("SELECT device.name AS name, device.url AS url, "
-                       "device.ip_1 AS ip_1, device.ip_2 AS ip_2, device.ip_3 AS ip_3, device.ip_4 AS ip_4, "
+                       "device.ip_v4 AS ip_v4, "
                        "HEX(device.mac) AS mac, device.description AS description, device.type AS type, "
                        "device.com_type AS com_type, device.mqtt_name AS mqtt_name, device.status AS status, "
                        "device.timestamp AS timestamp "
                        "FROM device ")
-        for name, url, ip_1, ip_2, ip_3, ip_4, mac, description, type, com_type, mqtt_name, status, timestamp in cursor:
-            entries.append([name, url, ip_1, ip_2, ip_3, ip_4, mac, description, type, com_type, mqtt_name, status, timestamp])
+        for name, url, ip_v4, mac, description, type, com_type, mqtt_name, status, timestamp in cursor:
+            entries.append([name, url, ip_v4, mac, description, type, com_type, mqtt_name, status, timestamp])
         cursor.close()
         db_connection.close()
     except mariadb.Error as err:

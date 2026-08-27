@@ -89,18 +89,18 @@
 					{{ item[0] }}
 				</td>
 				<td>
-					{% if item[11]=="up" %}
+					{% if item[8]=="up" %}
 					<i class="fa-regular fa-thumbs-up" style="color: rgb(0, 255, 0);"></i>
-					{% elif item[11]=="down" %}
+					{% elif item[8]=="down" %}
 					<i class="fa-regular fa-thumbs-down" style="color: rgb(255, 0, 0);"></i>
 					{% else %}
 					<i class="fa-regular fa-regular fa-circle-question"></i>    
 					{% endif %}
 				</td>
-				<td>{{ item[7] }}</td>
+				<td>{{ item[4] }}</td>
 				<td>
-					{% if item[11] == "up"%}
-					{% if item[9] == "http" %}
+					{% if item[8] == "up"%}
+					{% if item[6] == "http" %}
 					<a href="{{ item[1] }}">{{ item[1] }}</a>
 					{%else%}
 					{{ item[1] }}
@@ -109,12 +109,12 @@
 					{{ item[1] }}
 					{% endif %}
 				</td>
-				<td>{{- item[2] -}}.{{- item[3] -}}.{{- item[4] -}}.{{- item[5] -}}</td>
+				<td>{{ item[2] }}</td>
+				<td>{{ item[3] }}</td>
+				<td>{{ item[5] }}</td>
 				<td>{{ item[6] }}</td>
-				<td>{{ item[8] }}</td>
+				<td>{{ item[7] }}</td>
 				<td>{{ item[9] }}</td>
-				<td>{{ item[10] }}</td>
-				<td>{{ item[12] }}</td>
 			</tr>
 			{% endfor %}
 		</table>
