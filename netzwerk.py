@@ -4,6 +4,7 @@ Handles all DHCP operations
 """
 import logging
 
+
 def get_dhcp_devices(filename="/tmp/dhcp/dhcpd-eth0-static.conf"):
     """Liest MAC-Adressen und Hostnamen aus der DHCP-Konfiguration."""
     dhcp_devices = []
@@ -43,17 +44,34 @@ def check_netzwerkfehler(db_devices):
             if db_device[0] == dhcp_device["hostname"]:
                 # 1. Fehlerfall: Name in DB und DHCP und MACs gleich, aber MACs unterschiedlich
                 if db_mac != dhcp_device["mac"]:
-                    Netzwerkfehler.append({"device": db_device[0],"fehler": "DHCP falsche MAC", "soll": db_device[6], "ist": dhcp_device["mac"]})
+                    Netzwerkfehler.append(
+                        {"device": db_device[0], "fehler": "DHCP falsche MAC", "soll": db_device[6], "ist": dhcp_device["mac"]})
                 found = True
                 break
             # 2. Fehlerfall: MAC in DCHP, aber Name in DB und DHCP unterschiedlich
             if db_mac == dhcp_device["mac"]:
-                Netzwerkfehler.append({"device": db_device[0],"fehler": "DHCP falscher Name", "soll": db_device[6], "ist": dhcp_device["hostname"]})
+                Netzwerkfehler.append(
+                    {"device": db_device[0], "fehler": "DHCP falscher Name", "soll": db_device[6], "ist": dhcp_device["hostname"]})
                 found = True
                 break
         if not found:
             # 3. Fehlerfall: Name in DB, aber kein Eintrag in DHCP
-            Netzwerkfehler.append({"device": db_device[0],"fehler": "DHCP kein Eintrag", "soll": db_device[6], "ist": ""})
+            Netzwerkfehler.append(
+                {"device": db_device[0], "fehler": "DHCP kein Eintrag", "soll": db_device[6], "ist": ""})
+    # 4. Fehlerfall: Name in DHCP, aber kein Eintrag in DB
+    for dhcp_device in dhcp_devices:
+        found = False
+        for db_device in db_devices:
+            if type(db_device[6]) == bytes:
+                db_mac = db_device[6].decode("ascii").lower()
+            else:
+                db_mac = str(db_device[6]).lower()
+            if dhcp_device["hostname"] == db_device[0]:
+                found = True
+                break
+        if not found:
+            Netzwerkfehler.append(
+                {"device": dhcp_device["hostname"], "fehler": "DB kein Eintrag", "soll": "", "ist": dhcp_device["mac"]})
     # prüfe die DNS Einträge der Devices
     for db_device in db_devices:
         db_ip = f"{db_device[2]}.{db_device[3]}.{db_device[4]}.{db_device[5]}"
@@ -63,11 +81,13 @@ def check_netzwerkfehler(db_devices):
                 db_device[0] + ".ar14.s-muenzel.de")[2]
             # 4. Fehlerfall: Name in DB, aber DNS Eintrag hat andere IP
             if db_ip not in dns_ips:
-                Netzwerkfehler.append({"device": db_device[0],"fehler": "DNS falsche IP", "soll": db_ip, "ist": dns_ips})
-                logging.warning("DB-Device %s DNS falsche IP %s - %s", db_device[0], db_ip, dns_ips)
+                Netzwerkfehler.append(
+                    {"device": db_device[0], "fehler": "DNS falsche IP", "soll": db_ip, "ist": dns_ips})
+                logging.warning(
+                    "DB-Device %s DNS falsche IP %s - %s", db_device[0], db_ip, dns_ips)
         except socket.gaierror:
             # 5. Fehlerfall: Name in DB, aber kein DNS Eintrag
-            Netzwerkfehler.append({"device": db_device[0],"fehler": "DNS kein Eintrag", "soll": db_ip, "ist": ""})
+            Netzwerkfehler.append(
+                {"device": db_device[0], "fehler": "DNS kein Eintrag", "soll": db_ip, "ist": ""})
             logging.warning("DB-Device %s DNS kein Eintrag", db_device[0])
     return Netzwerkfehler
-    
