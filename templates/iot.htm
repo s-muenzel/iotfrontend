@@ -17,11 +17,19 @@
 			padding: 16px;
 			font-weight: bold;
 		}
+
+		#T .optional-column {
+			display: none;
+		}
+
+		#T.show-optional-columns .optional-column {
+			display: table-cell;
+		}
 	</style>
 	<title>Alte Rinne 14 - Iot Geräte</title>
 </head>
 
-<body onload="Werte_Init()">
+<body>
 
 	<nav class="w3-sidebar w3-bar-block w3-collapse w3-animate-left w3-card" style="z-index:3;width:250px;"
 		id="mySidebar">
@@ -55,13 +63,23 @@
 		{% if netzfehler %}
 		<div class="w3-container" style="padding:32px">
 			<h2 class="w3-xlarge w3-red">Netzwerkfehler</h2>
-				<ul class="w3-ul w3-card-4 w3-hoverable">
-					{% for fehler in netzfehler %}
-						<li>{{ fehler.device }}: {{ fehler.fehler }} (soll: {{ fehler.soll }}, ist: {{ fehler.ist }})</li>
-					{% endfor %}
-				</ul>
+			<ul class="w3-ul w3-card-4 w3-hoverable">
+				{% for fehler in netzfehler %}
+				<li>{{ fehler.device }}: {{ fehler.fehler }} (soll: {{ fehler.soll }}, ist: {{ fehler.ist }})</li>
+				{% endfor %}
+			</ul>
 		</div>
 		{% endif %}
+
+		<div class="w3-container" style="padding:32px">
+			Ansicht:
+			<button id="toggle-columns" class="w3-btn w3-small w3-ripple w3-round-small w3-blue w3-border" type="button"
+				onclick="toggleColumns()" aria-expanded="false" aria-controls="T"
+				title="Weitere Spalten sind verborgen">
+				Kompakt
+			</button>
+		</div>
+
 		<table id="T" class="w3-table-all w3-hoverable w3-card-4">
 			<tr>
 				<th onclick="sortTable(0)">Gerät <i class="fa sort-indicator" data-column="0" aria-hidden="true"></i>
@@ -70,22 +88,33 @@
 				</th>
 				<th onclick="sortTable(2)">Beschreibung <i class="fa sort-indicator" data-column="2"
 						aria-hidden="true"></i></th>
-				<th onclick="sortTable(3)">IPv4 <i class="fa sort-indicator" data-column="3" aria-hidden="true"></i>
+				<th onclick="sortTable(3)">Typ <i class="fa sort-indicator" data-column="3" aria-hidden="true"></i></th>
+				<th class="optional-column" onclick="sortTable(4)">IPv4 <i class="fa sort-indicator" data-column="4"
+						aria-hidden="true"></i>
 				</th>
-				<th onclick="sortTable(4)">MAC <i class="fa sort-indicator" data-column="4" aria-hidden="true"></i></th>
-				<th onclick="sortTable(5)">Typ <i class="fa sort-indicator" data-column="5" aria-hidden="true"></i></th>
-				<th onclick="sortTable(6)">Com-Typ <i class="fa sort-indicator" data-column="6" aria-hidden="true"></i>
-				</th>
-				<th onclick="sortTable(7)">MQTT-Name <i class="fa sort-indicator" data-column="7"
+				<th class="optional-column" onclick="sortTable(5)">MAC <i class="fa sort-indicator" data-column="5"
 						aria-hidden="true"></i></th>
-				<th onclick="sortTable(8)">Letzter Update <i class="fa sort-indicator" data-column="8"
-						aria-hidden="true"></i></th>	
+				<th class="optional-column" onclick="sortTable(6)">Com-Typ <i class="fa sort-indicator" data-column="6"
+						aria-hidden="true"></i>
+				</th>
+				<th class="optional-column" onclick="sortTable(7)">MQTT-Name <i class="fa sort-indicator"
+						data-column="7" aria-hidden="true"></i></th>
+				<th class="optional-column" onclick="sortTable(8)">Letzter Update <i class="fa sort-indicator"
+						data-column="8" aria-hidden="true"></i></th>
 			</tr>
 
 			{% for item in eintraege %}
 			<tr>
 				<td>
+					{% if item[7] == "up"%}
+					{% if item[5] == "http" %}
+					<a href="http://{{ item[1] }}" target="_blank">{{ item[0] }}</a>
+					{%else%}
 					{{ item[0] }}
+					{%endif%}
+					{% else %}
+					{{ item[0] }}
+					{% endif %}
 				</td>
 				<td>
 					{% if item[7]=="up" %}
@@ -93,26 +122,16 @@
 					{% elif item[7]=="down" %}
 					<i class="fa-regular fa-thumbs-down" style="color: rgb(255, 0, 0);"></i>
 					{% else %}
-					<i class="fa-regular fa-regular fa-circle-question"></i>    
+					<i class="fa-regular fa-regular fa-circle-question"></i>
 					{% endif %}
 				</td>
 				<td>{{ item[3] }}</td>
-				<td>
-					{% if item[7] == "up"%}
-					{% if item[5] == "http" %}
-					<a href="http://{{ item[1] }}" target="_blank">{{ item[1] }}</a>
-					{%else%}
-					{{ item[1] }}
-					{%endif%}
-					{% else %}
-					{{ item[1] }}
-					{% endif %}
-				</td>
-				<td>{{ item[2] }}</td>
 				<td>{{ item[4] }}</td>
-				<td>{{ item[5] }}</td>
-				<td>{{ item[6] }}</td>
-				<td>{{ item[7] }}</td>
+				<td class="optional-column">{{ item[1] }}</td>
+				<td class="optional-column">{{ item[2] }}</td>
+				<td class="optional-column">{{ item[5] }}</td>
+				<td class="optional-column">{{ item[6] }}</td>
+				<td class="optional-column">{{ item[8] }}</td>
 			</tr>
 			{% endfor %}
 		</table>
@@ -172,6 +191,18 @@
 			}
 		}
 	}
+
+	function toggleColumns() {
+		var table = document.getElementById("T");
+		var button = document.getElementById("toggle-columns");
+		var expanded = button.getAttribute("aria-expanded") === "true";
+
+		table.classList.toggle("show-optional-columns", !expanded);
+		button.setAttribute("aria-expanded", String(!expanded));
+		button.title = expanded ? "Weitere Spalten sind verborgen" : "Alle Spalten angezeigt";
+		button.textContent = expanded ? "Kompakt" : "Komplett";
+	}
+
 	// Open and close the sidebar on medium and small screens
 	function w3_open() {
 		document.getElementById("mySidebar").style.display = "block";
