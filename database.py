@@ -73,20 +73,19 @@ def get_device_list():
     """Fetch all devices with all their details from the database.
     
     Returns:
-        list: List of [name, url, ip, mac, description, type, com_type, mqtt_name, status, timestamp] for each device
+        list: List of [name, ip, mac, description, type, com_type, mqtt_name, status, timestamp] for each device
     """
     entries = []
     try:
         db_connection = get_connection()
         cursor = db_connection.cursor()
-        cursor.execute("SELECT device.name AS name, device.url AS url, "
-                       "device.ip_v4 AS ip_v4, "
+        cursor.execute("SELECT device.name AS name, device.ip_v4 AS ip_v4, "
                        "HEX(device.mac) AS mac, device.description AS description, device.type AS type, "
                        "device.com_type AS com_type, device.mqtt_name AS mqtt_name, device.status AS status, "
                        "device.timestamp AS timestamp "
                        "FROM device ")
-        for name, url, ip_v4, mac, description, type, com_type, mqtt_name, status, timestamp in cursor:
-            entries.append([name, url, ip_v4, mac, description, type, com_type, mqtt_name, status, timestamp])
+        for name, ip_v4, mac, description, type, com_type, mqtt_name, status, timestamp in cursor:
+            entries.append([name, ip_v4, mac, description, type, com_type, mqtt_name, status, timestamp])
         cursor.close()
         db_connection.close()
     except mariadb.Error as err:

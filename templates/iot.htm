@@ -70,16 +70,15 @@
 				</th>
 				<th onclick="sortTable(2)">Beschreibung <i class="fa sort-indicator" data-column="2"
 						aria-hidden="true"></i></th>
-				<th onclick="sortTable(3)">URL <i class="fa sort-indicator" data-column="3" aria-hidden="true"></i></th>
-				<th onclick="sortTable(4)">IPv4 <i class="fa sort-indicator" data-column="4" aria-hidden="true"></i>
+				<th onclick="sortTable(3)">IPv4 <i class="fa sort-indicator" data-column="3" aria-hidden="true"></i>
 				</th>
-				<th onclick="sortTable(5)">MAC <i class="fa sort-indicator" data-column="5" aria-hidden="true"></i></th>
-				<th onclick="sortTable(6)">Typ <i class="fa sort-indicator" data-column="6" aria-hidden="true"></i></th>
-				<th onclick="sortTable(7)">Com-Typ <i class="fa sort-indicator" data-column="7" aria-hidden="true"></i>
+				<th onclick="sortTable(4)">MAC <i class="fa sort-indicator" data-column="4" aria-hidden="true"></i></th>
+				<th onclick="sortTable(5)">Typ <i class="fa sort-indicator" data-column="5" aria-hidden="true"></i></th>
+				<th onclick="sortTable(6)">Com-Typ <i class="fa sort-indicator" data-column="6" aria-hidden="true"></i>
 				</th>
-				<th onclick="sortTable(8)">MQTT-Name <i class="fa sort-indicator" data-column="8"
+				<th onclick="sortTable(7)">MQTT-Name <i class="fa sort-indicator" data-column="7"
 						aria-hidden="true"></i></th>
-				<th onclick="sortTable(9)">Letzter Update <i class="fa sort-indicator" data-column="9"
+				<th onclick="sortTable(8)">Letzter Update <i class="fa sort-indicator" data-column="8"
 						aria-hidden="true"></i></th>	
 			</tr>
 
@@ -89,19 +88,19 @@
 					{{ item[0] }}
 				</td>
 				<td>
-					{% if item[8]=="up" %}
+					{% if item[7]=="up" %}
 					<i class="fa-regular fa-thumbs-up" style="color: rgb(0, 255, 0);"></i>
-					{% elif item[8]=="down" %}
+					{% elif item[7]=="down" %}
 					<i class="fa-regular fa-thumbs-down" style="color: rgb(255, 0, 0);"></i>
 					{% else %}
 					<i class="fa-regular fa-regular fa-circle-question"></i>    
 					{% endif %}
 				</td>
-				<td>{{ item[4] }}</td>
+				<td>{{ item[3] }}</td>
 				<td>
-					{% if item[8] == "up"%}
-					{% if item[6] == "http" %}
-					<a href="{{ item[1] }}">{{ item[1] }}</a>
+					{% if item[7] == "up"%}
+					{% if item[5] == "http" %}
+					<a href="http://{{ item[1] }}" target="_blank">{{ item[1] }}</a>
 					{%else%}
 					{{ item[1] }}
 					{%endif%}
@@ -110,11 +109,10 @@
 					{% endif %}
 				</td>
 				<td>{{ item[2] }}</td>
-				<td>{{ item[3] }}</td>
+				<td>{{ item[4] }}</td>
 				<td>{{ item[5] }}</td>
 				<td>{{ item[6] }}</td>
 				<td>{{ item[7] }}</td>
-				<td>{{ item[9] }}</td>
 			</tr>
 			{% endfor %}
 		</table>
