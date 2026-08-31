@@ -20,6 +20,7 @@ def top():
             T=weather['temp'],
             F=weather['feucht'],
             H=weather['hell'],
+            R=weather['regen'],
             P=weather['proz']
         )
     except Exception as err:
