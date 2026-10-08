@@ -17,5 +17,5 @@ COPY static/*.png  static/
 
 EXPOSE 80/tcp
 
-##run_cmd_arg## --publish 8808:80  -v /etc/dhcpd:/tmp/dhcp:ro 
+##run_cmd_arg## --publish 8808:80  -v /etc/dhcpd:/tmp/dhcp:ro  -v /volume1/@appstore/DNSServer/named/etc/zone/master:/tmp/dns:ro 
 CMD ["python3","app.py"]
