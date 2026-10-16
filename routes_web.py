@@ -1,6 +1,6 @@
 """routes_web.py: Web routes for main pages and device information."""
 import logging
-from flask import Blueprint, render_template
+from flask import Blueprint, redirect, render_template, request, url_for
 import database as db
 import mqtt_handler
 from netzwerk import check_netzwerkfehler
@@ -48,6 +48,61 @@ def strom():
     except Exception as err:
         logging.warning("Error in strom(): %s", str(err))
         return _error_response("allgemeiner Fehler")
+
+
+@web_bp.route('/heizung')
+def heizung():
+    """Web handler for /heizung - Show thermostat temperatures."""
+    from fritz_handler import get_Temperatur_Daten
+
+    try:
+        return render_template(
+            'heizung.htm',
+            rooms=get_Temperatur_Daten(),
+            updated=request.args.get('updated'),
+            error=None
+        )
+    except Exception:
+        logging.exception("Error loading heating status")
+        return render_template(
+            'heizung.htm',
+            rooms={},
+            updated=None,
+            error="Heizungsdaten konnten nicht geladen werden. "
+                  "Bitte Verbindung und fritz.cnf pr\u00fcfen."
+        ), 503
+
+
+@web_bp.route('/heizung/sollwert', methods=['POST'])
+def heizung_sollwert():
+    """Set the target temperature for a configured room."""
+    from fritz_handler import (
+        InvalidTargetError, ROOMS, set_target_temperature
+    )
+
+    room = request.form.get('room', '')
+    if room not in ROOMS:
+        return _error_response("Unbekannter Heizungsraum"), 400
+
+    try:
+        set_target_temperature(room, request.form.get('target', ''))
+        return redirect(url_for('web.heizung', updated=room), code=303)
+    except InvalidTargetError as err:
+        logging.info("Invalid heating target for %s: %s", room, err)
+        return render_template(
+            'heizung.htm',
+            rooms={},
+            updated=None,
+            error=str(err)
+        ), 400
+    except Exception:
+        logging.exception("Error setting heating target for %s", room)
+        return render_template(
+            'heizung.htm',
+            rooms={},
+            updated=None,
+            error="Solltemperatur konnte nicht gesetzt werden."
+        ), 502
 
 
 def _error_response(message):

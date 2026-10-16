@@ -9,7 +9,7 @@ RUN pip3 install --break-system-packages --root-user-action ignore paho-mqtt
 RUN pip3 install --break-system-packages --root-user-action ignore pyyaml
 RUN pip3 install --break-system-packages --root-user-action ignore pymodbus
 
-COPY *.py db.cnf mq.cnf ./
+COPY *.py db.cnf mq.cnf fritz.cnf ./
 
 COPY templates/*.htm /templates/
 
