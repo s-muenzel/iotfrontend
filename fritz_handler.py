@@ -21,7 +21,7 @@ _CONFIG = {"url": None, "username": None, "password": None}
 _RAUM_UID_MAP = {"Tim", "Eva", "Hobbykeller", "Wintergarten"}
 LOGIN_SID_ROUTE = "/login_sid.lua?version=2"
 SMART_HOME_REST_ROUTE = "/api/v0/smarthome"
-ROOMS = ("Tim", "Eva", "Hobbykeller", "Wintergarten")
+ROOMS = ()
 MIN_TEMPERATURE = 8.0
 MAX_TEMPERATURE = 28.0
 
@@ -298,8 +298,16 @@ def _thermostat(device):
     return None
 
 
-def _temperatures_from_devices(devices):
-    status = {room: None for room in ROOMS}
+def _temperatures_from_devices(devices, rooms=None):
+    global ROOMS
+    if rooms is None:
+        rooms = []
+        for device in devices:
+            room = device.get("name")
+            if isinstance(room, str) and _thermostat(device) is not None and room not in rooms:
+                rooms.append(room)
+        ROOMS = tuple(rooms)
+    status = {room: None for room in rooms}
     for device in devices:
         room = device.get("name")
         if room not in status:
