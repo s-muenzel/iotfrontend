@@ -4,3 +4,5 @@ static/Thumbs.db
 templates/top-Org.htm
 __pycache__/
 alt/
+launch.json
+settings.json
