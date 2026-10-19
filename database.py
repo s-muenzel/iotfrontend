@@ -177,6 +177,8 @@ def get_weather_data():
         cursor.execute(
             "SELECT SUM(value) FROM `env_values` WHERE type= 'Rdb' AND timestamp  >= NOW() - INTERVAL 1 DAY")
         for message in cursor:
+            if message[0] is None:
+                continue
             rain_value = float(message[0])
             weather_data['regen']['value'] = f"{rain_value:.1f}"
             weather_data['regen']['bg_color'] = getColor("R", rain_value)
