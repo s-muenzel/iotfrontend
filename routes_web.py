@@ -13,16 +13,7 @@ web_bp = Blueprint('web', __name__)
 def top():
     """Web handler for / - Top/Home page with weather and device info."""
     try:
-        weather = db.get_weather_data()
-        
-        return render_template(
-            'top.htm',
-            T=weather['temp'],
-            F=weather['feucht'],
-            H=weather['hell'],
-            R=weather['regen'],
-            P=weather['proz']
-        )
+        return _render_top()
     except Exception as err:
         logging.warning("Error in top(): %s", str(err))
         return _error_response("allgemeiner Fehler")
@@ -38,39 +29,6 @@ def iot():
     except Exception as err:
         logging.warning("Error in iot(): %s", str(err))
         return _error_response("allgemeiner Fehler")
-
-
-@web_bp.route('/strom')
-def strom():
-    """Web handler for /strom - Show power information."""
-    try:
-        return render_template('strom.htm')
-    except Exception as err:
-        logging.warning("Error in strom(): %s", str(err))
-        return _error_response("allgemeiner Fehler")
-
-
-@web_bp.route('/heizung')
-def heizung():
-    """Web handler for /heizung - Show thermostat temperatures."""
-    from fritz_handler import get_Temperatur_Daten
-
-    try:
-        return render_template(
-            'heizung.htm',
-            rooms=get_Temperatur_Daten(),
-            updated=request.args.get('updated'),
-            error=None
-        )
-    except Exception:
-        logging.exception("Error loading heating status")
-        return render_template(
-            'heizung.htm',
-            rooms={},
-            updated=None,
-            error="Heizungsdaten konnten nicht geladen werden. "
-                  "Bitte Verbindung und fritz.cnf pr\u00fcfen."
-        ), 503
 
 
 @web_bp.route('/heizung/status')
@@ -98,25 +56,29 @@ def heizung_sollwert():
 
     try:
         set_target_temperature(room, request.form.get('target', ''))
-        if request.form.get('dashboard') == '1':
-            return redirect(url_for('web.top') + '#heizung', code=303)
-        return redirect(url_for('web.heizung', updated=room), code=303)
+        return redirect(url_for('web.top') + '#heizung', code=303)
     except InvalidTargetError as err:
         logging.info("Invalid heating target for %s: %s", room, err)
-        return render_template(
-            'heizung.htm',
-            rooms={},
-            updated=None,
-            error=str(err)
-        ), 400
+        return _render_top(heating_error=str(err)), 400
     except Exception:
         logging.exception("Error setting heating target for %s", room)
-        return render_template(
-            'heizung.htm',
-            rooms={},
-            updated=None,
-            error="Solltemperatur konnte nicht gesetzt werden."
+        return _render_top(
+            heating_error="Solltemperatur konnte nicht gesetzt werden."
         ), 502
+
+
+def _render_top(heating_error=None):
+    """Render the dashboard with optional heating form feedback."""
+    weather = db.get_weather_data()
+    return render_template(
+        'top.htm',
+        T=weather['temp'],
+        F=weather['feucht'],
+        H=weather['hell'],
+        R=weather['regen'],
+        P=weather['proz'],
+        heating_error=heating_error
+    )
 
 
 def _error_response(message):

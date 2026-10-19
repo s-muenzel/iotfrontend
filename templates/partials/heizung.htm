@@ -1,7 +1,7 @@
 <section data-poll-section="heizung">
 	<h2 id="heizung">Heizung</h2>
 	<div id="heizung_error" class="w3-panel w3-pale-red w3-leftbar w3-border-red"
-		role="alert" hidden></div>
+		role="alert" {% if not heating_error %}hidden{% endif %}>{{ heating_error or "" }}</div>
 	<div class="w3-row-padding">
 		{% for room in ("Tim", "Eva", "Hobbykeller", "Wintergarten") %}
 		<section class="w3-half w3-margin-top" data-heating-room="{{ room }}">
@@ -11,7 +11,6 @@
 				<p>Solltemperatur: <strong class="heating-target">Lade...</strong></p>
 				<form action="/heizung/sollwert" method="post">
 					<input type="hidden" name="room" value="{{ room }}">
-					<input type="hidden" name="dashboard" value="1">
 					<label for="target-{{ loop.index }}">Neue Solltemperatur (&deg;C)</label>
 					<div class="w3-section">
 						<input class="w3-input w3-border" id="target-{{ loop.index }}"
