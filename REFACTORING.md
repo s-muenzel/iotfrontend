@@ -1,123 +1,74 @@
-# App.py Refactoring Summary
+# Current Application Structure
 
-## Overview
-The monolithic `app.py` (1020 lines) has been successfully split into 7 focused, maintainable modules following Flask best practices.
+The application is organized around a small Flask entry point, route
+blueprints, service handlers, and Jinja templates.
 
-## New Module Structure
+## Application and routes
 
-### Core Application
-- **app.py** (40 lines) - Entry point that creates Flask app and registers blueprints
+- `app.py` creates the Flask application, registers the route blueprints, and
+  starts and stops the MQTT client.
+- `routes_web.py` serves the dashboard (`/`), the device list (`/iot.htm`),
+  and the dashboard's heating status and setpoint endpoints.
+- `routes_status.py` provides JSON status endpoints for roller shutters,
+  garage, lights, and solar power.
+- `routes_actions.py` provides activity and action management routes.
 
-### Configuration & Schemas
-- **modbus_config.py** (63 lines) - Modbus register definitions and enums
-  - `RegisterTyp` enum for register types
-  - `INVERTER_REGISTERS` and `METER_REGISTERS` configuration
-  - Inverter status mappings
+The former standalone `/strom` and `/heizung` page routes have been removed.
+Strom and Heizung are dashboard sections; their data endpoints remain in use.
 
-### Data Access Layer
-- **database.py** (371 lines) - All database operations
-  - Connection management
-  - Weather data queries
-  - Device and activity management
-  - CRUD operations for activities, conditions, triggers, actions
-  - Encapsulates all MariaDB/MySQL interactions
+## Dashboard templates
 
-### External Services
-- **mqtt_handler.py** (98 lines) - MQTT communication
-  - MQTT client initialization and lifecycle
-  - Irrigation system (Bewässerung) state management
-  - Message publishing and subscription
-  - Separate global state for MQTT data
+`templates/top.htm` defines the dashboard shell, navigation, JavaScript, and
+section visibility observer. Each section's HTML is a Jinja partial in
+`templates/partials/`:
 
-- **modbus_handler.py** (43 lines) - Modbus communication
-  - Solar system power reading
-  - Modbus TCP client management
-  - Error handling for device communication
+- `wetter.htm`
+- `rollos.htm`
+- `garage.htm`
+- `leuchten.htm`
+- `wasser.htm`
+- `heizung.htm`
+- `strom.htm`
 
-### Web Routes (Blueprints)
-- **routes_web.py** (51 lines) - Main web pages
-  - `/` - Home page with weather and devices
-  - `/iot.htm` - IoT devices list
-  - `/devices` - Detailed device information
+The dashboard uses anchor navigation within the page. Polling is visibility
+aware: Rollos, Garage, Leuchten, and Strom update every 10 seconds while
+visible; Heizung fetches readings when visible and refreshes every 5 minutes
+while visible. Polling stops when the section leaves the viewport.
 
-- **routes_actions.py** (184 lines) - Activity/Action management
-  - `/actions` - List all actions
-  - `/aktion/add` - Create action form
-  - `/addaktion` - Store new action
-  - `/action/<id>` - View action details
-  - `/aktion/SchalteUm/<id>` - Toggle action status
-  - `/aktiondelete` - Delete action
-  - `/add_condition` - Add condition
-  - `/delete_condition` - Remove condition
-  - `/submitchange` - Update trigger/condition/action
-  - `/reloadaktions` - Reload actions
+The other full-page templates (`iot.htm`, `actions.htm`, `action.htm`, and
+`addaction.htm`) serve their respective pages.
 
-- **routes_status.py** (154 lines) - Status monitoring
-  - `/status_r` - Roller shutter status
-  - `/status_g` - Garage door status
-  - `/status_l` - Lamp status
-  - `/status_s` - Solar/house power information
+## Service and data modules
 
-## Benefits
+- `database.py` contains database access, including weather, device, and
+  activity data.
+- `mqtt_handler.py` manages the MQTT client and irrigation state.
+- `modbus_handler.py` and `modbus_config.py` provide Modbus-related
+  communication and register definitions.
+- `fritz_handler.py` handles FRITZ!Box authentication and Smart Home
+  thermostat requests. Its SID is retained and logged out after 15 minutes
+  without activity.
+- `netzwerk.py` contains network checks used by the device list.
 
-✅ **Separation of Concerns**: Each module has a single responsibility
-✅ **Reusability**: Database and handler modules can be used by other applications
-✅ **Testability**: Smaller modules are easier to unit test
-✅ **Maintainability**: Code is organized by feature, not by type
-✅ **Scalability**: Easy to add new routes or functionality
-✅ **Readability**: Each file focuses on specific domain
-✅ **Error Handling**: Centralized error responses in each route blueprint
+## Important routes
 
-## Code Reduction
-- **app.py**: 1020 lines → 45 lines (95% reduction in main file)
-- **Total**: All functionality preserved in 7 focused modules (956 total lines with documentation)
+| Route | Purpose |
+| --- | --- |
+| `/` | Main dashboard |
+| `/iot.htm` | IoT device list |
+| `/status_r` | Roller shutter status |
+| `/status_g` | Garage status |
+| `/status_l` | Light status |
+| `/status_s` | Solar and household power status |
+| `/heizung/status` | Heating readings for the dashboard |
+| `/heizung/sollwert` (`POST`) | Set a thermostat target |
+| `/actions` and `/action/...` | Activity and action management |
 
-## Migration Notes
+## Container templates
 
-### Database Operations
-All database code moved to `database.py`. Import and use:
-```python
-import database as db
-result = db.get_devices()
-```
+The `Dockerfile` copies top-level templates to `/templates/` and dashboard
+partials to `/templates/partials/`. Keep these paths aligned with the Jinja
+include paths in `templates/top.htm`.
 
-### MQTT Operations
-All MQTT functionality in `mqtt_handler.py`. Use:
-```python
-import mqtt_handler
-mqtt_handler.init_mqtt()
-```
-
-### Modbus Operations
-Power reading moved to `modbus_handler.py`:
-```python
-import modbus_handler
-data = modbus_handler.get_power_status()
-```
-
-### Adding New Routes
-Create new blueprint in dedicated module:
-```python
-from flask import Blueprint
-my_bp = Blueprint('myfeature', __name__)
-
-@my_bp.route('/myroute')
-def my_handler():
-    return "response"
-```
-
-Then register in `app.py`:
-```python
-from routes_myfeature import my_bp
-FLASK_APP.register_blueprint(my_bp)
-```
-
-## Files Changed/Created
-- ✅ Created: `modbus_config.py`
-- ✅ Created: `database.py`
-- ✅ Created: `mqtt_handler.py`
-- ✅ Created: `modbus_handler.py`
-- ✅ Created: `routes_web.py`
-- ✅ Created: `routes_actions.py`
-- ✅ Created: `routes_status.py`
-- ✅ Refactored: `app.py`
+Configuration is read from `db.cnf`, `mq.cnf`, and `fritz.cnf`. Keep actual
+credentials out of source control.
