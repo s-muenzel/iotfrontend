@@ -3,6 +3,7 @@ import hashlib
 import json
 import logging
 import math
+import threading
 import time
 import urllib.error
 import urllib.parse
@@ -24,6 +25,55 @@ SMART_HOME_REST_ROUTE = "/api/v0/smarthome"
 ROOMS = ()
 MIN_TEMPERATURE = 8.0
 MAX_TEMPERATURE = 28.0
+SESSION_IDLE_TIMEOUT = 15 * 60
+
+_SID = None
+_SID_LAST_USED = None
+_SID_TIMER = None
+_SID_LOCK = threading.RLock()
+
+
+def _schedule_sid_logout(sid: str) -> None:
+    """Reset the idle timer for the active FRITZ!Box session."""
+    global _SID, _SID_LAST_USED, _SID_TIMER
+    with _SID_LOCK:
+        if _SID_TIMER is not None:
+            _SID_TIMER.cancel()
+        _SID = sid
+        _SID_LAST_USED = time.monotonic()
+        _SID_TIMER = threading.Timer(
+            SESSION_IDLE_TIMEOUT, _logout_expired_sid, args=(sid,)
+        )
+        _SID_TIMER.daemon = True
+        _SID_TIMER.start()
+
+
+def _logout_expired_sid(sid: str) -> None:
+    """Log out the session if it has remained idle until the timer expires."""
+    global _SID, _SID_LAST_USED, _SID_TIMER
+    with _SID_LOCK:
+        if _SID != sid or _SID_LAST_USED is None:
+            return
+
+        remaining = SESSION_IDLE_TIMEOUT - (
+            time.monotonic() - _SID_LAST_USED
+        )
+        if remaining > 0:
+            _SID_TIMER = threading.Timer(
+                remaining, _logout_expired_sid, args=(sid,)
+            )
+            _SID_TIMER.daemon = True
+            _SID_TIMER.start()
+            return
+
+        _SID = None
+        _SID_LAST_USED = None
+        _SID_TIMER = None
+        try:
+            if not logout(_CONFIG["url"], sid):
+                logging.warning("FRITZ!Box session logout was not confirmed")
+        except (OSError, ValueError, ET.ParseError):
+            logging.warning("Could not close idle FRITZ!Box session", exc_info=True)
 
 
 def _load_config():
@@ -59,7 +109,16 @@ def get_sid() -> str:
     """Check login state.
     If already logged in, return the existing sid.
     Otherwise, get a new sid by solving the PBKDF2 (or MD5) challenge-response process."""
+    global _SID, _SID_LAST_USED, _SID_TIMER
     _load_config()
+    with _SID_LOCK:
+        if _SID and _SID_LAST_USED is not None:
+            if time.monotonic() - _SID_LAST_USED < SESSION_IDLE_TIMEOUT:
+                sid = _SID
+                _schedule_sid_logout(sid)
+                return sid
+            _logout_expired_sid(_SID)
+
     try:
         # state = get_login_state(_CONFIG["url"])
         logging.info("Getting FRITZ!Box login state from %s", _CONFIG["url"])
@@ -73,6 +132,7 @@ def get_sid() -> str:
         raise Exception("failed to get challenge") from ex
     if (sid != "0000000000000000"):
         logging.info("FRITZ!Box already logged in with sid: %s", sid)
+        _schedule_sid_logout(sid)
         return sid
 
     logging.info("FRITZ!Box login challenge: %s", challenge)
@@ -94,6 +154,7 @@ def get_sid() -> str:
     if sid == "0000000000000000":
         raise Exception("wrong username or password")
 
+    _schedule_sid_logout(sid)
     return sid
 
 
@@ -224,16 +285,10 @@ def get_Temperatur_Daten():
 
     # get the current session ID (SID) or get a new one from the FRITZ!Box
     sid = get_sid()
-    try:
-        devices = _get_smart_home_devices(_CONFIG["url"], sid)
-        ret_val = _temperatures_from_devices(devices)
-        logging.info(f"Temperaturdaten: {ret_val}")
-        return ret_val
-    finally:
-        try:
-            logout(_CONFIG["url"], sid)
-        except (OSError, ValueError, ET.ParseError, urllib.error.URLError):
-            logging.warning("Could not close FRITZ!Box session", exc_info=True)
+    devices = _get_smart_home_devices(_CONFIG["url"], sid)
+    ret_val = _temperatures_from_devices(devices)
+    logging.info(f"Temperaturdaten: {ret_val}")
+    return ret_val
 
 
 def _read_url(url, request=None):
