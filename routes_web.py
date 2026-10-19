@@ -1,6 +1,6 @@
 """routes_web.py: Web routes for main pages and device information."""
 import logging
-from flask import Blueprint, redirect, render_template, request, url_for
+from flask import Blueprint, jsonify, redirect, render_template, request, url_for
 import database as db
 import mqtt_handler
 from netzwerk import check_netzwerkfehler
@@ -73,6 +73,18 @@ def heizung():
         ), 503
 
 
+@web_bp.route('/heizung/status')
+def heizung_status():
+    """Return current thermostat readings for the dashboard."""
+    from fritz_handler import get_Temperatur_Daten
+
+    try:
+        return jsonify(rooms=get_Temperatur_Daten())
+    except Exception:
+        logging.exception("Error loading heating status")
+        return jsonify(error="Heizungsdaten konnten nicht geladen werden."), 503
+
+
 @web_bp.route('/heizung/sollwert', methods=['POST'])
 def heizung_sollwert():
     """Set the target temperature for a configured room."""
@@ -86,6 +98,8 @@ def heizung_sollwert():
 
     try:
         set_target_temperature(room, request.form.get('target', ''))
+        if request.form.get('dashboard') == '1':
+            return redirect(url_for('web.top') + '#heizung', code=303)
         return redirect(url_for('web.heizung', updated=room), code=303)
     except InvalidTargetError as err:
         logging.info("Invalid heating target for %s: %s", room, err)

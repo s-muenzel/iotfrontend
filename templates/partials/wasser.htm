@@ -1,0 +1,39 @@
+<section>
+<h2 id="wasser">
+				Wasser
+			</h2>
+			<h3>Zisterne</h3>
+			<div class="w3-container w3-cell w3-mobile">
+				<p><a href="http://192.168.2.97/">Zisterne</a></p>
+				<svg id="mySvg" width="200px" height="200px" xmlns="http://www.w3.org/2000/svg">
+
+					<g id="Zisterne">
+						<rect x="2" y="10" width="180" height="180" rx="10" ry="10" fill="white" stroke="black"
+							stroke-width="4" />
+						<!-- Hier Füllstand Hintergrund -->
+						<!-- height = Prozent * 170 / 100
+						     y = 190 - height 
+						     translate y = 183 - height -->
+						<rect x="4" y="105" width="176" height="85" rx="3" ry="5" fill="blue" id="zisterne_fill" />
+						<path
+							d="M 0,5 C 11,0 11,10 22,5 C 33,0 33,10 44,5 C 55,0 55,10 66,5 C 77,0 77,10 88,5 C 99,0 99,10 110,5 C 121,0 121,10 132,5 C 143,0 143,10 154,5 C 165,0 165,10 176,5"
+							fill="none" stroke="blue" stroke-width="3" id="zisterne_welle"
+							transform="translate(4 98)" />
+						<!-- Hier Füllstand Text -->
+						<text x="40" y="100" fill="{{ P.bg_color }}" stroke="{{ P.fg_color }}" font-size="40"
+							font-weight="bold" id="zisterne_per">100%</text>
+					</g>
+				</svg>
+			</div>
+			<div class="w3-container w3-mobile"><a
+					href="http://diskstation.ar14.s-muenzel.de:3000/d/J2w7Ym5Mk/zisterne?orgId=1">Verlauf Zisterne</a>
+			</div>
+			<h3>Bew&auml;sserung</h3>
+			<div class="w3-container w3-cell w3-mobile">
+				<!-- <p><a href="/bewaesserung">Bew&auml;sserung Holzschuppen (mqtt) - unpraktisch</a></p> -->
+				<p><a href="http://192.168.2.61">Bew&auml;sserung Holzschuppen</a></p>
+			</div>
+			<div class="w3-container w3-cell w3-mobile">
+				<p><a href="http://192.168.2.139">Bew&auml;sserung Vorgarten</a></p>
+			</div>
+			</section>

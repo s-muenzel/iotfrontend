@@ -104,15 +104,9 @@
 			}
 		}
 
-		var myTimer_r = setInterval(Werte_Init_Rollo, 10000);
-		var myTimer_g = setInterval(Werte_Init_Garage, 10000);
-		var myTimer_l = setInterval(Werte_Init_Leuchte, 10000);
 
 		function Werte_Init() {
 			Werte_Init_Zisterne();
-			Werte_Init_Rollo();
-			Werte_Init_Garage();
-			Werte_Init_Leuchte();
 		}
 		function Werte_Init_Zisterne() {
 			let p = {{ P.value }}
@@ -167,6 +161,99 @@
 			xhttp_lampe.open("GET", "status_l", true);
 			xhttp_lampe.send();
 		}
+		function Werte_Init_Strom() {
+			Resize_Strom();
+			HoleWerte_Strom();
+		}
+		function Resize_Strom() {
+			let width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+			document.getElementById("stromSvg").width.baseVal.value = width * 0.8;
+			document.getElementById("stromSvg").height.baseVal.value = width * 0.8 * 0.75;
+			document.getElementById("scale_group").setAttribute(
+				"transform",
+				"scale(" + document.getElementById("stromSvg").width.baseVal.value / 800 + ")"
+			);
+		}
+		function HoleWerte_Strom() {
+			fetch('/status_s')
+				.then(response => {
+					if (!response.ok) {
+						throw new Error("Power status request failed: " + response.status);
+					}
+					return response.json();
+				})
+				.then(UpdatePfeile_Strom)
+				.catch(error => console.error('Error fetching power status:', error));
+		}
+		function ErzeugePText_Strom(power) {
+			if (power >= 1000 || power <= -1000) {
+				return (power / 1000).toPrecision(3) + "kW";
+			}
+			return Math.round(power) + " W";
+		}
+		function UpdatePfeile_Strom(data) {
+			document.getElementById("battery_per").textContent = data.soc + "%";
+			document.getElementById("battery_fill").setAttribute("height", 70 * (data.soc / 100));
+			document.getElementById("battery_fill").setAttribute("y", 10 + 70 * (1 - data.soc / 100));
+			document.getElementById("battery_p").textContent = ErzeugePText_Strom(data.p_battery);
+			document.getElementById("battery_arrow_lade").setAttribute(
+				"fill", data.p_battery > 0 ? "green" : "none"
+			);
+			document.getElementById("battery_arrow_entlade").setAttribute(
+				"fill", data.p_battery < 0 ? "red" : "none"
+			);
+			document.getElementById("solar_p").textContent = ErzeugePText_Strom(data.p_solar);
+			document.getElementById("solar_arrow_lade").setAttribute(
+				"fill", data.p_solar > 0 ? "green" : "none"
+			);
+			document.getElementById("haus_p").textContent = ErzeugePText_Strom(data.p_haus);
+			document.getElementById("haus_arrow_lade").setAttribute(
+				"fill", data.p_haus > 0 ? "red" : "none"
+			);
+			document.getElementById("grid_p").textContent = ErzeugePText_Strom(data.p_grid);
+			document.getElementById("grid_arrow_lade").setAttribute(
+				"fill", data.p_grid > 0 ? "red" : "none"
+			);
+			document.getElementById("grid_arrow_entlade").setAttribute(
+				"fill", data.p_grid < 0 ? "green" : "none"
+			);
+		}
+		function Werte_Init_Heizung() {
+			fetch('/heizung/status')
+				.then(response => {
+					if (!response.ok) {
+						throw new Error("Heating status request failed: " + response.status);
+					}
+					return response.json();
+				})
+				.then(data => {
+					Object.entries(data.rooms).forEach(([room, temperature]) => {
+						const roomElement = document.querySelector(
+							'[data-heating-room="' + room + '"]'
+						);
+						if (!roomElement) {
+							return;
+						}
+						roomElement.querySelector(".heating-actual").textContent =
+							temperature ? temperature.actual.toFixed(1) + " °C" : "Nicht verfügbar";
+						roomElement.querySelector(".heating-target").textContent =
+							temperature ? temperature.target + " °C" : "Nicht verfügbar";
+						const targetInput = roomElement.querySelector('[name="target"]');
+						if (!targetInput.dataset.userEdited) {
+							targetInput.value = temperature ? temperature.target : "";
+						}
+					});
+					const errorMessage = document.getElementById("heizung_error");
+					errorMessage.textContent = "";
+					errorMessage.hidden = true;
+				})
+				.catch(error => {
+					console.error('Error fetching heating status:', error);
+					const errorMessage = document.getElementById("heizung_error");
+					errorMessage.textContent = "Heizungsdaten konnten nicht geladen werden.";
+					errorMessage.hidden = false;
+				});
+		}
 	</script>
 	<title>Alte Rinne 14</title>
 </head>
@@ -183,8 +270,8 @@
 		<a class="w3-bar-item w3-button" href="#garage">Garage</a>
 		<a class="w3-bar-item w3-button" href="#leuchten">Leuchten</a>
 		<a class="w3-bar-item w3-button" href="#wasser">Wasser</a>
-		<a class="w3-bar-item w3-button" href="/heizung">Heizung</a>
-		<a class="w3-bar-item w3-button" href="/strom">Strom</a>
+		<a class="w3-bar-item w3-button" href="#heizung">Heizung</a>
+		<a class="w3-bar-item w3-button" href="#strom">Strom</a>
 		<a class="w3-bar-item w3-button" href="/iot.htm">Ger&auml;te</a>
 	</nav>
 
@@ -204,184 +291,20 @@
 		</header>
 
 		<div class="w3-container" style="padding:32px">
+			{% include "partials/wetter.htm" %}
 
-			<h2 id="wetter">
-				Aktuelles Wetter
-			</h2>
-			<div class="w3-container w3-cell w3-mobile w3-centered w3-jumbo">
-				<i class="fa-solid fa-temperature-full"></i>
-				<p class="w3-btn w3-border w3-round-xlarge" id="Anzeige_T"
-					style="background-color:{{ T.bg_color }};color:{{ T.fg_color }}">
-					{{ T.value }}°C</p>
-			</div>
-			<div class="w3-container w3-cell w3-mobile w3-centered w3-jumbo">
-				<i class="fa-solid fa-droplet"></i>
-				<p class="w3-btn w3-border w3-round-xlarge" id="Anzeige_F"
-					style="background-color:{{ F.bg_color }};color:{{ F.fg_color }}">
-					{{ F.value }}%<small><small><small>rel</small></small>F</small></p>
-			</div>
-			<div class="w3-container w3-cell w3-mobile w3-centered w3-jumbo">
-				<i class="fa-solid fa-cloud-showers-heavy"></i>
-				<p class="w3-btn w3-border w3-round-xlarge" id="Anzeige_R"
-					style="background-color:{{ R.bg_color }};color:{{ R.fg_color }}">
-					{{ R.value }}
-					<small><small><sup>mm</sup>/<sub><small><small>24h</small></small></sub></small></small>
-				</p>
-			</div>
-			<div class="w3-container w3-mobile"><a
-					href="http://diskstation.ar14.s-muenzel.de:3000/d/7Uo7fi5Mz/wetterdaten?orgId=1&refresh=5m">Langfristige
-					Wetterdaten</a></div>
+			{% include "partials/rollos.htm" %}
 
-			<hr>
-			<h2 id="rollos">
-				Rolläden
-			</h2>
-			<div class="w3-container w3-cell w3-mobile">
-				<div class="w3-container w3-third">
-					<p><a id="L" href="http://rollo-bad.ar14.s-muenzel.de/">Bad</a></p>
-					<p><button class="w3-button w3-black" onclick="Rollo_Hoch('http://rollo-bad.ar14.s-muenzel.de/');">
-							<i class="fa fa-caret-up"></i></button>
-						<input type="number" min="0" max="100" value=""
-							onchange="Rollo_Wert('bad','http://rollo-bad.ar14.s-muenzel.de/');" id="rollo_bad_wert"
-							style="width:50px"></i>
-						<button class="w3-button w3-black"
-							onclick="Rollo_Runter('http://rollo-bad.ar14.s-muenzel.de/');">
-							<i class="fa fa-caret-down"></i></button>
-					</p>
-				</div>
-				<div class="w3-content w3-twothird" id="rollo_bad"
-					style="background-image:url('static/shutter-30.png');width:160px;height:160px; background-repeat:no-repeat;">
-				</div>
-			</div>
+			{% include "partials/garage.htm" %}
 
-			<div class="w3-container w3-cell w3-mobile">
-				<div class="w3-container w3-third">
-					<p><a id="L" href="http://rollo-eva.ar14.s-muenzel.de/">Eva</a></p>
-					<p><button class="w3-button w3-black" onclick="Rollo_Hoch('http://rollo-eva.ar14.s-muenzel.de/');">
-							<i class="fa fa-caret-up"></i></button>
-						<input type="number" min="0" max="100" value=""
-							onchange="Rollo_Wert('eva','http://rollo-eva.ar14.s-muenzel.de/');" id="rollo_eva_wert"
-							style="width:50px"></i>
-						<button class="w3-button w3-black"
-							onclick="Rollo_Runter('http://rollo-eva.ar14.s-muenzel.de/');">
-							<i class="fa fa-caret-down"></i></button>
-					</p>
-				</div>
-				<div class="w3-container w3-twothird" id="rollo_eva"
-					style="background-image:url('static/shutter-30.png');width:160px;height:160px; background-repeat:no-repeat;">
-				</div>
-			</div>
+			{% include "partials/leuchten.htm" %}
 
-			<div class="w3-container w3-cell w3-mobile">
-				<div class="w3-container w3-third">
-					<p><a id="L" href="http://rollo-sz.ar14.s-muenzel.de/">Schlafzimmer</a></p>
-					<p><button class="w3-button w3-black" onclick="Rollo_Hoch('http://rollo-sz.ar14.s-muenzel.de/');">
-							<i class="fa fa-caret-up"></i></button>
-						<input type="number" min="0" max="100" value=""
-							onchange="Rollo_Wert('sz','http://rollo-sz.ar14.s-muenzel.de/');" id="rollo_sz_wert"
-							style="width:50px"></i>
-						<button class="w3-button w3-black"
-							onclick="Rollo_Runter('http://rollo-sz.ar14.s-muenzel.de/');">
-							<i class="fa fa-caret-down"></i></button>
-					</p>
-				</div>
-				<div class="w3-container w3-twothird" id="rollo_sz"
-					style="background-image:url('static/shutter-30.png');width:160px;height:160px; background-repeat:no-repeat;">
-				</div>
-			</div>
+			{% include "partials/wasser.htm" %}
 
-			<div class="w3-container w3-cell w3-mobile">
-				<div class="w3-container w3-third">
-					<p><a id="L" href="http://rollo-tim.ar14.s-muenzel.de/">Tim</a></p>
-					</p><button class="w3-button w3-black" onclick="Rollo_Hoch('http://rollo-tim.ar14.s-muenzel.de/');">
-						<i class="fa fa-caret-up"></i></button>
-					<input type="number" min="0" max="100" value=""
-						onchange="Rollo_Wert('tim','http://rollo-tim.ar14.s-muenzel.de/');" id="rollo_tim_wert"
-						style="width:50px"></i>
-					<button class="w3-button w3-black" onclick="Rollo_Runter('http://rollo-tim.ar14.s-muenzel.de/');">
-						<i class="fa fa-caret-down"></i></button></p>
-				</div>
-				<div class="w3-container w3-twothird" id="rollo_tim"
-					style="background-image:url('static/shutter-30.png');width:160px;height:160px; background-repeat:no-repeat;">
-				</div>
-			</div>
+			{% include "partials/heizung.htm" %}
 
-			<hr>
-			<h2 id="garage">
-				Garage
-			</h2>
-			<div class="w3-container w3-cell w3-mobile">
-				<p><a href="http://192.168.2.97/">Garage</a></p>
-				<div class="w3-content w3-twothird" id="garage_tor"
-					style="background-image:url('static/unklar.png');width:300px;height:300px; background-repeat:no-repeat;">
-				</div>
-				<button class="w3-button w3-round-xlarge w3-green" id="B_Auf"
-					onclick="fahre_Garagentor('Auf');">Öffnen</button>
-				<button class="w3-button w3-round-xlarge w3-green" id="B_Zu"
-					onclick="fahre_Garagentor('Zu');">Schliessen</button>
-			</div>
-			<hr>
+			{% include "partials/strom.htm" %}
 
-			<h2 id="leuchten">
-				Leuchten
-			</h2>
-			<div class="w3-container w3-cell w3-mobile">
-				<p><a id="L" href="http://wz-lampe.ar14.s-muenzel.de/">Wohnzimmer-Stehlampe</a></p>
-				<button class="w3-button" onclick="anaus_Lampe('wz','http://wz-lampe.ar14.s-muenzel.de/')">
-					<i class="fa fa-power-off" style="font-size:24px;color:grey" id="lampe_wz_schalter"></i></button>
-				<input type="number" min="0" max="100" value=""
-					onchange="Lampe_Wert('wz','http://wz-lampe.ar14.s-muenzel.de/')" id="lampe_wz_wert"
-					style="width:50px"></i>
-			</div>
-			<div class="w3-container w3-cell w3-mobile">
-				<p><a id="L" href="http://a1-lampe.ar14.s-muenzel.de/">Terassenbeleuchtung</a></p>
-				<div id="TL_Div"><!-- <iframe src="a1-lampe.ar14.s-muenzel.de/Control"
-						style="border:none; height:220px"></iframe> --></div>
-			</div>
-			<div class="w3-container w3-cell w3-mobile">
-				<p><a id="L" href="http://a2-lampe.ar14.s-muenzel.de/">Beleuchtung Holzschuppen</a></p>
-				<div id="TL_Div"><!-- <iframe src="a2-lampe.ar14.s-muenzel.de/Control"
-						style="border:none; height:220px"></iframe> --></div>
-			</div>
-			<hr>
-			<hr>
-			<h2 id="wasser">
-				Wasser
-			</h2>
-			<h3>Zisterne</h3>
-			<div class="w3-container w3-cell w3-mobile">
-				<p><a href="http://192.168.2.97/">Zisterne</a></p>
-				<svg id="mySvg" width="200px" height="200px" xmlns="http://www.w3.org/2000/svg">
-
-					<g id="Zisterne">
-						<rect x="2" y="10" width="180" height="180" rx="10" ry="10" fill="white" stroke="black"
-							stroke-width="4" />
-						<!-- Hier Füllstand Hintergrund -->
-						<!-- height = Prozent * 170 / 100
-						     y = 190 - height 
-						     translate y = 183 - height -->
-						<rect x="4" y="105" width="176" height="85" rx="3" ry="5" fill="blue" id="zisterne_fill" />
-						<path
-							d="M 0,5 C 11,0 11,10 22,5 C 33,0 33,10 44,5 C 55,0 55,10 66,5 C 77,0 77,10 88,5 C 99,0 99,10 110,5 C 121,0 121,10 132,5 C 143,0 143,10 154,5 C 165,0 165,10 176,5"
-							fill="none" stroke="blue" stroke-width="3" id="zisterne_welle"
-							transform="translate(4 98)" />
-						<!-- Hier Füllstand Text -->
-						<text x="40" y="100" fill="{{ P.bg_color }}" stroke="{{ P.fg_color }}" font-size="40"
-							font-weight="bold" id="zisterne_per">100%</text>
-					</g>
-				</svg>
-			</div>
-			<div class="w3-container w3-mobile"><a
-					href="http://diskstation.ar14.s-muenzel.de:3000/d/J2w7Ym5Mk/zisterne?orgId=1">Verlauf Zisterne</a>
-			</div>
-			<h3>Bew&auml;sserung</h3>
-			<div class="w3-container w3-cell w3-mobile">
-				<!-- <p><a href="/bewaesserung">Bew&auml;sserung Holzschuppen (mqtt) - unpraktisch</a></p> -->
-				<p><a href="http://192.168.2.61">Bew&auml;sserung Holzschuppen</a></p>
-			</div>
-			<div class="w3-container w3-cell w3-mobile">
-				<p><a href="http://192.168.2.139">Bew&auml;sserung Vorgarten</a></p>
-			</div>
 		</div>
 	</div>
 </body>
@@ -396,6 +319,50 @@
 		document.getElementById("mySidebar").style.display = "none";
 		document.getElementById("myOverlay").style.display = "none";
 	}
+
+	const statusPollers = {
+		rollos: Werte_Init_Rollo,
+		garage: Werte_Init_Garage,
+		leuchten: Werte_Init_Leuchte,
+		strom: Werte_Init_Strom,
+		heizung: Werte_Init_Heizung
+	};
+	const pollIntervals = {
+		rollos: 10000,
+		garage: 10000,
+		leuchten: 10000,
+		strom: 10000,
+		heizung: 300000
+	};
+	const activePollers = new Map();
+	const sectionObserver = new IntersectionObserver(function (entries) {
+		entries.forEach(function (entry) {
+			const section = entry.target.dataset.pollSection;
+			if (entry.isIntersecting && !activePollers.has(section)) {
+				statusPollers[section]();
+				activePollers.set(
+					section,
+					window.setInterval(statusPollers[section], pollIntervals[section])
+				);
+			} else if (!entry.isIntersecting && activePollers.has(section)) {
+				window.clearInterval(activePollers.get(section));
+				activePollers.delete(section);
+			}
+		});
+	});
+	document.querySelectorAll('[data-poll-section]').forEach(function (section) {
+		sectionObserver.observe(section);
+	});
+	document.querySelectorAll('[data-heating-room] [name="target"]').forEach(function (input) {
+		input.addEventListener("input", function () {
+			input.dataset.userEdited = "true";
+		});
+	});
+	window.addEventListener("resize", function () {
+		if (activePollers.has("strom")) {
+			Resize_Strom();
+		}
+	});
 
 	// Change style of top container on scroll
 	window.onscroll = function () { myFunction() };

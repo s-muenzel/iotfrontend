@@ -1,0 +1,28 @@
+<section>
+<h2 id="wetter">
+				Aktuelles Wetter
+			</h2>
+			<div class="w3-container w3-cell w3-mobile w3-centered w3-jumbo">
+				<i class="fa-solid fa-temperature-full"></i>
+				<p class="w3-btn w3-border w3-round-xlarge" id="Anzeige_T"
+					style="background-color:{{ T.bg_color }};color:{{ T.fg_color }}">
+					{{ T.value }}°C</p>
+			</div>
+			<div class="w3-container w3-cell w3-mobile w3-centered w3-jumbo">
+				<i class="fa-solid fa-droplet"></i>
+				<p class="w3-btn w3-border w3-round-xlarge" id="Anzeige_F"
+					style="background-color:{{ F.bg_color }};color:{{ F.fg_color }}">
+					{{ F.value }}%<small><small><small>rel</small></small>F</small></p>
+			</div>
+			<div class="w3-container w3-cell w3-mobile w3-centered w3-jumbo">
+				<i class="fa-solid fa-cloud-showers-heavy"></i>
+				<p class="w3-btn w3-border w3-round-xlarge" id="Anzeige_R"
+					style="background-color:{{ R.bg_color }};color:{{ R.fg_color }}">
+					{{ R.value }}
+					<small><small><sup>mm</sup>/<sub><small><small>24h</small></small></sub></small></small>
+				</p>
+			</div>
+			<div class="w3-container w3-mobile"><a
+					href="http://diskstation.ar14.s-muenzel.de:3000/d/7Uo7fi5Mz/wetterdaten?orgId=1&refresh=5m">Langfristige
+					Wetterdaten</a></div>
+			</section>

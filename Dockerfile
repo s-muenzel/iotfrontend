@@ -13,6 +13,8 @@ COPY *.py db.cnf mq.cnf fritz.cnf ./
 
 COPY templates/*.htm /templates/
 
+COPY templates/partials/*.htm /templates/partials/
+
 COPY static/*.png  static/
 
 EXPOSE 80/tcp
