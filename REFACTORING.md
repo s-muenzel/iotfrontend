@@ -56,8 +56,6 @@ The monolithic `app.py` (1020 lines) has been successfully split into 7 focused,
   - `/status_r` - Roller shutter status
   - `/status_g` - Garage door status
   - `/status_l` - Lamp status
-  - `/bewaesserung` - Irrigation system page
-  - `/set_bew` - Set irrigation parameters
   - `/status_s` - Solar/house power information
 
 ## Benefits
@@ -88,7 +86,6 @@ All MQTT functionality in `mqtt_handler.py`. Use:
 ```python
 import mqtt_handler
 mqtt_handler.init_mqtt()
-status = mqtt_handler.get_bewaesserung_status()
 ```
 
 ### Modbus Operations

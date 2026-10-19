@@ -2,7 +2,7 @@
 import logging
 from flask import Blueprint, jsonify, redirect, render_template, request, url_for
 import database as db
-import mqtt_handler
+# import mqtt_handler
 from netzwerk import check_netzwerkfehler
 
 

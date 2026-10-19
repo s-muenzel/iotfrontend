@@ -4,13 +4,6 @@ import logging
 import paho.mqtt.client as mqtt_client
 import yaml
 
-# Global state variables for Bewässerung
-_bewaesserung_state = {
-    'dauer': -1,
-    'frequenz': -1,
-    'next': -1,
-    'wasser': False,
-}
 mqtt_client_instance = None
 
 # Global state variable for Solar/Electricity data
@@ -23,13 +16,12 @@ _solar_data = {
 }
 
 
-MQTT_TOPICS = ["Bewaesserung/Ist", "Sensor/Solar/////+"]
+MQTT_TOPICS = ["Sensor/Solar/////+"]
 
 def on_message(client, userdata, msg):
     """Callback for MQTT messages.
     
     Processes MQTT messages, particularly for
-    "Bewaesserung/Ist" topic to update irrigation system state
     "Sensor/Solar/////S*" topic to update solar/electricity data.
     
     Args:
@@ -37,20 +29,9 @@ def on_message(client, userdata, msg):
         userdata: User data
         msg: MQTT message
     """
-    global _bewaesserung_state
     
     logging.debug("Received topic %s Msg %s", msg.topic, msg.payload.decode())
     
-    if msg.topic == "Bewaesserung/Ist":
-        try:
-            bew = json.loads(msg.payload.decode())
-            if "Dauer" in bew:
-                _bewaesserung_state['dauer'] = bew["Dauer"]
-                _bewaesserung_state['frequenz'] = bew["Frequenz"]
-                _bewaesserung_state['next'] = bew["Next"]
-                _bewaesserung_state['wasser'] = bew["Wasser"]
-        except json.JSONDecodeError as err:
-            logging.warning("Failed to decode MQTT message: %s", err)
     if msg.topic == "Sensor/Solar/////SSs":
         _solar_data['p_solar'] = float(msg.payload.decode())
     if msg.topic == "Sensor/Solar/////SSh":
@@ -87,7 +68,6 @@ def init_mqtt():
         for topic in MQTT_TOPICS:
             mqtt_client_instance.subscribe(topic)
             logging.info("Subscribed to topic: %s", topic)
-        # erg = mqtt_client_instance.subscribe("Bewaesserung/Ist")
         # logging.info("MQTT subscribe result: %s", erg)
         
         mqtt_client_instance.loop_start()
@@ -119,20 +99,6 @@ def stop_mqtt():
         mqtt_client_instance = None
 
 
-def get_bewaesserung_status():
-    """Get current irrigation system status.
-    
-    Returns:
-        dict: Dictionary with Dauer, Frequenz, Next, Wasser
-    """
-    return _bewaesserung_state
-# {
-#         'dauer': _bewaesserung_state['dauer'],
-#         'frequenz': _bewaesserung_state['frequenz'],
-#         'next': _bewaesserung_state['next'],
-#         'wasser': _bewaesserung_state['wasser'],
-#     }
-
 def get_solar_status():
     """Get current solar status from Modbus handler.
     
@@ -140,16 +106,6 @@ def get_solar_status():
         dict: Dictionary with solar data or None if unavailable
     """
     return _solar_data
-
-def set_bewaesserung_value(parameter, value):
-    """Set a new value for irrigation system.
-    
-    Args:
-        parameter: Parameter name (e.g., "Dauer", "Frequenz")
-        value: New value
-    """
-    payload = '{"' + parameter + '":' + str(value) + '}'
-    publish_message("Bewaesserung/Soll", payload)
 
 
 def reload_actions():

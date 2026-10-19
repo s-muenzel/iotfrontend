@@ -83,55 +83,6 @@ def status_lampen():
     return json.dumps(result)
 
 
-@status_bp.route('/bewaesserung')
-def bewaesserung():
-    """Web handler for /bewaesserung - Irrigation system page."""
-    logging.debug("bewaesserung")
-    
-    try:
-        status = mqtt_handler.get_bewaesserung_status()
-        
-        # Request latest values if not available
-        if status['dauer'] == -1:
-            mqtt_handler.publish_message("Bewaesserung/Ist", "{}")
-        
-        return render_template(
-            'bewaesserung.htm',
-            D=status['dauer'],
-            F=status['frequenz'] / 3600.0 if status['frequenz'] != -1 else -1,
-            N=status['next'] / 3600.0 if status['next'] != -1 else -1,
-            W=status['wasser']
-        )
-    except Exception as err:
-        logging.warning("Error in bewaesserung(): %s", str(err))
-        return _error_response("allgemeiner Fehler")
-
-
-@status_bp.route('/set_bew', methods=["GET"])
-def set_bew():
-    """Set irrigation system parameter values.
-    
-    Query parameters:
-        was: Parameter name (Dauer, Frequenz, Next)
-        wieviel: Parameter value
-        
-    Returns:
-        JSON: Success response
-    """
-    was = request.values.get("was", "?")
-    wieviel = request.values.get("wieviel", "-1")
-    
-    logging.info("Neue Bewaesserungswerte was:%s wieviel:%s", was, wieviel)
-    
-    try:
-        if was != "?":
-            mqtt_handler.set_bewaesserung_value(was, wieviel)
-        return '{"ok"}'
-    except Exception as err:
-        logging.warning("Error in set_bew(): %s", str(err))
-        return '{"error": "' + str(err) + '"}'
-
-
 @status_bp.route('/status_s')
 def status_s():
     """Sendet die aktuellen Strom-Werte"""

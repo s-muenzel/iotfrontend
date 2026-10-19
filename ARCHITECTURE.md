@@ -19,7 +19,6 @@ iotfrontend/
 │   ├── action.htm
 │   ├── actions.htm
 │   ├── addaction.htm
-│   ├── bewaesserung.htm
 │   ├── devices.htm
 │   ├── iot.htm
 │   ├── strom.html
@@ -62,7 +61,7 @@ database.py ──→ (reads db.cnf)
 1. `mqtt_handler.init_mqtt()` starts MQTT client
 2. `on_message()` callback receives messages
 3. Updates global state in `mqtt_handler` module
-4. Routes read state via `get_bewaesserung_status()`
+`
 
 ### Database Operations
 All database operations go through `database.py`:
@@ -93,12 +92,6 @@ import mqtt_handler
 
 # Initialize once
 mqtt_handler.init_mqtt()
-
-# Get irrigation status
-status = mqtt_handler.get_bewaesserung_status()
-
-# Set parameter
-mqtt_handler.set_bewaesserung_value('Dauer', 30)
 
 # Publish message
 mqtt_handler.publish_message('topic', 'payload')
