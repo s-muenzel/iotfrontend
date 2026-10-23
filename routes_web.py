@@ -34,10 +34,10 @@ def iot():
 @web_bp.route('/heizung/status')
 def heizung_status():
     """Return current thermostat readings for the dashboard."""
-    from fritz_handler import get_Temperatur_Daten
+    from fritz_handler import hole_Temperatur_Daten
 
     try:
-        return jsonify(rooms=get_Temperatur_Daten())
+        return jsonify(rooms=hole_Temperatur_Daten())
     except Exception:
         logging.exception("Error loading heating status")
         return jsonify(error="Heizungsdaten konnten nicht geladen werden."), 503
@@ -47,7 +47,7 @@ def heizung_status():
 def heizung_sollwert():
     """Set the target temperature for a configured room."""
     from fritz_handler import (
-        InvalidTargetError, ROOMS, set_target_temperature
+        InvalidTargetError, ROOMS, setze_Soll_Temperatur
     )
 
     room = request.form.get('room', '')
@@ -55,7 +55,7 @@ def heizung_sollwert():
         return _error_response("Unbekannter Heizungsraum"), 400
 
     try:
-        set_target_temperature(room, request.form.get('target', ''))
+        setze_Soll_Temperatur(room, request.form.get('target', ''))
         return redirect(url_for('web.top') + '#heizung', code=303)
     except InvalidTargetError as err:
         logging.info("Invalid heating target for %s: %s", room, err)
