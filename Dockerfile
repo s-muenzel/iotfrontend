@@ -15,7 +15,7 @@ COPY templates/*.htm /templates/
 
 COPY templates/partials/*.htm /templates/partials/
 
-COPY static/*.png  static/
+COPY static/*.png  static/*.js  static/
 
 EXPOSE 80/tcp
 
