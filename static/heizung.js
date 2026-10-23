@@ -23,14 +23,9 @@ function Werte_Init_Heizung() {
 					targetInput.value = temperature ? temperature.target : "";
 				}
 			});
-			const errorMessage = document.getElementById("heizung_error");
-			errorMessage.textContent = "";
-			errorMessage.hidden = true;
 		})
 		.catch(error => {
 			console.error('Error fetching heating status:', error);
-			const errorMessage = document.getElementById("heizung_error");
-			errorMessage.textContent = "Heizungsdaten konnten nicht geladen werden.";
-			errorMessage.hidden = false;
+			Fehlermeldung("Heizungsdaten konnten nicht geladen werden.");
 		});
 }

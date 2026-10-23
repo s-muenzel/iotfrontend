@@ -18,6 +18,21 @@
 			padding: 16px;
 			font-weight: bold;
 		}
+
+		#fehler_verlauf_dialog {
+			max-height: 80vh;
+			overflow: auto;
+			width: min(600px, calc(100% - 32px));
+			border: 0;
+		}
+
+		#fehler_verlauf_dialog::backdrop {
+			background: rgba(0, 0, 0, 0.5);
+		}
+
+		#fehler_verlauf_button[hidden] {
+			display: none;
+		}
 	</style>
 	<script src="{{ url_for('static', filename='garage.js') }}"></script>
 	<script src="{{ url_for('static', filename='rollos.js') }}"></script>
@@ -58,7 +73,25 @@
 
 		<header class="w3-container w3-theme" style="padding:64px 32px">
 			<h1 class="w3-xxxlarge">Alte Rinne 14</h1>
+			<div id="fehler_meldung" class="w3-panel w3-pale-red w3-leftbar w3-border-red"
+				role="alert" {% if not FehlerMeldung %}hidden{% endif %}>{{ FehlerMeldung or "" }}</div>
+			<button id="fehler_verlauf_button" class="w3-button w3-small w3-red w3-round"
+				type="button" aria-label="Fehlermeldungsverlauf anzeigen" title="Fehlermeldungsverlauf"
+				hidden>
+				<i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+				<span id="fehler_verlauf_anzahl"></span>
+			</button>
 		</header>
+
+		<dialog id="fehler_verlauf_dialog" class="w3-card-4 w3-padding"
+			aria-labelledby="fehler_verlauf_titel">
+			<div class="w3-container">
+				<button id="fehler_verlauf_schliessen" class="w3-button w3-display-topright"
+					type="button" aria-label="Schliessen">&times;</button>
+				<h2 id="fehler_verlauf_titel">Fehlermeldungsverlauf</h2>
+				<ol id="fehler_verlauf_liste" class="w3-ul"></ol>
+			</div>
+		</dialog>
 
 		<div class="w3-container" style="padding:32px">
 			{% include "partials/wetter.htm" %}
@@ -79,6 +112,63 @@
 	</div>
 </body>
 <script>
+	let fehlermeldungTimeout;
+	const fehlermeldungen = [];
+	const maxFehlermeldungen = 20;
+
+	function aktualisiereFehlermeldungsverlauf() {
+		const button = document.getElementById("fehler_verlauf_button");
+		button.hidden = fehlermeldungen.length === 0;
+		document.getElementById("fehler_verlauf_anzahl").textContent = fehlermeldungen.length;
+	}
+
+	function zeigeFehlermeldungsverlauf() {
+		const liste = document.getElementById("fehler_verlauf_liste");
+		liste.replaceChildren();
+		fehlermeldungen.forEach(function (eintrag) {
+			const zeile = document.createElement("li");
+			const zeit = document.createElement("time");
+			zeit.dateTime = eintrag.zeit.toISOString();
+			zeit.textContent = eintrag.zeit.toLocaleString("de-DE");
+			const meldung = document.createElement("div");
+			meldung.textContent = eintrag.meldung;
+			zeile.append(zeit, meldung);
+			liste.append(zeile);
+		});
+		document.getElementById("fehler_verlauf_dialog").showModal();
+	}
+
+	function Fehlermeldung(meldung) {
+		fehlermeldungen.unshift({ meldung: meldung, zeit: new Date() });
+		fehlermeldungen.length = Math.min(fehlermeldungen.length, maxFehlermeldungen);
+		aktualisiereFehlermeldungsverlauf();
+
+		const errorDiv = document.getElementById("fehler_meldung");
+		errorDiv.textContent = meldung;
+		errorDiv.hidden = false;
+		window.clearTimeout(fehlermeldungTimeout);
+		fehlermeldungTimeout = window.setTimeout(function () {
+			errorDiv.hidden = true;
+			errorDiv.textContent = "";
+		}, 10000);
+	}
+
+	document.getElementById("fehler_verlauf_button").addEventListener(
+		"click",
+		zeigeFehlermeldungsverlauf
+	);
+	document.getElementById("fehler_verlauf_schliessen").addEventListener(
+		"click",
+		function () {
+			document.getElementById("fehler_verlauf_dialog").close();
+		}
+	);
+
+	const initialHeatingError = document.getElementById("fehler_meldung");
+	if (!initialHeatingError.hidden && initialHeatingError.textContent.trim()) {
+		Fehlermeldung(initialHeatingError.textContent);
+	}
+
 	// Open and close the sidebar on medium and small screens
 	function w3_open() {
 		document.getElementById("mySidebar").style.display = "block";
