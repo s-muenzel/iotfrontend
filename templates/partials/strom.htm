@@ -1,119 +1,122 @@
 <section data-poll-section="strom">
     <h2 id="strom">Strom</h2>
-        <div class="w3-container w3-padding-32" id="strom_visualization">
-                <svg id="stromSvg" width="800px" height="600px" xmlns="http://www.w3.org/2000/svg">
-                <g id="scale_group" transform="scale(1)">
-                    <defs>
-                        <!-- Pfeil-Objekt -->
-                        <g id="Pfeil">
+    <div class="w3-container w3-padding-32" id="strom_visualization">
+        <svg id="stromSvg" width="800px" height="600px" xmlns="http://www.w3.org/2000/svg">
+            <g id="scale_group" transform="scale(1)">
+                <defs>
+                    <!-- Pfeil-Objekt -->
+                    <g id="Pfeil">
+                        <defs>
+                            <mask id="pfeil_mask">
+                                <rect x="-40" y="-15" width="80" height="30" fill="red" />
+                            </mask>
+                        </defs>
+                        <g id="pfeilgruppe" mask="url(#pfeil_mask)">
                             <defs>
-                                <mask id="pfeil_mask">
-                                    <rect x="-40" y="-15" width="80" height="30" fill="red" />
-                                </mask>
+                                <g id="einzelpfeil">
+                                    <polygon points="0,15 20,0 20,30">
+                                        <animateTransform attributeName="transform" type="translate" values="20,0; 0,0;"
+                                            dur="1s" repeatCount="indefinite" />
+                                    </polygon>
+                                </g>
                             </defs>
-                            <g id="pfeilgruppe" mask="url(#pfeil_mask)">
-                                <defs>
-                                    <g id="einzelpfeil">
-                                        <polygon points="0,15 20,0 20,30">
-                                            <animateTransform attributeName="transform" type="translate"
-                                                values="20,0; 0,0;" dur="1s" repeatCount="indefinite" />
-                                        </polygon>
-                                    </g>
-                                </defs>
-                                <use href="#einzelpfeil" x="-40" y="-15" />
-                                <use href="#einzelpfeil" x="-20" y="-15" />
-                                <use href="#einzelpfeil" x="0" y="-15" />
-                                <use href="#einzelpfeil" x="20" y="-15" />
-                            </g>
+                            <use href="#einzelpfeil" x="-40" y="-15" />
+                            <use href="#einzelpfeil" x="-20" y="-15" />
+                            <use href="#einzelpfeil" x="0" y="-15" />
+                            <use href="#einzelpfeil" x="20" y="-15" />
                         </g>
-                        <!-- Batteriezeichnung -->
-                        <g id="Batterie">
-                            <rect x="10" y="0" width="10" height="15" rx="3" ry="3" fill="black" />
-                            <rect x="55" y="0" width="10" height="15" rx="2" ry="2" fill="black" />
-                            <rect x="0" y="10" width="80" height="70" rx="2" ry="2" fill="white" stroke="black" />
-                            <!-- Hier Füllstand Hintergrund -->
-                            <rect x="0" y="10" width="80" height="0" rx="0" ry="2" fill="green" id="battery_fill" />
-                            <text x="7" y="35" fill="red" font-size="36" font-weight="bold">+</text>
-                            <text x="53" y="35" fill="white" font-size="36" font-weight="bold" stroke="black">-</text>
-                            <!-- Hier Füllstand Text -->
-                            <text x="15" y="60" fill="white" stroke="black" font-size="24" font-weight="bold"
-                                id="battery_per">100%</text>
+                    </g>
+                    <!-- Batteriezeichnung -->
+                    <g id="Batterie">
+                        <rect x="10" y="0" width="10" height="15" rx="3" ry="3" fill="black" />
+                        <rect x="55" y="0" width="10" height="15" rx="2" ry="2" fill="black" />
+                        <rect x="0" y="10" width="80" height="70" rx="2" ry="2" fill="white" stroke="black" />
+                        <!-- Hier Füllstand Hintergrund -->
+                        <rect x="0" y="10" width="80" height="0" rx="0" ry="2" fill="green" id="battery_fill" />
+                        <text x="7" y="35" fill="red" font-size="36" font-weight="bold">+</text>
+                        <text x="53" y="35" fill="white" font-size="36" font-weight="bold" stroke="black">-</text>
+                        <!-- Hier Füllstand Text -->
+                        <text x="15" y="60" fill="white" stroke="black" font-size="24" font-weight="bold"
+                            id="battery_per">100%</text>
+                    </g>
+                    <!-- Solar -->
+                    <filter id="f1" width="12" height="12">
+                        <feOffset in="SourceGraphic" dx="12" dy="12" />
+                        <feGaussianBlur stdDeviation="7" />
+                        <feBlend in="SourceGraphic" in2="blurOut" />
+                    </filter>
+                    <rect id="solar_rect" x="0" y="0" width="20" height="20" fill="white" stroke="black"
+                        stroke-width="1" transform="skewX(-5)" />
+                    <g id="solar_reihe">
+                        <use href="#solar_rect" x="0" y="0" />
+                        <use href="#solar_rect" x="20" y="0" />
+                        <use href="#solar_rect" x="40" y="0" />
+                        <use href="#solar_rect" x="60" y="0" />
+                    </g>
+                    <g id="Solar">
+                        <g id="solar_panel_group" filter="url(#f1)" transform="skewX(-5)">
+                            <!-- Hier Solarpanel -->
+                            <use href="#solar_reihe" x="0" y="0" />
+                            <use href="#solar_reihe" x="0" y="20" />
+                            <use href="#solar_reihe" x="0" y="40" />
+                            <use href="#solar_reihe" x="0" y="60" />
                         </g>
-                        <!-- Solar -->
-                        <filter id="f1" width="12" height="12">
-                            <feOffset in="SourceGraphic" dx="12" dy="12" />
-                            <feGaussianBlur stdDeviation="7" />
-                            <feBlend in="SourceGraphic" in2="blurOut" />
-                        </filter>
-                        <rect id="solar_rect" x="0" y="0" width="20" height="20" fill="white" stroke="black"
-                            stroke-width="1" transform="skewX(-5)" />
-                        <g id="solar_reihe">
-                            <use href="#solar_rect" x="0" y="0" />
-                            <use href="#solar_rect" x="20" y="0" />
-                            <use href="#solar_rect" x="40" y="0" />
-                            <use href="#solar_rect" x="60" y="0" />
-                        </g>
-                        <g id="Solar">
-                            <g id="solar_panel_group" filter="url(#f1)" transform="skewX(-5)">
-                                <!-- Hier Solarpanel -->
-                                <use href="#solar_reihe" x="0" y="0" />
-                                <use href="#solar_reihe" x="0" y="20" />
-                                <use href="#solar_reihe" x="0" y="40" />
-                                <use href="#solar_reihe" x="0" y="60" />
-                            </g>
-                        </g>
-                        <!-- Haus -->
-                        <g id="Haus">
-                            <rect x="0" y="50" width="100" height="75" fill="white" stroke="black" stroke-width="3" />
-                            <polygon points="0,50 50,0 100,50" fill="white" stroke="black" stroke-width="3" />
-                            <rect x="25" y="75" width="25" height="50" fill="white" stroke="black" stroke-width="3" />
-                        </g>
-                    </defs>
+                    </g>
+                    <!-- Haus -->
+                    <g id="Haus">
+                        <rect x="0" y="50" width="100" height="75" fill="white" stroke="black" stroke-width="3" />
+                        <polygon points="0,50 50,0 100,50" fill="white" stroke="black" stroke-width="3" />
+                        <rect x="25" y="75" width="25" height="50" fill="white" stroke="black" stroke-width="3" />
+                    </g>
+                </defs>
 
-                    <use href="#Batterie" x="5" y="170" />
-                    <!-- Hier Batterieleistung -->
-                    <text id="battery_p" x="110" y="240" fill="white" stroke="black" font-size="24"
-                        font-weight="bold">1234W</text>
-                    <!-- Hier Pfeil -->
-                    <g transform="translate(150,200)">
-                        <use id="battery_arrow_lade" href="#Pfeil" fill="green" transform="rotate(0)" />
-                    </g>
-                    <g transform="translate(150,200)">
-                        <use id="battery_arrow_entlade" href="#Pfeil" fill="red" transform="rotate(180)" />
-                    </g>
-
-
-                    <use href="#Solar" x="320" y="0" />
-                    <!-- Hier Solarleistung -->
-                    <text id="solar_p" x="320" y="115" fill="white" stroke="black" font-size="24"
-                        font-weight="bold">1234W</text>
-                    <!-- Hier Pfeil -->
-                    <g transform="translate(350,160)">
-                        <use id="solar_arrow_lade" href="#Pfeil" fill="green" transform="rotate(-90)" />
-                    </g>
-
-                    <use href="#Haus" x="300" y="350" />
-                    <!-- Hier Hausleistung -->
-                    <text id="haus_p" x="320" y="330" fill="white" stroke="black" font-size="24"
-                        font-weight="bold">1234W</text>
-                    <!-- Hier Pfeil -->
-                    <g transform="translate(350,270)">
-                        <use id="haus_arrow_lade" href="#Pfeil" fill="red" transform="rotate(-90)" />
-                    </g>
-
-                    <!-- Grid -->
-                    <image x="580" y="140" height="120" width="160" href="../static/powerline.png" />
-                    <!-- Hier Gridleistung -->
-                    <text id="grid_p" x="460" y="240" fill="white" stroke="black" font-size="24"
-                        font-weight="bold">1234W</text>
-                    <!-- Hier Pfeil -->
-                    <g transform="translate(500,200)">
-                        <use id="grid_arrow_lade" href="#Pfeil" fill="red" transform="rotate(0)" />
-                    </g>
-                    <g transform="translate(500,200)">
-                        <use id="grid_arrow_entlade" href="#Pfeil" fill="green" transform="rotate(180)" />
-                    </g>
+                <use href="#Batterie" x="5" y="170" />
+                <!-- Hier Batterieleistung -->
+                <text id="battery_p" x="110" y="240" fill="white" stroke="black" font-size="24"
+                    font-weight="bold">1234W</text>
+                <!-- Hier Pfeil -->
+                <g transform="translate(150,200)">
+                    <use id="battery_arrow_lade" href="#Pfeil" fill="green" transform="rotate(0)" />
                 </g>
-            </svg>
-        </div>
+                <g transform="translate(150,200)">
+                    <use id="battery_arrow_entlade" href="#Pfeil" fill="red" transform="rotate(180)" />
+                </g>
+
+
+                <use href="#Solar" x="320" y="0" />
+                <!-- Hier Solarleistung -->
+                <text id="solar_p" x="320" y="115" fill="white" stroke="black" font-size="24"
+                    font-weight="bold">1234W</text>
+                <!-- Hier Pfeil -->
+                <g transform="translate(350,160)">
+                    <use id="solar_arrow_lade" href="#Pfeil" fill="green" transform="rotate(-90)" />
+                </g>
+
+                <use href="#Haus" x="300" y="350" />
+                <!-- Hier Hausleistung -->
+                <text id="haus_p" x="320" y="330" fill="white" stroke="black" font-size="24"
+                    font-weight="bold">1234W</text>
+                <!-- Hier Pfeil -->
+                <g transform="translate(350,270)">
+                    <use id="haus_arrow_lade" href="#Pfeil" fill="red" transform="rotate(-90)" />
+                </g>
+
+                <!-- Grid -->
+                <image x="580" y="140" height="120" width="160" href="../static/powerline.png" />
+                <!-- Hier Gridleistung -->
+                <text id="grid_p" x="460" y="240" fill="white" stroke="black" font-size="24"
+                    font-weight="bold">1234W</text>
+                <!-- Hier Pfeil -->
+                <g transform="translate(500,200)">
+                    <use id="grid_arrow_lade" href="#Pfeil" fill="red" transform="rotate(0)" />
+                </g>
+                <g transform="translate(500,200)">
+                    <use id="grid_arrow_entlade" href="#Pfeil" fill="green" transform="rotate(180)" />
+                </g>
+            </g>
+        </svg>
+    </div>
+    <div class="w3-container w3-mobile">Verlauf
+        <a href="http://diskstation.ar14.s-muenzel.de:3000/d/stkb62j/stromverbrauch-ar14?from=now-24h&to=now&timezone=browser">kompakt</a>
+        <a href="http://diskstation.ar14.s-muenzel.de:3000/d/st28p6l/solarstrom?from=now-24h&to=now&timezone=browser">detailliert</a></div>
 </section>
