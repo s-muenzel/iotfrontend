@@ -2,6 +2,23 @@
 from decimal import Decimal, InvalidOperation
 
 
+# Keep in sync with the keys in iotcontroler/controler.py:CHECK_FUNCTIONS.
+CONDITION_TYPES = (
+    "tag",
+    "zeit",
+    "hell",
+    "temp",
+    "heizung_ist",
+    "heizung_soll",
+    "rollo_pos",
+    "rollo_mode",
+    "rollo_last_move",
+)
+
+# Keep in sync with the keys in iotcontroler/controler.py:ACTION_FUNCTIONS.
+ACTION_TYPES = ("mqtt", "fritz")
+
+
 _SPECIAL_ARGUMENT_SCHEMAS = {
     "zeit": {"input": "time", "min": 0, "max": 86340, "step": 60},
     "hell": {"input": "number", "min": 0, "max": 4096, "step": 1},
@@ -65,3 +82,15 @@ def validate_typed_arguments(type_name, values):
             raise ValueError(
                 "Argument {} must use increments of {}".format(index, step)
             )
+
+
+def validate_condition_type(type_name):
+    """Reject condition types that are not supported by the controller."""
+    if type_name not in CONDITION_TYPES:
+        raise ValueError("Select a valid condition type")
+
+
+def validate_action_type(type_name):
+    """Reject action types that are not supported by the controller."""
+    if type_name not in ACTION_TYPES:
+        raise ValueError("Select a valid action type")

@@ -38,11 +38,10 @@
   <fieldset>
     <legend>Aktion</legend>
     <label for="ak_typ">Typ</label><br>
-    <input type="text" list="action_type_list" id="ak_typ" name="ak_typ"
-           value="" data-type-selector><br>
-    <datalist id="action_type_list">
-      {% for item in actiontyp %}<option value="{{ item }}">{% endfor %}
-    </datalist>
+    <select id="ak_typ" name="ak_typ" data-type-selector required>
+      <option value="">Bitte Typ auswählen</option>
+      {% for item in action_types %}<option value="{{ item }}">{{ item }}</option>{% endfor %}
+    </select><br>
     {{ typed_value("add-action-form", "ak_arg1", "1. Argument", "", "ak_typ") }}<br>
     {{ typed_value("add-action-form", "ak_arg2", "2. Argument", "", "ak_typ") }}
   </fieldset>
@@ -50,11 +49,10 @@
   <fieldset>
     <legend>Bedingungen</legend>
     <label for="c_typ">Typ</label><br>
-    <input type="text" list="condition_type_list" id="c_typ" name="c_typ"
-           value="" data-type-selector><br>
-    <datalist id="condition_type_list">
-      {% for item in condtyp %}<option value="{{ item }}">{% endfor %}
-    </datalist>
+    <select id="c_typ" name="c_typ" data-type-selector required>
+      <option value="">Bitte Typ auswählen</option>
+      {% for item in condition_types %}<option value="{{ item }}">{{ item }}</option>{% endfor %}
+    </select><br>
     {{ typed_value("add-action-form", "c_arg1", "1. Argument", "", "c_typ") }}<br>
     {{ typed_value("add-action-form", "c_arg2", "2. Argument", "", "c_typ") }}
   </fieldset>

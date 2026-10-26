@@ -3,7 +3,14 @@ import logging
 from flask import Blueprint, render_template, request, redirect
 import database as db
 import mqtt_handler
-from action_form import build_type_schemas, validate_typed_arguments
+from action_form import (
+    ACTION_TYPES,
+    CONDITION_TYPES,
+    build_type_schemas,
+    validate_action_type,
+    validate_condition_type,
+    validate_typed_arguments,
+)
 
 actions_bp = Blueprint('actions', __name__)
 
@@ -27,16 +34,16 @@ def aktion_add():
     try:
         mqtt_devices = db.get_mqtt_devices()
         triggers = db.get_triggers()
-        action_types = db.get_action_types()
-        condition_types = db.get_condition_types()
+        action_types = list(ACTION_TYPES)
+        condition_types = list(CONDITION_TYPES)
         type_schemas = build_type_schemas(action_types + condition_types)
         
         return render_template(
             'addaction.htm',
             devices=mqtt_devices,
             trigger=triggers,
-            actiontyp=action_types,
-            condtyp=condition_types,
+            action_types=action_types,
+            condition_types=condition_types,
             type_schemas=type_schemas
         )
     except Exception as err:
@@ -66,15 +73,17 @@ def add_aktion():
         c_arg1 = request.values.get("c_arg1", "")
         c_arg2 = request.values.get("c_arg2", "")
         
-        new_id = db.get_next_activity_id()
-        logging.info("New Activity ID is %d", new_id)
-        
         trigger_data = (t_topic, t_min, t_max)
         action_data = (ak_typ, ak_arg1, ak_arg2)
         condition_data = (c_typ, c_arg1, c_arg2)
 
+        validate_action_type(ak_typ)
         validate_typed_arguments(ak_typ, (ak_arg1, ak_arg2))
+        validate_condition_type(c_typ)
         validate_typed_arguments(c_typ, (c_arg1, c_arg2))
+
+        new_id = db.get_next_activity_id()
+        logging.info("New Activity ID is %d", new_id)
         
         if db.create_activity(new_id, a_name, a_dev, a_desc, trigger_data, action_data, condition_data):
             return redirect("/actions", code=307)
@@ -126,9 +135,9 @@ def action(action_id):
     
     try:
         details = db.get_activity_details(action_id)
-        action_types = db.get_action_types()
         type_schemas = build_type_schemas(
-            action_types + details['cond_liste']
+            list(ACTION_TYPES) + list(CONDITION_TYPES) +
+            details['cond_liste'] + [item[0] for item in details['actions']]
         )
         
         return render_template(
@@ -138,9 +147,10 @@ def action(action_id):
             trigger_liste=details['trigger_liste'],
             trigger=details['trigger'],
             cond_liste=details['cond_liste'],
+            condition_types=CONDITION_TYPES,
             conditions=details['conditions'],
             action_liste=details['action_liste'],
-            action_types=action_types,
+            action_types=ACTION_TYPES,
             action=details['actions'],
             actionid=action_id,
             actionname=details['actionname'],
@@ -180,6 +190,7 @@ def add_condition():
     logging.info("adding condition: a0=%s a1=%s a2=%s id=%s", arg0, arg1, arg2, action_id)
     
     try:
+        validate_condition_type(arg0)
         validate_typed_arguments(arg0, (arg1, arg2))
         if db.add_condition(int(action_id), arg0, arg1, arg2):
             return redirect("/action/{}".format(action_id), code=307)
@@ -206,6 +217,10 @@ def submitchange():
     
     try:
         if typ in ("condition", "action"):
+            if typ == "condition":
+                validate_condition_type(arg0)
+            else:
+                validate_action_type(arg0)
             validate_typed_arguments(arg0, (arg1, arg2))
         if db.update_record(typ, arg0, arg1, arg2, int(lfdnr)):
             return redirect("/action/{}".format(action_id), code=307)

@@ -35,9 +35,6 @@
 </datalist>
 
 <h3>Bedingungen</h3>
-<datalist id="condition_type_list">
-  {% for item in cond_liste %}<option value="{{ item }}">{% endfor %}
-</datalist>
 {% for item in conditions %}
 {% set form_id = "condition-" ~ loop.index %}
 <form id="{{ form_id }}" action="/submitchange" data-typed-form data-record-form
@@ -46,8 +43,13 @@
   <input type="hidden" name="lfdnr" value="{{ item[3] }}" data-form-control disabled>
   <input type="hidden" name="actionid" value="{{ actionid }}" data-form-control disabled>
   <label>Typ
-    <input id="{{ form_id }}-type" type="text" name="a0" value="{{ item[0] }}" list="condition_type_list"
-           data-type-selector data-form-control disabled>
+    <select id="{{ form_id }}-type" name="a0" data-type-selector
+            data-form-control disabled required>
+      <option value="">Bitte Typ auswählen</option>
+      {% for condition_type in condition_types %}
+      <option value="{{ condition_type }}" {% if item[0] == condition_type %}selected{% endif %}>{{ condition_type }}</option>
+      {% endfor %}
+    </select>
   </label>
   {% from "partials/typed_value.htm" import typed_value %}
   {{ typed_value(form_id, "a1", "Min", item[1], form_id ~ "-type") }}
@@ -64,8 +66,13 @@
       data-type-schemas='{{ type_schemas|tojson }}' hidden>
   <input type="hidden" name="actionid" value="{{ actionid }}" data-form-control disabled>
   <label>Typ
-    <input id="{{ add_form_id }}-type" type="text" name="a0" value="" list="condition_type_list"
-           data-type-selector data-form-control disabled>
+    <select id="{{ add_form_id }}-type" name="a0" data-type-selector
+            data-form-control disabled required>
+      <option value="">Bitte Typ auswählen</option>
+      {% for condition_type in condition_types %}
+      <option value="{{ condition_type }}">{{ condition_type }}</option>
+      {% endfor %}
+    </select>
   </label>
   {% from "partials/typed_value.htm" import typed_value %}
   {{ typed_value(add_form_id, "a1", "Min", "", add_form_id ~ "-type") }}
@@ -74,9 +81,6 @@
 </form>
 
 <h3>Aktionen</h3>
-<datalist id="action_type_list">
-  {% for item in action_types %}<option value="{{ item }}">{% endfor %}
-</datalist>
 <datalist id="action_argument_list">
   {% for item in action_liste %}<option value="{{ item }}">{% endfor %}
 </datalist>
@@ -88,9 +92,13 @@
   <input type="hidden" name="lfdnr" value="{{ item[3] }}" data-form-control disabled>
   <input type="hidden" name="actionid" value="{{ actionid }}" data-form-control disabled>
   <label>Typ
-    <input id="{{ form_id }}-type" type="text" name="a0" value="{{ item[0] }}"
-           list="action_type_list"
-           data-type-selector data-form-control disabled>
+    <select id="{{ form_id }}-type" name="a0" data-type-selector
+            data-form-control disabled required>
+      <option value="">Bitte Typ auswählen</option>
+      {% for action_type in action_types %}
+      <option value="{{ action_type }}" {% if item[0] == action_type %}selected{% endif %}>{{ action_type }}</option>
+      {% endfor %}
+    </select>
   </label>
   {% from "partials/typed_value.htm" import typed_value %}
   {{ typed_value(form_id, "a1", "Argument 1", item[1], form_id ~ "-type", "action_argument_list") }}
