@@ -3,6 +3,7 @@ import logging
 from flask import Blueprint, render_template, request, redirect
 import database as db
 import mqtt_handler
+from action_form import build_type_schemas, validate_typed_arguments
 
 actions_bp = Blueprint('actions', __name__)
 
@@ -28,13 +29,15 @@ def aktion_add():
         triggers = db.get_triggers()
         action_types = db.get_action_types()
         condition_types = db.get_condition_types()
+        type_schemas = build_type_schemas(action_types + condition_types)
         
         return render_template(
             'addaction.htm',
             devices=mqtt_devices,
             trigger=triggers,
             actiontyp=action_types,
-            condtyp=condition_types
+            condtyp=condition_types,
+            type_schemas=type_schemas
         )
     except Exception as err:
         logging.warning("Error in aktion_add(): %s", str(err))
@@ -69,11 +72,16 @@ def add_aktion():
         trigger_data = (t_topic, t_min, t_max)
         action_data = (ak_typ, ak_arg1, ak_arg2)
         condition_data = (c_typ, c_arg1, c_arg2)
+
+        validate_typed_arguments(ak_typ, (ak_arg1, ak_arg2))
+        validate_typed_arguments(c_typ, (c_arg1, c_arg2))
         
         if db.create_activity(new_id, a_name, a_dev, a_desc, trigger_data, action_data, condition_data):
             return redirect("/actions", code=307)
         else:
             return _error_response("Fehler beim Erstellen der Aktion")
+    except ValueError as err:
+        return _error_response(str(err), status=400)
     except Exception as err:
         logging.warning("Error in add_aktion(): %s", str(err))
         return _error_response("allgemeiner Fehler")
@@ -118,6 +126,10 @@ def action(action_id):
     
     try:
         details = db.get_activity_details(action_id)
+        action_types = db.get_action_types()
+        type_schemas = build_type_schemas(
+            action_types + details['cond_liste']
+        )
         
         return render_template(
             'action.htm',
@@ -128,9 +140,11 @@ def action(action_id):
             cond_liste=details['cond_liste'],
             conditions=details['conditions'],
             action_liste=details['action_liste'],
+            action_types=action_types,
             action=details['actions'],
             actionid=action_id,
-            actionname=details['actionname']
+            actionname=details['actionname'],
+            type_schemas=type_schemas
         )
     except Exception as err:
         logging.warning("Error in action(): %s", str(err))
@@ -166,10 +180,13 @@ def add_condition():
     logging.info("adding condition: a0=%s a1=%s a2=%s id=%s", arg0, arg1, arg2, action_id)
     
     try:
+        validate_typed_arguments(arg0, (arg1, arg2))
         if db.add_condition(int(action_id), arg0, arg1, arg2):
             return redirect("/action/{}".format(action_id), code=307)
         else:
             return _error_response("Fehler beim Hinzufügen der Bedingung")
+    except ValueError as err:
+        return _error_response(str(err), status=400)
     except Exception as err:
         logging.warning("Error in add_condition(): %s", str(err))
         return _error_response("allgemeiner Fehler")
@@ -188,10 +205,14 @@ def submitchange():
     logging.info("change of %s: %s %s %s", typ, arg0, arg1, arg2)
     
     try:
+        if typ in ("condition", "action"):
+            validate_typed_arguments(arg0, (arg1, arg2))
         if db.update_record(typ, arg0, arg1, arg2, int(lfdnr)):
             return redirect("/action/{}".format(action_id), code=307)
         else:
             return _error_response("Fehler beim Aktualisieren")
+    except ValueError as err:
+        return _error_response(str(err), status=400)
     except Exception as err:
         logging.warning("Error in submitchange(): %s", str(err))
         return _error_response("allgemeiner Fehler")
@@ -205,15 +226,16 @@ def reload_aktions():
     return redirect("/actions", code=307)
 
 
-def _error_response(message):
+def _error_response(message, status=200):
     """Generate error response HTML.
     
     Args:
         message: Error message to display
         
     Returns:
-        str: HTML error page
+        tuple: HTML error page and HTTP status
     """
-    return ('<!DOCTYPE html><html><head><meta charset="UTF-8">'
-            '<title>Fehler</title></head>'
-            '<body><h1>{}</h1></body></html>'.format(message))
+    response = ('<!DOCTYPE html><html><head><meta charset="UTF-8">'
+                '<title>Fehler</title></head>'
+                '<body><h1>{}</h1></body></html>'.format(message))
+    return response, status

@@ -1,0 +1,15 @@
+{% macro typed_value(form_id, parameter_name, label, value, type_selector_id, list_id='') -%}
+<span class="typed-value" data-parameter="{{ parameter_name }}"
+      data-type-selector-id="{{ type_selector_id }}">
+  <input type="hidden" form="{{ form_id }}" name="{{ parameter_name }}"
+         value="{{ value }}" data-canonical-value disabled>
+  {% for input_kind in ('text', 'time', 'number') %}
+  <label data-typed-control="{{ input_kind }}" hidden>
+    {{ label }}
+    <input type="{{ input_kind }}" form="{{ form_id }}" data-value-control
+           {% if input_kind == 'text' and list_id %}list="{{ list_id }}"{% endif %}
+           disabled>
+  </label>
+  {% endfor %}
+</span>
+{%- endmacro %}
