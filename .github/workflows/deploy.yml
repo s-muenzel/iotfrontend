@@ -3,7 +3,7 @@ name: Sync fritz_handler to iotcontroler
 on:
   push:
     branches:
-      - main
+      - master
     paths:
       - "fritz_handler.py"
 
