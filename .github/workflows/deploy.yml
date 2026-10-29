@@ -1,4 +1,4 @@
-name: Sync fritz_handler to iotcontroler
+name: Sync files to iotcontroler
 
 on:
   push:
@@ -6,6 +6,8 @@ on:
       - master
     paths:
       - "fritz_handler.py"
+      - "Check_Types.md"
+      - "check_types.py"
 
   # Allows manual execution from the GitHub Actions UI
   workflow_dispatch:
@@ -29,10 +31,12 @@ jobs:
           token: ${{ secrets.IOTCONTROLER_PAT }}
           path: iotcontroler
 
-      # Copy fritz.py
-      - name: Copy fritz_handler.py
+      # Copy files managed by this workflow
+      - name: Copy files
         run: |
           cp iotfrontend/fritz_handler.py iotcontroler/fritz_handler.py
+          cp iotfrontend/Check_Types.md iotcontroler/Check_Types.md
+          cp iotfrontend/check_types.py iotcontroler/check_types.py
 
       # Commit and push only if the file actually changed
       - name: Commit and push changes
@@ -41,12 +45,12 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add fritz_handler.py
+          git add fritz_handler.py Check_Types.md check_types.py
 
           if git diff --cached --quiet; then
-            echo "No changes detected in fritz_handler.py"
+            echo "No changes detected in synced files"
             exit 0
           fi
 
-          git commit -m "Update fritz.py from frontend"
+          git commit -m "Sync files from frontend"
           git push
