@@ -137,7 +137,9 @@ def action(action_id):
         details = db.get_activity_details(action_id)
         type_schemas = build_type_schemas(
             list(ACTION_TYPES) + list(CONDITION_TYPES) +
-            details['cond_liste'] + [item[0] for item in details['actions']]
+            details['cond_liste'] +
+            [item[0] for item in details['trigger']] +
+            [item[0] for item in details['actions']]
         )
         
         return render_template(

@@ -5,8 +5,9 @@
     const schemas = JSON.parse(form.dataset.typeSchemas || "{}");
     const selector = document.getElementById(field.dataset.typeSelectorId);
     const selectedType = selector.value;
+    const schemaArgument = field.dataset.parameter.replace(/^a/, "arg");
     return (schemas[selectedType] &&
-      schemas[selectedType][field.dataset.parameter]) ||
+      schemas[selectedType][schemaArgument]) ||
       { input: "text" };
   }
 
@@ -46,8 +47,10 @@
       label.hidden = !active;
       const input = label.querySelector("[data-value-control]");
       input.disabled = !active || canonical.disabled;
-      input.min = schema.min === undefined ? "" : schema.min;
-      input.max = schema.max === undefined ? "" : schema.max;
+      input.min = schema.min === undefined ? "" :
+        displayValue(String(schema.min), schema);
+      input.max = schema.max === undefined ? "" :
+        displayValue(String(schema.max), schema);
       input.step = schema.step === undefined ? "any" : schema.step;
       if (active) {
         input.value = displayValue(canonical.value, schema);

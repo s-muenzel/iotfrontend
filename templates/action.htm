@@ -11,28 +11,28 @@
 <p>Gerät: {{ device }} ({{ deviceid }})</p>
 
 <h3>Trigger</h3>
+<datalist id="trigger_liste">
+  {% for item in trigger_liste %}<option value="{{ item }}">{% endfor %}
+</datalist>
+{% from "partials/typed_value.htm" import typed_value %}
 {% for item in trigger %}
-<form action="/submitchange" data-record-form>
-  <input type="hidden" name="typ" value="trigger" data-form-control>
-  <input type="hidden" name="lfdnr" value="{{ item[3] }}" data-form-control>
-  <input type="hidden" name="actionid" value="{{ actionid }}" data-form-control>
+{% set form_id = "trigger-" ~ loop.index %}
+<form id="{{ form_id }}" action="/submitchange" data-typed-form data-record-form
+      data-type-schemas='{{ type_schemas|tojson }}'>
+  <input type="hidden" name="typ" value="trigger" data-form-control disabled>
+  <input type="hidden" name="lfdnr" value="{{ item[3] }}" data-form-control disabled>
+  <input type="hidden" name="actionid" value="{{ actionid }}" data-form-control disabled>
   <label>Topic
-    <input type="text" name="a0" value="{{ item[0] }}" list="trigger_liste" data-form-control disabled>
+    <input id="{{ form_id }}-type" type="text" name="a0" value="{{ item[0] }}"
+           list="trigger_liste" data-type-selector data-form-control disabled>
   </label>
-  <label>Min
-    <input type="text" name="a1" value="{{ item[1] }}" data-form-control disabled>
-  </label>
-  <label>Max
-    <input type="text" name="a2" value="{{ item[2] }}" data-form-control disabled>
-  </label>
+  {{ typed_value(form_id, "a1", "Min", item[1], form_id ~ "-type") }}
+  {{ typed_value(form_id, "a2", "Max", item[2], form_id ~ "-type") }}
   <button type="button" data-edit-button>Bearbeiten</button>
   <button type="submit" data-save-button hidden>OK</button>
   <button type="button" data-cancel-button hidden>Abbrechen</button>
 </form>
 {% endfor %}
-<datalist id="trigger_liste">
-  {% for item in trigger_liste %}<option value="{{ item }}">{% endfor %}
-</datalist>
 
 <h3>Bedingungen</h3>
 {% for item in conditions %}
@@ -51,7 +51,6 @@
       {% endfor %}
     </select>
   </label>
-  {% from "partials/typed_value.htm" import typed_value %}
   {{ typed_value(form_id, "a1", "Min", item[1], form_id ~ "-type") }}
   {{ typed_value(form_id, "a2", "Max", item[2], form_id ~ "-type") }}
   <button type="button" data-edit-button>Bearbeiten</button>
@@ -100,7 +99,6 @@
       {% endfor %}
     </select>
   </label>
-  {% from "partials/typed_value.htm" import typed_value %}
   {{ typed_value(form_id, "a1", "Argument 1", item[1], form_id ~ "-type", "action_argument_list") }}
   {{ typed_value(form_id, "a2", "Argument 2", item[2], form_id ~ "-type") }}
   <button type="button" data-edit-button>Bearbeiten</button>
