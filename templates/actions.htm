@@ -3,41 +3,86 @@
 
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Alte Rinne 14 - IOT Regeln</title>
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+  <link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-teal.css">
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css"
     integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+  <style>
+    body {
+      font-family: "Roboto", sans-serif;
+    }
+
+    .w3-table-all td,
+    .w3-table-all th {
+      vertical-align: middle;
+    }
+  </style>
 </head>
 
 <body>
-  <h1>
-    Alte Rinne 14 - IOT Regeln
-  </h1>
-  <table id="T">
-    <tr>
-      <th></th>
-      <th>Regel</th>
-      <th>Beschreibung</th>
-    </tr>
-    {% for item in eintraege %}
-    <tr>
-      <td><i onclick="aktion_remove({{ item[1] }})" class="fas fa-minus"></i></td>
-      <td><a href="/action/{{ item[1] }}">{{ item[0] }}</a></td>
-      <td> {% if item[3] %} - {{ item[3] }}{% endif %}</td>
-      <td>
-        {% if item[2]>0 %}
-        <a href="/aktion/SchalteUm/{{ item[1] }}"><i class="fas fa-toggle-on" style="color:green"></i></a>
-        {% else %}
-        <a href="/aktion/SchalteUm/{{ item[1] }}"><i class="fas fa-toggle-off" style="color:red"></i></a>
-        {% endif %}
-      </td>
-    </tr>
-    {% endfor %}
-    <tr>
-      <td><a href="/aktion/add"><small><i class="fas fa-plus"></i></small></a></td>
-    </tr>
-  </table>
-  <p>Regeln geändert? Dann <a href="/reloadaktions">hier</a> neu laden</p>
-  <p><a href="/">zurück</a></p>
+  <header class="w3-container w3-theme w3-padding-32">
+    <h1 class="w3-xxxlarge">Alte Rinne 14 - IOT Regeln</h1>
+  </header>
+
+  <main class="w3-content w3-padding-32" style="max-width:1100px">
+    <section class="w3-card-4 w3-white">
+      <div class="w3-container w3-theme-l4">
+        <h2>Regeln</h2>
+      </div>
+      <div class="w3-responsive">
+        <table id="T" class="w3-table-all w3-hoverable">
+          <thead>
+            <tr class="w3-theme">
+              <th scope="col">Aktionen</th>
+              <th scope="col">Regel</th>
+              <th scope="col">Beschreibung</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in eintraege %}
+            <tr>
+              <td>
+                <button class="w3-button w3-round w3-pale-red w3-text-red" type="button"
+                  onclick="aktion_remove({{ item[1] }})" aria-label="Regel {{ item[0] }} löschen"
+                  title="Regel löschen">
+                  <i class="fas fa-minus" aria-hidden="true"></i>
+                </button>
+              </td>
+              <td><a class="w3-text-teal" href="/action/{{ item[1] }}">{{ item[0] }}</a></td>
+              <td>{% if item[3] %}{{ item[3] }}{% endif %}</td>
+              <td>
+                <a class="w3-button w3-round {% if item[2]>0 %}w3-pale-green w3-text-green{% else %}w3-pale-red w3-text-red{% endif %}"
+                  href="/aktion/SchalteUm/{{ item[1] }}" aria-label="Status von {{ item[0] }} umschalten"
+                  title="Status umschalten">
+                  {% if item[2]>0 %}
+                  <i class="fas fa-toggle-on" aria-hidden="true"></i> Aktiv
+                  {% else %}
+                  <i class="fas fa-toggle-off" aria-hidden="true"></i> Inaktiv
+                  {% endif %}
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="w3-container w3-padding">
+        <a class="w3-button w3-theme w3-round" href="/aktion/add">
+          <i class="fas fa-plus" aria-hidden="true"></i> Regel hinzufügen
+        </a>
+      </div>
+    </section>
+
+    <div class="w3-panel w3-pale-yellow w3-leftbar w3-border-yellow">
+      <p>Regeln geändert? Dann <a class="w3-text-teal" href="/reloadaktions">hier neu laden</a>.</p>
+    </div>
+    <p><a class="w3-button w3-light-grey w3-round" href="/"><i class="fas fa-arrow-left"
+          aria-hidden="true"></i> Zurück</a></p>
+  </main>
+
   <script>
     function aktion_remove(n) {
       if (confirm("Regel löschen (kein Undo!)")) {
