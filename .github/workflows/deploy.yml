@@ -1,0 +1,52 @@
+name: Sync fritz_handler to iotcontroler
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "fritz_handler.py"
+
+  # Allows manual execution from the GitHub Actions UI
+  workflow_dispatch:
+
+jobs:
+  sync-fritz:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the frontend repository
+      - name: Checkout iotfrontend
+        uses: actions/checkout@v4
+        with:
+          path: iotfrontend
+
+      # Checkout the controler repository
+      - name: Checkout controler
+        uses: actions/checkout@v4
+        with:
+          repository: s-muenzel/iotcontroler
+          token: ${{ secrets.IOTCONTROLER_PAT }}
+          path: iotcontroler
+
+      # Copy fritz.py
+      - name: Copy fritz_handler.py
+        run: |
+          cp iotfrontend/fritz_handler.py iotcontroler/fritz_handler.py
+
+      # Commit and push only if the file actually changed
+      - name: Commit and push changes
+        working-directory: iotcontroler
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add fritz_handler.py
+
+          if git diff --cached --quiet; then
+            echo "No changes detected in fritz_handler.py"
+            exit 0
+          fi
+
+          git commit -m "Update fritz.py from frontend"
+          git push

@@ -1,4 +1,4 @@
-"""FRITZ!Box Smart Home thermostat access."""
+"""FRITZ!Box Smart Home thermostat access."""^
 import hashlib
 import json
 import logging
