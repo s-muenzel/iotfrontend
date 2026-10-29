@@ -26,8 +26,8 @@
     <input id="{{ form_id }}-type" type="text" name="a0" value="{{ item[0] }}"
            list="trigger_liste" data-type-selector data-form-control disabled>
   </label>
-  {{ typed_value(form_id, "a1", "Min", item[1], form_id ~ "-type") }}
-  {{ typed_value(form_id, "a2", "Max", item[2], form_id ~ "-type") }}
+  {{ typed_value(form_id, "a1", "Min", item[1], form_id ~ "-type", tag_values=tag_values) }}
+  {{ typed_value(form_id, "a2", "Max", item[2], form_id ~ "-type", tag_values=tag_values) }}
   <button type="button" data-edit-button>Bearbeiten</button>
   <button type="submit" data-save-button hidden>OK</button>
   <button type="button" data-cancel-button hidden>Abbrechen</button>
@@ -51,8 +51,8 @@
       {% endfor %}
     </select>
   </label>
-  {{ typed_value(form_id, "a1", "Min", item[1], form_id ~ "-type") }}
-  {{ typed_value(form_id, "a2", "Max", item[2], form_id ~ "-type") }}
+  {{ typed_value(form_id, "a1", "Min", item[1], form_id ~ "-type", tag_values=tag_values) }}
+  {{ typed_value(form_id, "a2", "Max", item[2], form_id ~ "-type", tag_values=tag_values) }}
   <button type="button" data-edit-button>Bearbeiten</button>
   <button type="submit" data-save-button hidden>OK</button>
   <button type="button" data-cancel-button hidden>Abbrechen</button>
@@ -74,8 +74,8 @@
     </select>
   </label>
   {% from "partials/typed_value.htm" import typed_value %}
-  {{ typed_value(add_form_id, "a1", "Min", "", add_form_id ~ "-type") }}
-  {{ typed_value(add_form_id, "a2", "Max", "", add_form_id ~ "-type") }}
+  {{ typed_value(add_form_id, "a1", "Min", "", add_form_id ~ "-type", tag_values=tag_values) }}
+  {{ typed_value(add_form_id, "a2", "Max", "", add_form_id ~ "-type", tag_values=tag_values) }}
   <button type="submit" data-save-button hidden>Hinzufügen</button>
 </form>
 
@@ -99,8 +99,8 @@
       {% endfor %}
     </select>
   </label>
-  {{ typed_value(form_id, "a1", "Argument 1", item[1], form_id ~ "-type", "action_argument_list") }}
-  {{ typed_value(form_id, "a2", "Argument 2", item[2], form_id ~ "-type") }}
+  {{ typed_value(form_id, "a1", "Argument 1", item[1], form_id ~ "-type", "action_argument_list", tag_values) }}
+  {{ typed_value(form_id, "a2", "Argument 2", item[2], form_id ~ "-type", tag_values=tag_values) }}
   <button type="button" data-edit-button>Bearbeiten</button>
   <button type="submit" data-save-button hidden>OK</button>
   <button type="button" data-cancel-button hidden>Abbrechen</button>

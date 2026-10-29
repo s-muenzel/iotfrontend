@@ -42,8 +42,8 @@
       <option value="">Bitte Typ auswählen</option>
       {% for item in action_types %}<option value="{{ item }}">{{ item }}</option>{% endfor %}
     </select><br>
-    {{ typed_value("add-action-form", "ak_arg1", "1. Argument", "", "ak_typ") }}<br>
-    {{ typed_value("add-action-form", "ak_arg2", "2. Argument", "", "ak_typ") }}
+    {{ typed_value("add-action-form", "ak_arg1", "1. Argument", "", "ak_typ", tag_values=tag_values) }}<br>
+    {{ typed_value("add-action-form", "ak_arg2", "2. Argument", "", "ak_typ", tag_values=tag_values) }}
   </fieldset>
 
   <fieldset>
@@ -53,8 +53,8 @@
       <option value="">Bitte Typ auswählen</option>
       {% for item in condition_types %}<option value="{{ item }}">{{ item }}</option>{% endfor %}
     </select><br>
-    {{ typed_value("add-action-form", "c_arg1", "1. Argument", "", "c_typ") }}<br>
-    {{ typed_value("add-action-form", "c_arg2", "2. Argument", "", "c_typ") }}
+    {{ typed_value("add-action-form", "c_arg1", "Min", "", "c_typ", tag_values=tag_values) }}<br>
+    {{ typed_value("add-action-form", "c_arg2", "Max", "", "c_typ", tag_values=tag_values) }}
   </fieldset>
   <input type="submit" value="Submit">
 </form>

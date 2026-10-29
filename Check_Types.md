@@ -11,7 +11,7 @@
         Feiertag	Bit 9	1000000000	512
     "zeit": Sekunden seit Mitternacht (0-86399)
     "hell": Lux (0-65535)
-    "temp": °C (-35 - 100)
+    "temp": °C (-35 - 50)
     "heizung_ist": °C (-10 - 45)
     "heizung_soll": °C (0: off, 8 - 28)
     "rollo_pos": Percentage (0-100),
@@ -25,3 +25,6 @@ qualifier bits are additional conditions: `Werktag` means Monday-Friday except
 public holidays, `Wochenende` means Saturday or Sunday, and `Feiertag` means
 the holiday API reports a holiday. If several qualifiers are selected, all
 must match.
+For "tag" at least one weekday or one qualifier must be present, but multiple selections are allowed.
+For qualifiers only `Feiertag` and `Wochenende` can be present at the same time.
+ 

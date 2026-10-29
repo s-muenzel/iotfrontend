@@ -6,6 +6,7 @@ import mqtt_handler
 from action_form import (
     ACTION_TYPES,
     CONDITION_TYPES,
+    TAG_BITS,
     build_type_schemas,
     validate_action_type,
     validate_condition_type,
@@ -44,6 +45,7 @@ def aktion_add():
             trigger=triggers,
             action_types=action_types,
             condition_types=condition_types,
+            tag_values=TAG_BITS,
             type_schemas=type_schemas
         )
     except Exception as err:
@@ -156,6 +158,7 @@ def action(action_id):
             action=details['actions'],
             actionid=action_id,
             actionname=details['actionname'],
+            tag_values=TAG_BITS,
             type_schemas=type_schemas
         )
     except Exception as err:
@@ -217,6 +220,8 @@ def submitchange():
     
     logging.info("change of %s: %s %s %s", typ, arg0, arg1, arg2)
     
+    if arg0 == "tag" and arg2 == "": # für typ "tag" ist arg2 leer - muss aber als 0 in die Datenbank geschrieben werden
+        arg2 = 0
     try:
         if typ in ("condition", "action"):
             if typ == "condition":

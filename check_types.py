@@ -23,7 +23,7 @@ CHECK_TYPE_RANGES = {
     "tag": ((0, TAG_MASK),),
     "zeit": ((0, 86399),),
     "hell": ((0, 65535),),
-    "temp": ((-35, 100),),
+    "temp": ((-35, 50),),
     "heizung_ist": ((-10, 45),),
     "heizung_soll": ((0, 0), (8, 28)),
     "rollo_pos": ((0, 100),),

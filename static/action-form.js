@@ -5,7 +5,8 @@
     const schemas = JSON.parse(form.dataset.typeSchemas || "{}");
     const selector = document.getElementById(field.dataset.typeSelectorId);
     const selectedType = selector.value;
-    const schemaArgument = field.dataset.parameter.replace(/^a/, "arg");
+    const argumentMatch = field.dataset.parameter.match(/(?:^a|_arg)([12])$/);
+    const schemaArgument = argumentMatch ? "arg" + argumentMatch[1] : "";
     return (schemas[selectedType] &&
       schemas[selectedType][schemaArgument]) ||
       { input: "text" };
@@ -35,6 +36,18 @@
     return String(hours * 3600 + minutes * 60);
   }
 
+  function rangeError(displayedValue, schema) {
+    if (displayedValue === "" || !schema.ranges) {
+      return "";
+    }
+
+    const value = Number(canonicalValue(displayedValue, schema));
+    const allowed = schema.ranges.some(function (range) {
+      return value >= range[0] && value <= range[1];
+    });
+    return allowed ? "" : "Wert liegt außerhalb des erlaubten Typbereichs.";
+  }
+
   function updateField(form, field) {
     const schema = schemaFor(form, field);
     const canonical = field.querySelector("[data-canonical-value]");
@@ -46,16 +59,67 @@
       const active = label === activeLabel;
       label.hidden = !active;
       const input = label.querySelector("[data-value-control]");
+      if (!input) {
+        return;
+      }
       input.disabled = !active || canonical.disabled;
-      input.min = schema.min === undefined ? "" :
-        displayValue(String(schema.min), schema);
-      input.max = schema.max === undefined ? "" :
-        displayValue(String(schema.max), schema);
-      input.step = schema.step === undefined ? "any" : schema.step;
+      input.required = active && schema.input === "tag";
+      if (schema.input !== "tag") {
+        input.setCustomValidity("");
+      }
+      if (input instanceof HTMLInputElement) {
+        input.min = schema.min === undefined ? "" :
+          displayValue(String(schema.min), schema);
+        input.max = schema.max === undefined ? "" :
+          displayValue(String(schema.max), schema);
+        input.step = schema.step === undefined ? "any" : schema.step;
+      }
       if (active) {
-        input.value = displayValue(canonical.value, schema);
+        if (schema.input === "tag") {
+          const mask = Number(canonical.value);
+          let selectedMask = 0;
+          Array.from(input.options).forEach(function (option) {
+            const bit = Number(option.value);
+            option.selected = Number.isInteger(mask) && mask > 0 &&
+              (mask & bit) === bit;
+            if (option.selected) {
+              selectedMask |= bit;
+            }
+          });
+          input.setCustomValidity(tagSelectionError(schema, mask, selectedMask));
+        } else {
+          input.value = displayValue(canonical.value, schema);
+          input.setCustomValidity(rangeError(input.value, schema));
+        }
       }
     });
+  }
+
+  function tagSelectionError(schema, mask, selectedMask) {
+    if (!Number.isInteger(mask) || mask <= 0 || selectedMask !== mask) {
+      return "Bitte mindestens einen gültigen Tag auswählen.";
+    }
+
+    const selectedNames = new Set(
+      Object.entries(schema.options || {})
+        .filter(function (entry) {
+          return (mask & Number(entry[1])) === Number(entry[1]);
+        })
+        .map(function (entry) {
+          return entry[0];
+        })
+    );
+    const incompatible = schema.incompatible || [];
+    const hasConflict = incompatible.some(function (combination) {
+      return combination.every(function (name) {
+        return selectedNames.has(name);
+      });
+    });
+    if (hasConflict) {
+      return "Werktag kann nicht mit Wochenende oder Feiertag kombiniert werden.";
+    }
+
+    return "";
   }
 
   function synchronizeField(field) {
@@ -66,9 +130,21 @@
     const activeInput = field.querySelector(
       '[data-typed-control="' + schema.input + '"] [data-value-control]'
     );
-    if (activeInput) {
-      field.querySelector("[data-canonical-value]").value =
-        canonicalValue(activeInput.value, schema);
+    const canonical = field.querySelector("[data-canonical-value]");
+    if (schema.input === "none") {
+      canonical.value = "";
+    } else if (activeInput && schema.input === "tag") {
+      const selectedMask = Array.from(activeInput.selectedOptions)
+        .reduce(function (mask, option) {
+          return mask | Number(option.value);
+        }, 0);
+      canonical.value = selectedMask ? String(selectedMask) : "";
+      activeInput.setCustomValidity(
+        tagSelectionError(schema, selectedMask, selectedMask)
+      );
+    } else if (activeInput) {
+      canonical.value = canonicalValue(activeInput.value, schema);
+      activeInput.setCustomValidity(rangeError(activeInput.value, schema));
     }
   }
 
