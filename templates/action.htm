@@ -7,8 +7,31 @@
 </head>
 <body>
 <h1>Alte Rinne 14 - IOT Regel-Details</h1>
-<h2>Regel: {{ actionname }}</h2>
-<p>Gerät: {{ device }} ({{ deviceid }})</p>
+<form id="activity-details" action="/update_activity" method="post"
+      data-record-form>
+  <input type="hidden" name="actionid" value="{{ actionid }}" data-form-control disabled>
+  <label for="activity-name">Regelname</label>
+  <input type="text" id="activity-name" name="a_name" value="{{ actionname }}"
+         data-form-control disabled required>
+  <label for="activity-description">Beschreibung</label>
+  <input type="text" id="activity-description" name="a_desc"
+         value="{{ description }}" data-form-control disabled>
+  <label for="activity-device">Gerät (Geräte-ID / MQTT-Präfix)</label>
+  <select id="activity-device" name="a_dev" data-form-control disabled>
+    {% if deviceid and deviceid not in device_ids %}
+    <option value="{{ deviceid }}" selected>{{ device }} ({{ deviceid }})</option>
+    {% endif %}
+    {% for activity_device in devices %}
+    <option value="{{ activity_device[1] }}"
+            {% if activity_device[1] == deviceid %}selected{% endif %}>
+      {{ activity_device[0] }} ({{ activity_device[1] }})
+    </option>
+    {% endfor %}
+  </select>
+  <button type="button" data-edit-button>Bearbeiten</button>
+  <button type="submit" data-save-button hidden>Speichern</button>
+  <button type="button" data-cancel-button hidden>Abbrechen</button>
+</form>
 
 <h3>Trigger</h3>
 <datalist id="trigger_liste">

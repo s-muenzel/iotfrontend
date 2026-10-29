@@ -137,6 +137,7 @@ def action(action_id):
     
     try:
         details = db.get_activity_details(action_id)
+        devices = db.get_activity_devices()
         type_schemas = build_type_schemas(
             list(ACTION_TYPES) + list(CONDITION_TYPES) +
             details['cond_liste'] +
@@ -158,11 +159,38 @@ def action(action_id):
             action=details['actions'],
             actionid=action_id,
             actionname=details['actionname'],
+            description=details['description'],
+            devices=devices,
+            device_ids={item[1] for item in devices},
             tag_values=TAG_BITS,
             type_schemas=type_schemas
         )
     except Exception as err:
         logging.warning("Error in action(): %s", str(err))
+        return _error_response("allgemeiner Fehler")
+
+
+@actions_bp.route('/update_activity', methods=["POST"])
+def update_activity():
+    """Update an activity's name, description, or assigned device."""
+    action_id = request.form.get("actionid", "")
+    name = request.form.get("a_name", "").strip()
+    description = request.form.get("a_desc", "")
+    device_id = request.form.get("a_dev", "")
+
+    if not name:
+        return _error_response("Regelname darf nicht leer sein", status=400)
+
+    try:
+        action_id = int(action_id)
+        if db.update_activity_details(
+                action_id, name, description, device_id):
+            return redirect("/action/{}".format(action_id), code=303)
+        return _error_response("Fehler beim Aktualisieren der Regel")
+    except ValueError as err:
+        return _error_response(str(err), status=400)
+    except Exception as err:
+        logging.warning("Error in update_activity(): %s", str(err))
         return _error_response("allgemeiner Fehler")
 
 

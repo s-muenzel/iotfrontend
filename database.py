@@ -262,6 +262,7 @@ def get_activity_details(action_id):
     """
     result = {
         'actionname': 'unbekannt',
+        'description': '',
         'devicename': 'unbekannt',
         'geraetname': 'unbekannt',
         'trigger_liste': [],
@@ -277,15 +278,16 @@ def get_activity_details(action_id):
 
         # Get activity info
         cursor = db_connection.cursor()
-        cursor.execute("SELECT activities.name as name, activities.device as device, "
-                       "device.name as geraet "
-                       "FROM activities INNER JOIN device ON "
+        cursor.execute("SELECT activities.name as name, activities.description, "
+                       "activities.device as device, device.name as geraet "
+                       "FROM activities LEFT JOIN device ON "
                        "activities.device = device.mqtt_name "
-                       "WHERE id='{}'".format(action_id))
-        for name, device, geraet in cursor:
+                       "WHERE activities.id='{}'".format(action_id))
+        for name, description, device, geraet in cursor:
             result['actionname'] = name
-            result['devicename'] = device
-            result['geraetname'] = geraet
+            result['description'] = description or ''
+            result['devicename'] = device or ''
+            result['geraetname'] = geraet or 'unbekannt'
         cursor.close()
 
         # Get all available triggers
@@ -335,6 +337,25 @@ def get_activity_details(action_id):
         logging.warning("Database failure: %s", err)
 
     return result
+
+
+def get_activity_devices():
+    """Fetch registered devices that can be assigned to an activity."""
+    devices = []
+    try:
+        db_connection = get_connection()
+        cursor = db_connection.cursor()
+        cursor.execute(
+            "SELECT name, mqtt_name FROM device "
+            "WHERE mqtt_name IS NOT NULL AND mqtt_name != '' ORDER BY name"
+        )
+        devices = [[name, mqtt_name] for name, mqtt_name in cursor]
+        cursor.close()
+        db_connection.close()
+    except mariadb.Error as err:
+        logging.warning("Database failure: %s", err)
+
+    return devices
 
 
 def get_mqtt_devices():
@@ -509,6 +530,25 @@ def update_activity_status(activity_id):
         cursor.execute(sql_str)
         cursor.close()
         db_connection.commit()
+        db_connection.close()
+        return True
+    except mariadb.Error as err:
+        logging.warning("Database failure: %s", err)
+        return False
+
+
+def update_activity_details(activity_id, name, description, device_id):
+    """Update an activity's editable identifying information."""
+    try:
+        db_connection = get_connection()
+        cursor = db_connection.cursor()
+        cursor.execute(
+            "UPDATE activities SET name=%s, description=%s, device=%s "
+            "WHERE id=%s",
+            (name, description, device_id, activity_id)
+        )
+        db_connection.commit()
+        cursor.close()
         db_connection.close()
         return True
     except mariadb.Error as err:
