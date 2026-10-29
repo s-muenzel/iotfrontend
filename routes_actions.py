@@ -33,15 +33,16 @@ def aktion_add():
     """Web handler for /aktion/add - Form to create new action."""
     logging.info("aktion_add")
     try:
-        mqtt_devices = db.get_mqtt_devices()
+        devices = db.get_activity_devices()
         triggers = db.get_triggers()
         action_types = list(ACTION_TYPES)
         condition_types = list(CONDITION_TYPES)
         type_schemas = build_type_schemas(action_types + condition_types)
         
         return render_template(
-            'addaction.htm',
-            devices=mqtt_devices,
+            'action.htm',
+            is_new=True,
+            devices=devices,
             trigger=triggers,
             action_types=action_types,
             condition_types=condition_types,
@@ -75,14 +76,16 @@ def add_aktion():
         c_arg1 = request.values.get("c_arg1", "")
         c_arg2 = request.values.get("c_arg2", "")
         
-        trigger_data = (t_topic, t_min, t_max)
-        action_data = (ak_typ, ak_arg1, ak_arg2)
-        condition_data = (c_typ, c_arg1, c_arg2)
-
         validate_action_type(ak_typ)
         validate_typed_arguments(ak_typ, (ak_arg1, ak_arg2))
         validate_condition_type(c_typ)
         validate_typed_arguments(c_typ, (c_arg1, c_arg2))
+        if c_typ == "tag":
+            c_arg2 = "0"
+
+        trigger_data = (t_topic, t_min, t_max)
+        action_data = (ak_typ, ak_arg1, ak_arg2)
+        condition_data = (c_typ, c_arg1, c_arg2)
 
         new_id = db.get_next_activity_id()
         logging.info("New Activity ID is %d", new_id)

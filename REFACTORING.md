@@ -35,8 +35,9 @@ aware: Rollos, Garage, Leuchten, and Strom update every 10 seconds while
 visible; Heizung fetches readings when visible and refreshes every 5 minutes
 while visible. Polling stops when the section leaves the viewport.
 
-The other full-page templates (`iot.htm`, `actions.htm`, `action.htm`, and
-`addaction.htm`) serve their respective pages.
+The other full-page templates (`iot.htm`, `actions.htm`, and `action.htm`)
+serve their respective pages. `action.htm` handles both creating and editing
+an activity.
 
 ## Service and data modules
 

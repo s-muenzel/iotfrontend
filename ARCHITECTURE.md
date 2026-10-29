@@ -18,7 +18,6 @@ iotfrontend/
 ├── templates/                # Flask HTML templates
 │   ├── action.htm
 │   ├── actions.htm
-│   ├── addaction.htm
 │   ├── devices.htm
 │   ├── iot.htm
 │   ├── strom.html

@@ -125,7 +125,7 @@ def validate_typed_arguments(type_name, values):
 def _validate_tag_arguments(values):
     """Validate a tag bitfield supplied in Min, with Max left empty."""
     minimum, maximum = values
-    if maximum > 0:
+    if maximum not in ("", 0, "0"):
         raise ValueError("Tag conditions use Min only; Max must be 0")
     try:
         number = Decimal(minimum)
