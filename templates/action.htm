@@ -54,6 +54,29 @@
       border-radius: 4px;
     }
 
+    [data-row="condition"] {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      align-items: end;
+      gap: 6px 12px;
+      margin: 8px 0;
+      padding: 10px;
+    }
+
+    [data-row="condition"] label,
+    [data-row="condition"] .typed-value label {
+      margin-top: 0;
+    }
+
+    [data-row="condition"] .condition-type label {
+      display: block;
+    }
+
+    [data-row="condition"] [data-remove-row] {
+      justify-self: start;
+      margin-top: 0;
+    }
+
   </style>
 </head>
 
@@ -97,17 +120,19 @@
 
     {% macro condition_row(index, item) -%}
     <div data-row="condition">
-      <label for="condition-{{ index }}-type">Typ</label>
-      <select class="w3-select" id="condition-{{ index }}-type" name="condition_type"
-        data-type-selector required>
-        <option value="">Bitte Typ auswählen</option>
-        {% for condition_type in condition_types %}
-        <option value="{{ condition_type }}"
-          {% if item[0] == condition_type %}selected{% endif %}>
-          {{ condition_type }}
-        </option>
-        {% endfor %}
-      </select>
+      <div class="condition-type">
+        <label for="condition-{{ index }}-type">Typ</label>
+        <select class="w3-select" id="condition-{{ index }}-type" name="condition_type"
+          data-type-selector required>
+          <option value="">Bitte Typ auswählen</option>
+          {% for condition_type in condition_types %}
+          <option value="{{ condition_type }}"
+            {% if item[0] == condition_type %}selected{% endif %}>
+            {{ condition_type }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
       {{ typed_value("activity-form", "condition_min", "Min", item[1], "condition-" ~ index ~ "-type", tag_values=tag_values, schema_argument="arg1") }}
       {{ typed_value("activity-form", "condition_max", "Max", item[2], "condition-" ~ index ~ "-type", tag_values=tag_values, schema_argument="arg2") }}
       <button class="w3-button w3-round w3-pale-red w3-text-red w3-margin-top" type="button" data-remove-row>
