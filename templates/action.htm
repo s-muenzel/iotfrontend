@@ -17,7 +17,6 @@
          value="{{ item[0] }}" list="trigger_list" data-type-selector required>
   {{ typed_value("activity-form", "trigger_min", "Mindestwert", item[1], "trigger-" ~ index ~ "-type", tag_values=tag_values, schema_argument="arg1") }}
   {{ typed_value("activity-form", "trigger_max", "Maximalwert", item[2], "trigger-" ~ index ~ "-type", tag_values=tag_values, schema_argument="arg2") }}
-  <button type="button" data-remove-row>Trigger entfernen</button>
 </fieldset>
 {%- endmacro %}
 
@@ -100,11 +99,6 @@
     {{ trigger_row(loop.index0, item) }}
     {% endfor %}
   </div>
-  <button type="button" data-add-row="trigger">Trigger hinzufügen</button>
-  <template data-row-template="trigger">
-    {{ trigger_row("__INDEX__", ("", "", "")) }}
-  </template>
-
   <div data-rows="action">
     {% for item in actions %}
       {% if loop.first %}{{ action_row(loop.index0, item) }}{% endif %}

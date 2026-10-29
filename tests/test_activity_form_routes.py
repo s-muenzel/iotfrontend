@@ -43,7 +43,8 @@ class ActivityFormRouteTests(unittest.TestCase):
         for response in (create_response, edit_response):
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.data.count(b"<form"), 1)
-            self.assertIn(b'data-add-row="trigger"', response.data)
+            self.assertNotIn(b'data-add-row="trigger"', response.data)
+            self.assertEqual(response.data.count(b'data-row="trigger"'), 1)
             self.assertNotIn(b'data-add-row="action"', response.data)
             self.assertIn(b'data-add-row="condition"', response.data)
             self.assertEqual(response.data.count(b'data-row="action"'), 1)
@@ -54,7 +55,7 @@ class ActivityFormRouteTests(unittest.TestCase):
         self.assertIn(b'value="Rule"', edit_response.data)
         self.assertIn(b'value="sensor/temp"', edit_response.data)
 
-    def test_save_activity_persists_multiple_rows_with_one_action(self):
+    def test_save_activity_persists_one_trigger_and_action(self):
         submitted = []
         with patch.object(
                 routes_actions.db, "get_next_activity_id",
@@ -67,9 +68,9 @@ class ActivityFormRouteTests(unittest.TestCase):
                 "a_name": "New rule",
                 "a_desc": "Description",
                 "a_dev": "mqtt/device",
-                "trigger_topic": ["topic/one", "topic/two"],
-                "trigger_min": ["", "1"],
-                "trigger_max": ["", "2"],
+                "trigger_topic": ["topic/one"],
+                "trigger_min": [""],
+                "trigger_max": [""],
                 "action_type": ["mqtt"],
                 "action_arg1": ["first"],
                 "action_arg2": [""],
@@ -82,7 +83,7 @@ class ActivityFormRouteTests(unittest.TestCase):
         self.assertTrue(response.location.endswith("/actions"))
         args, kwargs = submitted[0]
         self.assertEqual(args[0], 23)
-        self.assertEqual(len(args[4]), 2)
+        self.assertEqual(args[4], [("topic/one", "", "")])
         self.assertEqual(args[5], [("mqtt", "first", "")])
         self.assertEqual(args[6][0], ("tag", "1", "0"))
         self.assertTrue(kwargs["create"])
@@ -126,6 +127,24 @@ class ActivityFormRouteTests(unittest.TestCase):
                 "action_type": ["mqtt", "fritz"],
                 "action_arg1": ["first", "second"],
                 "action_arg2": ["", ""],
+                "condition_type": "temp",
+                "condition_min": "20",
+                "condition_max": "",
+            })
+
+        self.assertEqual(response.status_code, 400)
+        save.assert_not_called()
+
+    def test_save_activity_rejects_multiple_triggers(self):
+        with patch.object(routes_actions.db, "save_activity") as save:
+            response = self.client.post("/save_activity", data={
+                "a_name": "Rule",
+                "trigger_topic": ["topic/one", "topic/two"],
+                "trigger_min": ["", ""],
+                "trigger_max": ["", ""],
+                "action_type": "mqtt",
+                "action_arg1": "topic",
+                "action_arg2": "value",
                 "condition_type": "temp",
                 "condition_min": "20",
                 "condition_max": "",

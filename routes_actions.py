@@ -131,9 +131,10 @@ def save_activity():
         condition_rows = _form_rows(
             "condition_type", "condition_min", "condition_max"
         )
-        if not trigger_rows or len(action_rows) != 1 or not condition_rows:
+        if (len(trigger_rows) != 1 or len(action_rows) != 1 or
+                not condition_rows):
             raise ValueError(
-                "Mindestens ein Trigger und eine Bedingung sowie genau eine Aktion sind erforderlich"
+                "Genau ein Trigger und eine Aktion sowie mindestens eine Bedingung sind erforderlich"
             )
 
         for action_type, arg1, arg2 in action_rows:
