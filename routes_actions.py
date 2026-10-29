@@ -37,13 +37,23 @@ def aktion_add():
         triggers = db.get_triggers()
         action_types = list(ACTION_TYPES)
         condition_types = list(CONDITION_TYPES)
-        type_schemas = build_type_schemas(action_types + condition_types)
+        type_schemas = build_type_schemas(
+            action_types + condition_types + triggers
+        )
         
         return render_template(
             'action.htm',
             is_new=True,
+            actionname="",
+            description="",
+            device="",
+            deviceid="",
             devices=devices,
-            trigger=triggers,
+            device_ids={item[1] for item in devices},
+            trigger_options=triggers,
+            triggers=[("", "", "")],
+            actions=[("", "", "")],
+            conditions=[("", "", "")],
             action_types=action_types,
             condition_types=condition_types,
             tag_values=TAG_BITS,
@@ -80,17 +90,16 @@ def add_aktion():
         validate_typed_arguments(ak_typ, (ak_arg1, ak_arg2))
         validate_condition_type(c_typ)
         validate_typed_arguments(c_typ, (c_arg1, c_arg2))
-        if c_typ == "tag":
-            c_arg2 = "0"
-
-        trigger_data = (t_topic, t_min, t_max)
-        action_data = (ak_typ, ak_arg1, ak_arg2)
-        condition_data = (c_typ, c_arg1, c_arg2)
-
         new_id = db.get_next_activity_id()
         logging.info("New Activity ID is %d", new_id)
         
-        if db.create_activity(new_id, a_name, a_dev, a_desc, trigger_data, action_data, condition_data):
+        if c_typ == "tag":
+            c_arg2 = "0"
+        if db.save_activity(
+                new_id, a_name, a_dev, a_desc,
+                [(t_topic, t_min, t_max)],
+                [(ak_typ, ak_arg1, ak_arg2)],
+                [(c_typ, c_arg1, c_arg2)], create=True):
             return redirect("/actions", code=307)
         else:
             return _error_response("Fehler beim Erstellen der Aktion")
@@ -98,6 +107,63 @@ def add_aktion():
         return _error_response(str(err), status=400)
     except Exception as err:
         logging.warning("Error in add_aktion(): %s", str(err))
+        return _error_response("allgemeiner Fehler")
+
+
+@actions_bp.route('/save_activity', methods=["POST"])
+def save_activity():
+    """Create or update an activity and all of its related records."""
+    action_id = request.form.get("actionid", "").strip()
+    name = request.form.get("a_name", "").strip()
+    description = request.form.get("a_desc", "")
+    device_id = request.form.get("a_dev", "")
+
+    try:
+        if not name:
+            raise ValueError("Regelname darf nicht leer sein")
+
+        trigger_rows = _form_rows(
+            "trigger_topic", "trigger_min", "trigger_max"
+        )
+        action_rows = _form_rows(
+            "action_type", "action_arg1", "action_arg2"
+        )
+        condition_rows = _form_rows(
+            "condition_type", "condition_min", "condition_max"
+        )
+        if not trigger_rows or len(action_rows) != 1 or not condition_rows:
+            raise ValueError(
+                "Mindestens ein Trigger und eine Bedingung sowie genau eine Aktion sind erforderlich"
+            )
+
+        for action_type, arg1, arg2 in action_rows:
+            validate_action_type(action_type)
+            validate_typed_arguments(action_type, (arg1, arg2))
+
+        for condition_type, arg1, arg2 in condition_rows:
+            validate_condition_type(condition_type)
+            validate_typed_arguments(condition_type, (arg1, arg2))
+        condition_rows = [
+            (condition_type, arg1, "0" if condition_type == "tag" else arg2)
+            for condition_type, arg1, arg2 in condition_rows
+        ]
+
+        is_new = not action_id
+        if is_new:
+            action_id = db.get_next_activity_id()
+        else:
+            action_id = int(action_id)
+
+        if db.save_activity(
+                action_id, name, device_id, description,
+                trigger_rows, action_rows, condition_rows, create=is_new):
+            destination = "/actions" if is_new else "/action/{}".format(action_id)
+            return redirect(destination, code=303)
+        return _error_response("Fehler beim Speichern der Regel")
+    except ValueError as err:
+        return _error_response(str(err), status=400)
+    except Exception as err:
+        logging.warning("Error in save_activity(): %s", str(err))
         return _error_response("allgemeiner Fehler")
 
 
@@ -150,16 +216,15 @@ def action(action_id):
         
         return render_template(
             'action.htm',
+            is_new=False,
             device=details['geraetname'],
             deviceid=details['devicename'],
-            trigger_liste=details['trigger_liste'],
-            trigger=details['trigger'],
-            cond_liste=details['cond_liste'],
+            trigger_options=details['trigger_liste'],
+            triggers=details['trigger'],
             condition_types=CONDITION_TYPES,
             conditions=details['conditions'],
-            action_liste=details['action_liste'],
             action_types=ACTION_TYPES,
-            action=details['actions'],
+            actions=details['actions'],
             actionid=action_id,
             actionname=details['actionname'],
             description=details['description'],
@@ -292,3 +357,11 @@ def _error_response(message, status=200):
                 '<title>Fehler</title></head>'
                 '<body><h1>{}</h1></body></html>'.format(message))
     return response, status
+
+
+def _form_rows(*field_names):
+    """Read parallel repeated form fields as rows in their submitted order."""
+    columns = [request.form.getlist(name) for name in field_names]
+    if len({len(column) for column in columns}) > 1:
+        raise ValueError("Unvollständige Regel-Daten")
+    return list(zip(*columns))

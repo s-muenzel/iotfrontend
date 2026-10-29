@@ -7,189 +7,128 @@
 </head>
 <body>
 <h1>Alte Rinne 14 - IOT Regel-Details</h1>
-{% if is_new %}
-<h2>Neue Regel hinzufügen</h2>
-<form id="add-action-form" action="/addaktion" data-typed-form data-create-form
-      data-type-schemas='{{ type_schemas|tojson }}'>
+{% from "partials/typed_value.htm" import typed_value %}
+
+{% macro trigger_row(index, item) -%}
+<fieldset data-row="trigger">
+  <legend>Trigger</legend>
+  <label for="trigger-{{ index }}-type">Topic</label>
+  <input id="trigger-{{ index }}-type" type="text" name="trigger_topic"
+         value="{{ item[0] }}" list="trigger_list" data-type-selector required>
+  {{ typed_value("activity-form", "trigger_min", "Mindestwert", item[1], "trigger-" ~ index ~ "-type", tag_values=tag_values, schema_argument="arg1") }}
+  {{ typed_value("activity-form", "trigger_max", "Maximalwert", item[2], "trigger-" ~ index ~ "-type", tag_values=tag_values, schema_argument="arg2") }}
+  <button type="button" data-remove-row>Trigger entfernen</button>
+</fieldset>
+{%- endmacro %}
+
+{% macro action_row(index, item) -%}
+<fieldset data-row="action">
+  <legend>Aktion</legend>
+  <label for="action-{{ index }}-type">Typ</label>
+  <select id="action-{{ index }}-type" name="action_type"
+          data-type-selector required>
+    <option value="">Bitte Typ auswählen</option>
+    {% for action_type in action_types %}
+    <option value="{{ action_type }}"
+            {% if item[0] == action_type %}selected{% endif %}>
+      {{ action_type }}
+    </option>
+    {% endfor %}
+  </select>
+  {{ typed_value("activity-form", "action_arg1", "Argument 1", item[1], "action-" ~ index ~ "-type", tag_values=tag_values, schema_argument="arg1") }}
+  {{ typed_value("activity-form", "action_arg2", "Argument 2", item[2], "action-" ~ index ~ "-type", tag_values=tag_values, schema_argument="arg2") }}
+</fieldset>
+{%- endmacro %}
+
+{% macro condition_row(index, item) -%}
+<div data-row="condition">
+  <!-- <h4>Bedingung</h4> -->
+  <label for="condition-{{ index }}-type">Typ</label>
+  <select id="condition-{{ index }}-type" name="condition_type"
+          data-type-selector required>
+    <option value="">Bitte Typ auswählen</option>
+    {% for condition_type in condition_types %}
+    <option value="{{ condition_type }}"
+            {% if item[0] == condition_type %}selected{% endif %}>
+      {{ condition_type }}
+    </option>
+    {% endfor %}
+  </select>
+  {{ typed_value("activity-form", "condition_min", "Min", item[1], "condition-" ~ index ~ "-type", tag_values=tag_values, schema_argument="arg1") }}
+  {{ typed_value("activity-form", "condition_max", "Max", item[2], "condition-" ~ index ~ "-type", tag_values=tag_values, schema_argument="arg2") }}
+  <button type="button" data-remove-row>Bedingung entfernen</button>
+</div>
+{%- endmacro %}
+
+<form id="activity-form" action="/save_activity" method="post"
+      data-typed-form data-type-schemas='{{ type_schemas|tojson }}'>
+  {% if not is_new %}
+  <input type="hidden" name="actionid" value="{{ actionid }}">
+  {% endif %}
   <fieldset>
     <legend>Allgemeine Regel-Werte</legend>
-    <label for="a_name">Regelname</label>
-    <input type="text" id="a_name" name="a_name" required>
-    <label for="a_desc">Beschreibung</label>
-    <input type="text" id="a_desc" name="a_desc">
-    <label for="a_dev">Gerät (Geräte-ID / MQTT-Präfix)</label>
-    <select id="a_dev" name="a_dev">
+    <label for="activity-name">Regelname</label>
+    <input type="text" id="activity-name" name="a_name"
+           value="{{ actionname }}" required>
+    <label for="activity-description">Beschreibung</label>
+    <input type="text" id="activity-description" name="a_desc"
+           value="{{ description }}">
+    <label for="activity-device">Gerät (Geräte-ID / MQTT-Präfix)</label>
+    <select id="activity-device" name="a_dev">
+      <option value="" {% if not deviceid %}selected{% endif %}>
+        Kein Gerät ausgewählt
+      </option>
+      {% if deviceid and deviceid not in device_ids %}
+      <option value="{{ deviceid }}" selected>
+        {{ device }} ({{ deviceid }})
+      </option>
+      {% endif %}
       {% for activity_device in devices %}
-      <option value="{{ activity_device[1] }}">
+      <option value="{{ activity_device[1] }}"
+              {% if activity_device[1] == deviceid %}selected{% endif %}>
         {{ activity_device[0] }} ({{ activity_device[1] }})
       </option>
       {% endfor %}
     </select>
   </fieldset>
 
-  <fieldset>
-    <legend>Trigger</legend>
-    <label for="t_topic">Topic</label>
-    <input type="text" list="trigger_list" id="t_topic" name="t_topic">
-    <datalist id="trigger_list">
-      {% for item in trigger %}<option value="{{ item }}">{% endfor %}
-    </datalist>
-    <label for="t_min">Mindestwert</label>
-    <input type="text" id="t_min" name="t_min">
-    <label for="t_max">Maximalwert</label>
-    <input type="text" id="t_max" name="t_max">
-  </fieldset>
+  <datalist id="trigger_list">
+    {% for item in trigger_options %}<option value="{{ item }}">{% endfor %}
+  </datalist>
+  <div data-rows="trigger">
+    {% for item in triggers %}
+    {{ trigger_row(loop.index0, item) }}
+    {% endfor %}
+  </div>
+  <button type="button" data-add-row="trigger">Trigger hinzufügen</button>
+  <template data-row-template="trigger">
+    {{ trigger_row("__INDEX__", ("", "", "")) }}
+  </template>
 
-  {% from "partials/typed_value.htm" import typed_value %}
-  <fieldset>
-    <legend>Aktion</legend>
-    <label for="ak_typ">Typ</label>
-    <select id="ak_typ" name="ak_typ" data-type-selector required>
-      <option value="">Bitte Typ auswählen</option>
-      {% for item in action_types %}<option value="{{ item }}">{{ item }}</option>{% endfor %}
-    </select>
-    {{ typed_value("add-action-form", "ak_arg1", "1. Argument", "", "ak_typ", tag_values=tag_values) }}
-    {{ typed_value("add-action-form", "ak_arg2", "2. Argument", "", "ak_typ", tag_values=tag_values) }}
-  </fieldset>
+  <div data-rows="action">
+    {% for item in actions %}
+      {% if loop.first %}{{ action_row(loop.index0, item) }}{% endif %}
+    {% endfor %}
+  </div>
 
   <fieldset>
     <legend>Bedingungen</legend>
-    <label for="c_typ">Typ</label>
-    <select id="c_typ" name="c_typ" data-type-selector required>
-      <option value="">Bitte Typ auswählen</option>
-      {% for item in condition_types %}<option value="{{ item }}">{{ item }}</option>{% endfor %}
-    </select>
-    {{ typed_value("add-action-form", "c_arg1", "Min", "", "c_typ", tag_values=tag_values) }}
-    {{ typed_value("add-action-form", "c_arg2", "Max", "", "c_typ", tag_values=tag_values) }}
+    <div data-rows="condition">
+      {% for item in conditions %}
+      {{ condition_row(loop.index0, item) }}
+      {% endfor %}
+    </div>
+    <button type="button" data-add-row="condition">Bedingung hinzufügen</button>
   </fieldset>
-  <input type="submit" value="Hinzufügen">
+  <template data-row-template="condition">
+    {{ condition_row("__INDEX__", ("", "", "")) }}
+  </template>
+
+  <button type="submit">
+    {% if is_new %}Regel hinzufügen{% else %}Änderungen speichern{% endif %}
+  </button>
 </form>
 <p><a href="/actions">Zurück</a></p>
-{% else %}
-<form id="activity-details" action="/update_activity" method="post"
-      data-record-form>
-  <input type="hidden" name="actionid" value="{{ actionid }}" data-form-control disabled>
-  <label for="activity-name">Regelname</label>
-  <input type="text" id="activity-name" name="a_name" value="{{ actionname }}"
-         data-form-control disabled required>
-  <label for="activity-description">Beschreibung</label>
-  <input type="text" id="activity-description" name="a_desc"
-         value="{{ description }}" data-form-control disabled>
-  <label for="activity-device">Gerät (Geräte-ID / MQTT-Präfix)</label>
-  <select id="activity-device" name="a_dev" data-form-control disabled>
-    {% if deviceid and deviceid not in device_ids %}
-    <option value="{{ deviceid }}" selected>{{ device }} ({{ deviceid }})</option>
-    {% endif %}
-    {% for activity_device in devices %}
-    <option value="{{ activity_device[1] }}"
-            {% if activity_device[1] == deviceid %}selected{% endif %}>
-      {{ activity_device[0] }} ({{ activity_device[1] }})
-    </option>
-    {% endfor %}
-  </select>
-  <button type="button" data-edit-button>Bearbeiten</button>
-  <button type="submit" data-save-button hidden>Speichern</button>
-  <button type="button" data-cancel-button hidden>Abbrechen</button>
-</form>
-
-<h3>Trigger</h3>
-<datalist id="trigger_liste">
-  {% for item in trigger_liste %}<option value="{{ item }}">{% endfor %}
-</datalist>
-{% from "partials/typed_value.htm" import typed_value %}
-{% for item in trigger %}
-{% set form_id = "trigger-" ~ loop.index %}
-<form id="{{ form_id }}" action="/submitchange" data-typed-form data-record-form
-      data-type-schemas='{{ type_schemas|tojson }}'>
-  <input type="hidden" name="typ" value="trigger" data-form-control disabled>
-  <input type="hidden" name="lfdnr" value="{{ item[3] }}" data-form-control disabled>
-  <input type="hidden" name="actionid" value="{{ actionid }}" data-form-control disabled>
-  <label>Topic
-    <input id="{{ form_id }}-type" type="text" name="a0" value="{{ item[0] }}"
-           list="trigger_liste" data-type-selector data-form-control disabled>
-  </label>
-  {{ typed_value(form_id, "a1", "Min", item[1], form_id ~ "-type", tag_values=tag_values) }}
-  {{ typed_value(form_id, "a2", "Max", item[2], form_id ~ "-type", tag_values=tag_values) }}
-  <button type="button" data-edit-button>Bearbeiten</button>
-  <button type="submit" data-save-button hidden>OK</button>
-  <button type="button" data-cancel-button hidden>Abbrechen</button>
-</form>
-{% endfor %}
-
-<h3>Bedingungen</h3>
-{% for item in conditions %}
-{% set form_id = "condition-" ~ loop.index %}
-<form id="{{ form_id }}" action="/submitchange" data-typed-form data-record-form
-      data-type-schemas='{{ type_schemas|tojson }}'>
-  <input type="hidden" name="typ" value="condition" data-form-control disabled>
-  <input type="hidden" name="lfdnr" value="{{ item[3] }}" data-form-control disabled>
-  <input type="hidden" name="actionid" value="{{ actionid }}" data-form-control disabled>
-  <label>Typ
-    <select id="{{ form_id }}-type" name="a0" data-type-selector
-            data-form-control disabled required>
-      <option value="">Bitte Typ auswählen</option>
-      {% for condition_type in condition_types %}
-      <option value="{{ condition_type }}" {% if item[0] == condition_type %}selected{% endif %}>{{ condition_type }}</option>
-      {% endfor %}
-    </select>
-  </label>
-  {{ typed_value(form_id, "a1", "Min", item[1], form_id ~ "-type", tag_values=tag_values) }}
-  {{ typed_value(form_id, "a2", "Max", item[2], form_id ~ "-type", tag_values=tag_values) }}
-  <button type="button" data-edit-button>Bearbeiten</button>
-  <button type="submit" data-save-button hidden>OK</button>
-  <button type="button" data-cancel-button hidden>Abbrechen</button>
-  <button type="button" onclick="if (confirm('Bedingung löschen (kein Undo!)')) { window.location.assign('/delete_condition?lfdnr={{ item[3] }}'); }">Löschen</button>
-</form>
-{% endfor %}
-{% set add_form_id = "condition-add" %}
-<button type="button" data-add-condition-button data-form-id="{{ add_form_id }}">Bedingung hinzufügen</button>
-<form id="{{ add_form_id }}" action="/add_condition" data-typed-form data-record-form
-      data-type-schemas='{{ type_schemas|tojson }}' hidden>
-  <input type="hidden" name="actionid" value="{{ actionid }}" data-form-control disabled>
-  <label>Typ
-    <select id="{{ add_form_id }}-type" name="a0" data-type-selector
-            data-form-control disabled required>
-      <option value="">Bitte Typ auswählen</option>
-      {% for condition_type in condition_types %}
-      <option value="{{ condition_type }}">{{ condition_type }}</option>
-      {% endfor %}
-    </select>
-  </label>
-  {% from "partials/typed_value.htm" import typed_value %}
-  {{ typed_value(add_form_id, "a1", "Min", "", add_form_id ~ "-type", tag_values=tag_values) }}
-  {{ typed_value(add_form_id, "a2", "Max", "", add_form_id ~ "-type", tag_values=tag_values) }}
-  <button type="submit" data-save-button hidden>Hinzufügen</button>
-</form>
-
-<h3>Aktionen</h3>
-<datalist id="action_argument_list">
-  {% for item in action_liste %}<option value="{{ item }}">{% endfor %}
-</datalist>
-{% for item in action %}
-{% set form_id = "action-" ~ loop.index %}
-<form id="{{ form_id }}" action="/submitchange" data-typed-form data-record-form
-      data-type-schemas='{{ type_schemas|tojson }}'>
-  <input type="hidden" name="typ" value="action" data-form-control disabled>
-  <input type="hidden" name="lfdnr" value="{{ item[3] }}" data-form-control disabled>
-  <input type="hidden" name="actionid" value="{{ actionid }}" data-form-control disabled>
-  <label>Typ
-    <select id="{{ form_id }}-type" name="a0" data-type-selector
-            data-form-control disabled required>
-      <option value="">Bitte Typ auswählen</option>
-      {% for action_type in action_types %}
-      <option value="{{ action_type }}" {% if item[0] == action_type %}selected{% endif %}>{{ action_type }}</option>
-      {% endfor %}
-    </select>
-  </label>
-  {{ typed_value(form_id, "a1", "Argument 1", item[1], form_id ~ "-type", "action_argument_list", tag_values) }}
-  {{ typed_value(form_id, "a2", "Argument 2", item[2], form_id ~ "-type", tag_values=tag_values) }}
-  <button type="button" data-edit-button>Bearbeiten</button>
-  <button type="submit" data-save-button hidden>OK</button>
-  <button type="button" data-cancel-button hidden>Abbrechen</button>
-</form>
-{% endfor %}
-<p><a href="/actions">Zurück</a></p>
-{% endif %}
 <script src="{{ url_for('static', filename='action-form.js') }}" defer></script>
 </body>
 </html>

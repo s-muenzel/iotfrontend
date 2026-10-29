@@ -240,9 +240,11 @@ def get_activities():
     try:
         db_connection = get_connection()
         cursor = db_connection.cursor()
-        cursor.execute("SELECT id, name, activ FROM activities ORDER BY name")
-        for activity_id, name, activ in cursor:
-            activities.append([name, activity_id, activ])
+        cursor.execute(
+            "SELECT id, name, description, activ FROM activities ORDER BY name"
+        )
+        for activity_id, name, description, activ in cursor:
+            activities.append([name, activity_id, activ, description or ""])
         cursor.close()
         db_connection.close()
     except mariadb.Error as err:
@@ -554,6 +556,67 @@ def update_activity_details(activity_id, name, description, device_id):
     except mariadb.Error as err:
         logging.warning("Database failure: %s", err)
         return False
+
+
+def save_activity(activity_id, name, device_id, description,
+                  triggers, actions, conditions, create=False):
+    """Create or replace an activity and its trigger/action/condition rows."""
+    db_connection = None
+    cursor = None
+    try:
+        db_connection = get_connection()
+        cursor = db_connection.cursor()
+        if create:
+            cursor.execute(
+                "INSERT INTO activities (id, name, device, description) "
+                "VALUES (%s, %s, %s, %s)",
+                (activity_id, name, device_id, description)
+            )
+        else:
+            cursor.execute(
+                "SELECT id FROM activities WHERE id=%s", (activity_id,)
+            )
+            if cursor.fetchone() is None:
+                db_connection.rollback()
+                logging.warning(
+                    "Cannot update missing activity %s", activity_id
+                )
+                return False
+            cursor.execute(
+                "UPDATE activities SET name=%s, device=%s, description=%s "
+                "WHERE id=%s",
+                (name, device_id, description, activity_id)
+            )
+
+        record_tables = (
+            ("activity_trigger", ("topic", "min", "max"), triggers),
+            ("activity_actions", ("typ", "arg1", "arg2"), actions),
+            ("activity_conditions", ("typ", "min", "max"), conditions),
+        )
+        for table, columns, records in record_tables:
+            cursor.execute(
+                "DELETE FROM {} WHERE id=%s".format(table), (activity_id,)
+            )
+            placeholders = ", ".join(["%s"] * (len(columns) + 1))
+            column_list = ", ".join(("id",) + columns)
+            insert_sql = "INSERT INTO {} ({}) VALUES ({})".format(
+                table, column_list, placeholders
+            )
+            for record in records:
+                cursor.execute(insert_sql, (activity_id,) + tuple(record))
+
+        db_connection.commit()
+        return True
+    except mariadb.Error as err:
+        if db_connection:
+            db_connection.rollback()
+        logging.warning("Database failure while saving activity: %s", err)
+        return False
+    finally:
+        if cursor:
+            cursor.close()
+        if db_connection:
+            db_connection.close()
 
 
 def delete_activity(activity_id):

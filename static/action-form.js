@@ -6,7 +6,8 @@
     const selector = document.getElementById(field.dataset.typeSelectorId);
     const selectedType = selector.value;
     const argumentMatch = field.dataset.parameter.match(/(?:^a|_arg)([12])$/);
-    const schemaArgument = argumentMatch ? "arg" + argumentMatch[1] : "";
+    const schemaArgument = field.dataset.schemaArgument ||
+      (argumentMatch ? "arg" + argumentMatch[1] : "");
     return (schemas[selectedType] &&
       schemas[selectedType][schemaArgument]) ||
       { input: "text" };
@@ -86,6 +87,11 @@
               selectedMask |= bit;
             }
           });
+          input.title = Array.from(input.selectedOptions)
+            .map(function (option) {
+              return option.text;
+            })
+            .join(", ");
           input.setCustomValidity(tagSelectionError(schema, mask, selectedMask));
         } else {
           input.value = displayValue(canonical.value, schema);
@@ -171,37 +177,98 @@
     });
   }
 
-  document.querySelectorAll("[data-typed-form]").forEach(function (form) {
-    const fields = form.querySelectorAll(".typed-value");
-
-    fields.forEach(function (field) {
-      updateField(form, field);
-      field.querySelectorAll("[data-value-control]").forEach(function (input) {
-        input.addEventListener("input", function () {
-          synchronizeField(field);
-        });
-        input.addEventListener("change", function () {
-          synchronizeField(field);
-        });
-      });
-    });
-
-    form.querySelectorAll("[data-type-selector]").forEach(function (selector) {
-      const relatedFields = Array.from(fields).filter(function (field) {
-        return field.dataset.typeSelectorId === selector.id;
-      });
-      function updateRelatedFields() {
-        relatedFields.forEach(function (field) {
+  function initializeTypedForm(form) {
+    const updateFields = function (selector) {
+      form.querySelectorAll(".typed-value").forEach(function (field) {
+        if (field.dataset.typeSelectorId === selector.id) {
           updateField(form, field);
-        });
-      }
-      selector.addEventListener("input", updateRelatedFields);
-      selector.addEventListener("change", updateRelatedFields);
+        }
+      });
+    };
+
+    form.querySelectorAll("[data-canonical-value]").forEach(function (input) {
+      input.disabled = false;
+    });
+    form.querySelectorAll(".typed-value").forEach(function (field) {
+      updateField(form, field);
     });
 
-    form.addEventListener("submit", function () {
-      fields.forEach(synchronizeField);
+    form.addEventListener("focusin", function (event) {
+      if (event.target.matches("[data-tag-selector]")) {
+        event.target.size = event.target.options.length;
+      }
     });
+    form.addEventListener("focusout", function (event) {
+      if (event.target.matches("[data-tag-selector]")) {
+        event.target.size = 1;
+      }
+    });
+    form.addEventListener("input", function (event) {
+      if (event.target.matches("[data-value-control]")) {
+        synchronizeField(event.target.closest(".typed-value"));
+      }
+    });
+    form.addEventListener("change", function (event) {
+      if (event.target.matches("[data-type-selector]")) {
+        updateFields(event.target);
+      } else if (event.target.matches("[data-value-control]")) {
+        synchronizeField(event.target.closest(".typed-value"));
+      }
+    });
+    form.addEventListener("click", function (event) {
+      const addButton = event.target.closest("[data-add-row]");
+      if (addButton) {
+        const category = addButton.dataset.addRow;
+        const template = form.querySelector(
+          'template[data-row-template="' + category + '"]'
+        );
+        const rows = form.querySelector('[data-rows="' + category + '"]');
+        const fragment = template.content.cloneNode(true);
+        const counterName = "next" +
+          category.charAt(0).toUpperCase() + category.slice(1) + "Index";
+        const index = Number(
+          form.dataset[counterName] || rows.querySelectorAll("[data-row]").length
+        );
+        form.dataset[counterName] = index + 1;
+        const walker = document.createTreeWalker(
+          fragment,
+          NodeFilter.SHOW_ELEMENT
+        );
+        let element = walker.nextNode();
+        while (element) {
+          Array.from(element.attributes).forEach(function (attribute) {
+            attribute.value = attribute.value.replace(/__INDEX__/g, index);
+          });
+          element = walker.nextNode();
+        }
+        rows.appendChild(fragment);
+        rows.querySelectorAll(".typed-value").forEach(function (field) {
+          if (field.dataset.typeSelectorId.indexOf(
+            category + "-" + index + "-"
+          ) === 0) {
+            field.querySelector("[data-canonical-value]").disabled = false;
+            updateField(form, field);
+          }
+        });
+        return;
+      }
+
+      const removeButton = event.target.closest("[data-remove-row]");
+      if (removeButton) {
+        const row = removeButton.closest("[data-row]");
+        const rows = row.parentElement;
+        if (rows.querySelectorAll("[data-row]").length > 1) {
+          row.remove();
+        }
+      }
+    });
+    form.addEventListener("submit", function () {
+      form.querySelectorAll(".typed-value").forEach(synchronizeField);
+    });
+  }
+
+  document.querySelectorAll("[data-typed-form]").forEach(function (form) {
+    initializeTypedForm(form);
   });
 
   document.querySelectorAll("[data-record-form]").forEach(function (form) {

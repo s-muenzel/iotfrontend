@@ -1,38 +1,50 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<meta charset="UTF-8">
-<title>Alte Rinne 14 - IOT Regeln</title>
-<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+  <meta charset="UTF-8">
+  <title>Alte Rinne 14 - IOT Regeln</title>
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css"
+    integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
 </head>
+
 <body>
-<h1>
-	Alte Rinne 14 - IOT Regeln
-</h1>
-<table id="T"><tr><th></th><th>Regel</th></tr>
-{% for item in eintraege %}
-<tr>
-  <td><i onclick="aktion_remove({{ item[1] }})" class="fas fa-minus"></i></td>
-  <td><a href="/action/{{ item[1] }}">{{ item[0] }}</a></td>
-  <td> 
-  {% if item[2]>0 %}
-    <a href="/aktion/SchalteUm/{{ item[1] }}"><i class="fas fa-toggle-on" style="color:green"></i></a>
-  {% else %}
-  <a href="/aktion/SchalteUm/{{ item[1] }}"><i class="fas fa-toggle-off" style="color:red"></i></a>
-  {% endif %}
-  </td>
-</tr>
-{% endfor %}
-<tr><td><a href="/aktion/add"><small><i class="fas fa-plus"></i></small></a></td></tr>
-</table>
-<p>Regeln geändert? Dann <a href="/reloadaktions">hier</a> neu laden</p>
-<p><a href="/">zurück</a></p>
-<script>
-  function aktion_remove(n) {
-    if ( confirm("Regel löschen (kein Undo!)") ) {
-      window.location.assign("/aktiondelete?actionid="+n);
+  <h1>
+    Alte Rinne 14 - IOT Regeln
+  </h1>
+  <table id="T">
+    <tr>
+      <th></th>
+      <th>Regel</th>
+      <th>Beschreibung</th>
+    </tr>
+    {% for item in eintraege %}
+    <tr>
+      <td><i onclick="aktion_remove({{ item[1] }})" class="fas fa-minus"></i></td>
+      <td><a href="/action/{{ item[1] }}">{{ item[0] }}</a></td>
+      <td> {% if item[3] %} - {{ item[3] }}{% endif %}</td>
+      <td>
+        {% if item[2]>0 %}
+        <a href="/aktion/SchalteUm/{{ item[1] }}"><i class="fas fa-toggle-on" style="color:green"></i></a>
+        {% else %}
+        <a href="/aktion/SchalteUm/{{ item[1] }}"><i class="fas fa-toggle-off" style="color:red"></i></a>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+    <tr>
+      <td><a href="/aktion/add"><small><i class="fas fa-plus"></i></small></a></td>
+    </tr>
+  </table>
+  <p>Regeln geändert? Dann <a href="/reloadaktions">hier</a> neu laden</p>
+  <p><a href="/">zurück</a></p>
+  <script>
+    function aktion_remove(n) {
+      if (confirm("Regel löschen (kein Undo!)")) {
+        window.location.assign("/aktiondelete?actionid=" + n);
+      }
     }
-  }
-</script>
+  </script>
 </body>
+
 </html>

@@ -1,13 +1,15 @@
-{% macro typed_value(form_id, parameter_name, label, value, type_selector_id, list_id='', tag_values={}) -%}
+{% macro typed_value(form_id, parameter_name, label, value, type_selector_id, list_id='', tag_values={}, schema_argument='') -%}
 <span class="typed-value" data-parameter="{{ parameter_name }}"
-      data-type-selector-id="{{ type_selector_id }}">
+      data-type-selector-id="{{ type_selector_id }}"
+      data-schema-argument="{{ schema_argument }}">
   <input type="hidden" form="{{ form_id }}" name="{{ parameter_name }}"
          value="{{ value }}" data-canonical-value disabled>
   {% for input_kind in ('text', 'time', 'number', 'tag') %}
   <label data-typed-control="{{ input_kind }}" hidden>
     {{ label }}
     {% if input_kind == 'tag' %}
-    <select form="{{ form_id }}" data-value-control multiple size="6"
+    <select form="{{ form_id }}" data-value-control data-tag-selector
+            multiple size="1"
             aria-label="{{ label }}" disabled>
       {% for name, bit in tag_values.items() %}
       <option value="{{ bit }}">{{ name }}</option>
