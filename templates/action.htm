@@ -1,128 +1,195 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<meta charset="UTF-8">
-<title>Alte Rinne 14 - IOT Regel-Details</title>
-<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Alte Rinne 14 - IOT Regel-Details</title>
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+  <link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-teal.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css"
+    integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+  <style>
+    body {
+      font-family: "Roboto", sans-serif;
+    }
+
+    #activity-form > fieldset,
+    [data-row="trigger"],
+    [data-row="action"],
+    [data-row="condition"] {
+      border: 1px solid #009688;
+      border-radius: 4px;
+      margin: 16px 0;
+      padding: 16px;
+    }
+
+    #activity-form label:not([hidden]),
+    .typed-value label:not([hidden]) {
+      display: block;
+      margin-top: 12px;
+    }
+
+    #activity-form [hidden],
+    .typed-value [hidden] {
+      display: none !important;
+    }
+
+    #activity-form input:not([type="hidden"]),
+    #activity-form select,
+    .typed-value input,
+    .typed-value select {
+      box-sizing: border-box;
+      max-width: 100%;
+      padding: 8px;
+    }
+
+    #activity-form input:not([type="hidden"]):not([type="checkbox"]),
+    #activity-form > fieldset > input,
+    #activity-form > fieldset > select,
+    .typed-value input,
+    .typed-value select {
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+  </style>
 </head>
+
 <body>
-<h1>Alte Rinne 14 - IOT Regel-Details</h1>
-{% from "partials/typed_value.htm" import typed_value %}
+  <header class="w3-container w3-theme w3-padding-32">
+    <h1 class="w3-xxxlarge">Alte Rinne 14 - IOT Regel-Details</h1>
+  </header>
 
-{% macro trigger_row(index, item) -%}
-<fieldset data-row="trigger">
-  <legend>Trigger</legend>
-  <label for="trigger-{{ index }}-type">Topic</label>
-  <input id="trigger-{{ index }}-type" type="text" name="trigger_topic"
-         value="{{ item[0] }}" list="trigger_list" data-type-selector required>
-  {{ typed_value("activity-form", "trigger_min", "Mindestwert", item[1], "trigger-" ~ index ~ "-type", tag_values=tag_values, schema_argument="arg1") }}
-  {{ typed_value("activity-form", "trigger_max", "Maximalwert", item[2], "trigger-" ~ index ~ "-type", tag_values=tag_values, schema_argument="arg2") }}
-</fieldset>
-{%- endmacro %}
+  <main class="w3-content w3-padding-32" style="max-width:1000px">
+    {% from "partials/typed_value.htm" import typed_value %}
 
-{% macro action_row(index, item) -%}
-<fieldset data-row="action">
-  <legend>Aktion</legend>
-  <label for="action-{{ index }}-type">Typ</label>
-  <select id="action-{{ index }}-type" name="action_type"
-          data-type-selector required>
-    <option value="">Bitte Typ auswählen</option>
-    {% for action_type in action_types %}
-    <option value="{{ action_type }}"
-            {% if item[0] == action_type %}selected{% endif %}>
-      {{ action_type }}
-    </option>
-    {% endfor %}
-  </select>
-  {{ typed_value("activity-form", "action_arg1", "Argument 1", item[1], "action-" ~ index ~ "-type", tag_values=tag_values, schema_argument="arg1") }}
-  {{ typed_value("activity-form", "action_arg2", "Argument 2", item[2], "action-" ~ index ~ "-type", tag_values=tag_values, schema_argument="arg2") }}
-</fieldset>
-{%- endmacro %}
+    {% macro trigger_row(index, item) -%}
+    <fieldset class="w3-card-2 w3-white" data-row="trigger">
+      <legend class="w3-text-teal"><strong>Trigger</strong></legend>
+      <label for="trigger-{{ index }}-type">Topic</label>
+      <input class="w3-input" id="trigger-{{ index }}-type" type="text" name="trigger_topic"
+        value="{{ item[0] }}" list="trigger_list" data-type-selector required>
+      {{ typed_value("activity-form", "trigger_min", "Mindestwert", item[1], "trigger-" ~ index ~ "-type", tag_values=tag_values, schema_argument="arg1") }}
+      {{ typed_value("activity-form", "trigger_max", "Maximalwert", item[2], "trigger-" ~ index ~ "-type", tag_values=tag_values, schema_argument="arg2") }}
+    </fieldset>
+    {%- endmacro %}
 
-{% macro condition_row(index, item) -%}
-<div data-row="condition">
-  <!-- <h4>Bedingung</h4> -->
-  <label for="condition-{{ index }}-type">Typ</label>
-  <select id="condition-{{ index }}-type" name="condition_type"
-          data-type-selector required>
-    <option value="">Bitte Typ auswählen</option>
-    {% for condition_type in condition_types %}
-    <option value="{{ condition_type }}"
-            {% if item[0] == condition_type %}selected{% endif %}>
-      {{ condition_type }}
-    </option>
-    {% endfor %}
-  </select>
-  {{ typed_value("activity-form", "condition_min", "Min", item[1], "condition-" ~ index ~ "-type", tag_values=tag_values, schema_argument="arg1") }}
-  {{ typed_value("activity-form", "condition_max", "Max", item[2], "condition-" ~ index ~ "-type", tag_values=tag_values, schema_argument="arg2") }}
-  <button type="button" data-remove-row>Bedingung entfernen</button>
-</div>
-{%- endmacro %}
+    {% macro action_row(index, item) -%}
+    <fieldset class="w3-card-2 w3-white" data-row="action">
+      <legend class="w3-text-teal"><strong>Aktion</strong></legend>
+      <label for="action-{{ index }}-type">Typ</label>
+      <select class="w3-select" id="action-{{ index }}-type" name="action_type"
+        data-type-selector required>
+        <option value="">Bitte Typ auswählen</option>
+        {% for action_type in action_types %}
+        <option value="{{ action_type }}"
+          {% if item[0] == action_type %}selected{% endif %}>
+          {{ action_type }}
+        </option>
+        {% endfor %}
+      </select>
+      {{ typed_value("activity-form", "action_arg1", "Argument 1", item[1], "action-" ~ index ~ "-type", tag_values=tag_values, schema_argument="arg1") }}
+      {{ typed_value("activity-form", "action_arg2", "Argument 2", item[2], "action-" ~ index ~ "-type", tag_values=tag_values, schema_argument="arg2") }}
+    </fieldset>
+    {%- endmacro %}
 
-<form id="activity-form" action="/save_activity" method="post"
-      data-typed-form data-type-schemas='{{ type_schemas|tojson }}'>
-  {% if not is_new %}
-  <input type="hidden" name="actionid" value="{{ actionid }}">
-  {% endif %}
-  <fieldset>
-    <legend>Allgemeine Regel-Werte</legend>
-    <label for="activity-name">Regelname</label>
-    <input type="text" id="activity-name" name="a_name"
-           value="{{ actionname }}" required>
-    <label for="activity-description">Beschreibung</label>
-    <input type="text" id="activity-description" name="a_desc"
-           value="{{ description }}">
-    <label for="activity-device">Gerät (Geräte-ID / MQTT-Präfix)</label>
-    <select id="activity-device" name="a_dev">
-      <option value="" {% if not deviceid %}selected{% endif %}>
-        Kein Gerät ausgewählt
-      </option>
-      {% if deviceid and deviceid not in device_ids %}
-      <option value="{{ deviceid }}" selected>
-        {{ device }} ({{ deviceid }})
-      </option>
-      {% endif %}
-      {% for activity_device in devices %}
-      <option value="{{ activity_device[1] }}"
-              {% if activity_device[1] == deviceid %}selected{% endif %}>
-        {{ activity_device[0] }} ({{ activity_device[1] }})
-      </option>
-      {% endfor %}
-    </select>
-  </fieldset>
-
-  <datalist id="trigger_list">
-    {% for item in trigger_options %}<option value="{{ item }}">{% endfor %}
-  </datalist>
-  <div data-rows="trigger">
-    {% for item in triggers %}
-    {{ trigger_row(loop.index0, item) }}
-    {% endfor %}
-  </div>
-  <div data-rows="action">
-    {% for item in actions %}
-      {% if loop.first %}{{ action_row(loop.index0, item) }}{% endif %}
-    {% endfor %}
-  </div>
-
-  <fieldset>
-    <legend>Bedingungen</legend>
-    <div data-rows="condition">
-      {% for item in conditions %}
-      {{ condition_row(loop.index0, item) }}
-      {% endfor %}
+    {% macro condition_row(index, item) -%}
+    <div data-row="condition">
+      <label for="condition-{{ index }}-type">Typ</label>
+      <select class="w3-select" id="condition-{{ index }}-type" name="condition_type"
+        data-type-selector required>
+        <option value="">Bitte Typ auswählen</option>
+        {% for condition_type in condition_types %}
+        <option value="{{ condition_type }}"
+          {% if item[0] == condition_type %}selected{% endif %}>
+          {{ condition_type }}
+        </option>
+        {% endfor %}
+      </select>
+      {{ typed_value("activity-form", "condition_min", "Min", item[1], "condition-" ~ index ~ "-type", tag_values=tag_values, schema_argument="arg1") }}
+      {{ typed_value("activity-form", "condition_max", "Max", item[2], "condition-" ~ index ~ "-type", tag_values=tag_values, schema_argument="arg2") }}
+      <button class="w3-button w3-round w3-pale-red w3-text-red w3-margin-top" type="button" data-remove-row>
+        <i class="fas fa-minus" aria-hidden="true"></i> Bedingung entfernen
+      </button>
     </div>
-    <button type="button" data-add-row="condition">Bedingung hinzufügen</button>
-  </fieldset>
-  <template data-row-template="condition">
-    {{ condition_row("__INDEX__", ("", "", "")) }}
-  </template>
+    {%- endmacro %}
 
-  <button type="submit">
-    {% if is_new %}Regel hinzufügen{% else %}Änderungen speichern{% endif %}
-  </button>
-</form>
-<p><a href="/actions">Zurück</a></p>
-<script src="{{ url_for('static', filename='action-form.js') }}" defer></script>
+    <form id="activity-form" class="w3-card-4 w3-white w3-padding" action="/save_activity" method="post"
+      data-typed-form data-type-schemas='{{ type_schemas|tojson }}'>
+      {% if not is_new %}
+      <input type="hidden" name="actionid" value="{{ actionid }}">
+      {% endif %}
+      <fieldset class="w3-border-teal w3-padding">
+        <legend class="w3-text-teal"><strong>Allgemeine Regel-Werte</strong></legend>
+        <label for="activity-name">Regelname</label>
+        <input class="w3-input" type="text" id="activity-name" name="a_name"
+          value="{{ actionname }}" required>
+        <label for="activity-description">Beschreibung</label>
+        <input class="w3-input" type="text" id="activity-description" name="a_desc"
+          value="{{ description }}">
+        <label for="activity-device">Gerät (Geräte-ID / MQTT-Präfix)</label>
+        <select class="w3-select" id="activity-device" name="a_dev">
+          <option value="" {% if not deviceid %}selected{% endif %}>
+            Kein Gerät ausgewählt
+          </option>
+          {% if deviceid and deviceid not in device_ids %}
+          <option value="{{ deviceid }}" selected>
+            {{ device }} ({{ deviceid }})
+          </option>
+          {% endif %}
+          {% for activity_device in devices %}
+          <option value="{{ activity_device[1] }}"
+            {% if activity_device[1] == deviceid %}selected{% endif %}>
+            {{ activity_device[0] }} ({{ activity_device[1] }})
+          </option>
+          {% endfor %}
+        </select>
+      </fieldset>
+
+      <h2 class="w3-text-teal">Trigger</h2>
+      <datalist id="trigger_list">
+        {% for item in trigger_options %}<option value="{{ item }}">{% endfor %}
+      </datalist>
+      <div data-rows="trigger">
+        {% for item in triggers %}
+        {{ trigger_row(loop.index0, item) }}
+        {% endfor %}
+      </div>
+
+      <h2 class="w3-text-teal">Aktion</h2>
+      <div data-rows="action">
+        {% for item in actions %}
+          {% if loop.first %}{{ action_row(loop.index0, item) }}{% endif %}
+        {% endfor %}
+      </div>
+
+      <fieldset>
+    <legend>Bedingungen</legend>
+        <div data-rows="condition">
+          {% for item in conditions %}
+          {{ condition_row(loop.index0, item) }}
+          {% endfor %}
+        </div>
+        <button class="w3-button w3-theme w3-round w3-margin-top" type="button" data-add-row="condition">
+          <i class="fas fa-plus" aria-hidden="true"></i> Bedingung hinzufügen
+        </button>
+      </fieldset>
+      <template data-row-template="condition">
+        {{ condition_row("__INDEX__", ("", "", "")) }}
+      </template>
+
+      <button class="w3-button w3-theme w3-round w3-margin-top" type="submit">
+        <i class="fas fa-save" aria-hidden="true"></i>
+        {% if is_new %}Regel hinzufügen{% else %}Änderungen speichern{% endif %}
+      </button>
+    </form>
+
+    <p><a class="w3-button w3-light-grey w3-round" href="/actions">
+      <i class="fas fa-arrow-left" aria-hidden="true"></i> Zurück
+    </a></p>
+  </main>
+  <script src="{{ url_for('static', filename='action-form.js') }}" defer></script>
 </body>
 </html>
