@@ -17,6 +17,9 @@ class ActionFormTests(unittest.TestCase):
         self.assertEqual(schemas["zeit"]["arg1"]["input"], "time")
         self.assertEqual(schemas["temp"]["arg2"]["step"], 0.1)
         self.assertEqual(schemas["hell"]["arg1"]["max"], 65535)
+        self.assertEqual(
+            schemas["rollo_last_move"]["arg1"]["input"], "duration"
+        )
         self.assertEqual(schemas["custom"]["arg1"], {"input": "text"})
 
     def test_builds_tag_selection_schema_with_one_argument(self):
@@ -31,6 +34,8 @@ class ActionFormTests(unittest.TestCase):
     def test_accepts_valid_numeric_values(self):
         validate_typed_arguments("temp", ("-10.5", "50"))
         validate_typed_arguments("zeit", ("3600", "86340"))
+        validate_typed_arguments("rollo_last_move", ("86400", ""))
+        validate_typed_arguments("rollo_last_move", ("86399000", ""))
 
     def test_rejects_values_outside_type_constraints(self):
         with self.assertRaises(ValueError):
@@ -42,7 +47,7 @@ class ActionFormTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             validate_typed_arguments("heizung_soll", ("4", ""))
         with self.assertRaises(ValueError):
-            validate_typed_arguments("rollo_last_move", ("86400", ""))
+            validate_typed_arguments("rollo_last_move", ("86399001", ""))
 
     def test_validates_tag_values_and_allowed_combinations(self):
         validate_typed_arguments("tag", ("769", ""))

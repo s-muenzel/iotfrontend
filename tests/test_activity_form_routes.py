@@ -80,6 +80,19 @@ class ActivityFormRouteTests(unittest.TestCase):
         self.assertIn(b'value="Rule"', edit_response.data)
         self.assertIn(b'value="sensor/temp"', edit_response.data)
 
+    def test_create_page_renders_duration_controls(self):
+        with patch.object(
+                routes_actions.db, "get_activity_devices",
+                return_value=[]), \
+                patch.object(
+                    routes_actions.db, "get_triggers",
+                    return_value=[]):
+            response = self.client.get("/aktion/add")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'data-duration-days', response.data)
+        self.assertIn(b'data-duration-time', response.data)
+
     def test_save_activity_persists_one_trigger_and_action(self):
         submitted = []
         with patch.object(
@@ -141,6 +154,30 @@ class ActivityFormRouteTests(unittest.TestCase):
         self.assertEqual(args[0], 7)
         self.assertEqual(args[5], [("mqtt", "topic", "value")])
         self.assertFalse(kwargs["create"])
+
+    def test_save_activity_accepts_rollo_last_move_over_one_day(self):
+        submitted = []
+        with patch.object(
+                routes_actions.db, "save_activity",
+                side_effect=lambda *args, **kwargs:
+                submitted.append((args, kwargs)) or True):
+            response = self.client.post("/save_activity", data={
+                "a_name": "Updated rule",
+                "trigger_topic": "topic",
+                "trigger_min": "",
+                "trigger_max": "",
+                "action_type": "mqtt",
+                "action_arg1": "topic",
+                "action_arg2": "value",
+                "condition_type": "rollo_last_move",
+                "condition_min": "86400",
+                "condition_max": "",
+            })
+
+        self.assertEqual(response.status_code, 303)
+        self.assertEqual(submitted[0][0][6], [
+            ("rollo_last_move", "86400", "")
+        ])
 
     def test_save_activity_rejects_multiple_actions(self):
         with patch.object(routes_actions.db, "save_activity") as save:

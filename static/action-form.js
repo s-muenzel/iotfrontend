@@ -37,6 +37,20 @@
     return String(hours * 3600 + minutes * 60);
   }
 
+  function durationValue(days, time) {
+    if (days === "" && time === "") {
+      return "";
+    }
+
+    const dayCount = days === "" ? 0 : Number(days);
+    const timeSeconds = time === "" ? 0 :
+      Number(canonicalValue(time, { input: "time" }));
+    if (!Number.isFinite(dayCount) || !Number.isFinite(timeSeconds)) {
+      return "";
+    }
+    return String(dayCount * 86400 + timeSeconds);
+  }
+
   function rangeError(displayedValue, schema) {
     if (displayedValue === "" || !schema.ranges) {
       return "";
@@ -54,21 +68,42 @@
     const canonical = field.querySelector("[data-canonical-value]");
     const activeLabel = field.querySelector(
       '[data-typed-control="' + schema.input + '"]'
-    );
+    ) || (schema.input === "duration" ?
+      field.querySelector('[data-typed-control="number"]') : null);
 
     field.querySelectorAll("[data-typed-control]").forEach(function (label) {
       const active = label === activeLabel;
       label.hidden = !active;
-      const input = label.querySelector("[data-value-control]");
-      if (!input) {
+      const inputs = label.querySelectorAll("[data-value-control]");
+      if (!inputs.length) {
         return;
       }
-      input.disabled = !active || canonical.disabled;
-      input.required = active && schema.input === "tag";
-      if (schema.input !== "tag") {
-        input.setCustomValidity("");
-      }
-      if (input instanceof HTMLInputElement) {
+      inputs.forEach(function (input) {
+        input.disabled = !active || canonical.disabled;
+        input.required = active && schema.input === "tag";
+        if (schema.input !== "tag") {
+          input.setCustomValidity("");
+        }
+      });
+      const input = inputs[0];
+      if (active && schema.input === "duration") {
+        const daysInput = label.querySelector("[data-duration-days]");
+        const timeInput = label.querySelector("[data-duration-time]");
+        if (daysInput && timeInput) {
+          const maxDays = schema.max === undefined ? "" :
+            Math.floor(schema.max / 86400);
+          daysInput.min = "0";
+          daysInput.max = String(maxDays);
+          daysInput.step = "1";
+          timeInput.min = "00:00";
+          timeInput.max = "23:59";
+          timeInput.step = "60";
+        } else {
+          input.min = schema.min === undefined ? "" : schema.min;
+          input.max = schema.max === undefined ? "" : schema.max;
+          input.step = schema.step === undefined ? "1" : schema.step;
+        }
+      } else if (active && input instanceof HTMLInputElement) {
         input.min = schema.min === undefined ? "" :
           displayValue(String(schema.min), schema);
         input.max = schema.max === undefined ? "" :
@@ -93,6 +128,30 @@
             })
             .join(", ");
           input.setCustomValidity(tagSelectionError(schema, mask, selectedMask));
+        } else if (schema.input === "duration") {
+          const daysInput = label.querySelector("[data-duration-days]");
+          const timeInput = label.querySelector("[data-duration-time]");
+          if (daysInput && timeInput) {
+            const totalSeconds = Number(canonical.value);
+            const validValue = canonical.value !== "" &&
+              Number.isFinite(totalSeconds) && totalSeconds >= 0;
+            const days = validValue ? Math.floor(totalSeconds / 86400) : "";
+            const remainder = validValue ? totalSeconds % 86400 : 0;
+            const hours = Math.floor(remainder / 3600);
+            const minutes = Math.floor((remainder % 3600) / 60);
+            const time = validValue ?
+              String(hours).padStart(2, "0") + ":" +
+                String(minutes).padStart(2, "0") : "";
+            daysInput.value = validValue ? String(days) : "";
+            timeInput.value = time;
+            daysInput.setCustomValidity(rangeError(
+              durationValue(daysInput.value, timeInput.value),
+              schema
+            ));
+          } else {
+            input.value = canonical.value;
+            input.setCustomValidity(rangeError(input.value, schema));
+          }
         } else {
           input.value = displayValue(canonical.value, schema);
           input.setCustomValidity(rangeError(input.value, schema));
@@ -133,9 +192,12 @@
       field.querySelector("[data-canonical-value]").getAttribute("form")
     );
     const schema = schemaFor(form, field);
-    const activeInput = field.querySelector(
-      '[data-typed-control="' + schema.input + '"] [data-value-control]'
-    );
+    const activeLabel = field.querySelector(
+      '[data-typed-control="' + schema.input + '"]'
+    ) || (schema.input === "duration" ?
+      field.querySelector('[data-typed-control="number"]') : null);
+    const activeInput = activeLabel &&
+      activeLabel.querySelector("[data-value-control]");
     const canonical = field.querySelector("[data-canonical-value]");
     if (schema.input === "none") {
       canonical.value = "";
@@ -148,6 +210,16 @@
       activeInput.setCustomValidity(
         tagSelectionError(schema, selectedMask, selectedMask)
       );
+    } else if (activeInput && schema.input === "duration") {
+      const daysInput = activeLabel.querySelector("[data-duration-days]");
+      const timeInput = activeLabel.querySelector("[data-duration-time]");
+      if (daysInput && timeInput) {
+        canonical.value = durationValue(daysInput.value, timeInput.value);
+        daysInput.setCustomValidity(rangeError(canonical.value, schema));
+      } else {
+        canonical.value = activeInput.value;
+        activeInput.setCustomValidity(rangeError(canonical.value, schema));
+      }
     } else if (activeInput) {
       canonical.value = canonicalValue(activeInput.value, schema);
       activeInput.setCustomValidity(rangeError(activeInput.value, schema));

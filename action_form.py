@@ -28,7 +28,7 @@ _ARGUMENT_INPUTS = {
     "heizung_soll": {"input": "number", "step": 0.5},
     "rollo_pos": {"input": "number", "step": 1},
     "rollo_mode": {"input": "number", "step": 1},
-    "rollo_last_move": {"input": "number", "step": 1},
+    "rollo_last_move": {"input": "duration", "step": 1},
 }
 
 _TAG_INCOMPATIBLE_COMBINATIONS = (

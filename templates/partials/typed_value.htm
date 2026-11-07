@@ -4,7 +4,7 @@
       data-schema-argument="{{ schema_argument }}">
   <input type="hidden" form="{{ form_id }}" name="{{ parameter_name }}"
          value="{{ value }}" data-canonical-value disabled>
-  {% for input_kind in ('text', 'time', 'number', 'tag') %}
+  {% for input_kind in ('text', 'time', 'number', 'duration', 'tag') %}
   <label data-typed-control="{{ input_kind }}" hidden>
     {{ label }}
     {% if input_kind == 'tag' %}
@@ -15,6 +15,16 @@
       <option value="{{ bit }}">{{ name }}</option>
       {% endfor %}
     </select>
+    {% elif input_kind == 'duration' %}
+    <span class="duration-controls">
+      <input type="number" form="{{ form_id }}" data-value-control
+             data-duration-days min="0" step="1"
+             aria-label="{{ label }} (Tage)" disabled>
+      <span>Tage</span>
+      <input type="time" form="{{ form_id }}" data-value-control
+             data-duration-time step="60"
+             aria-label="{{ label }} (Uhrzeit)" disabled>
+    </span>
     {% else %}
     <input type="{{ input_kind }}" form="{{ form_id }}" data-value-control
            {% if input_kind == 'text' and list_id %}list="{{ list_id }}"{% endif %}
