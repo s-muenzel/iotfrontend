@@ -18,6 +18,14 @@
     .w3-table-all th {
       vertical-align: middle;
     }
+
+    .w3-table-all th[onclick] {
+      cursor: pointer;
+    }
+
+    .w3-table-all th.status-header {
+      text-align: right;
+    }
   </style>
 </head>
 
@@ -28,42 +36,46 @@
 
   <main class="w3-content w3-padding-32" style="max-width:1100px">
     <section class="w3-card-4 w3-white">
-      <div class="w3-container w3-theme-l4">
-        <h2>Regeln</h2>
-      </div>
+      <h2 class="w3-container w3-teal">Regeln</h2>
       <div class="w3-responsive">
-        <table id="T" class="w3-table-all w3-hoverable">
+        <table id="T" class="w3-table-all w3-hoverable w3-card-4">
           <thead>
-            <tr class="w3-theme">
-              <th scope="col">Aktionen</th>
-              <th scope="col">Regel</th>
-              <th scope="col">Beschreibung</th>
-              <th scope="col">Status</th>
+            <tr>
+              <th class="status-header" scope="col" onclick="sortTable(1)" aria-sort="none">Status
+                <i class="fa sort-indicator" data-column="1" aria-hidden="true"></i>
+              </th>
+              <th scope="col" onclick="sortTable(2)" aria-sort="none">Regel
+                <i class="fa sort-indicator" data-column="2" aria-hidden="true"></i>
+              </th>
+              <th scope="col" onclick="sortTable(3)" aria-sort="none">Beschreibung
+                <i class="fa sort-indicator" data-column="3" aria-hidden="true"></i>
+              </th>
             </tr>
           </thead>
           <tbody>
             {% for item in eintraege %}
             <tr>
-              <td>
-                <button class="w3-button w3-round w3-pale-red w3-text-red" type="button"
-                  onclick="aktion_remove({{ item[1] }})" aria-label="Regel {{ item[0] }} löschen"
-                  title="Regel löschen">
-                  <i class="fas fa-minus" aria-hidden="true"></i>
+              <td data-sort="{% if item[2]>0 %}1{% else %}0{% endif %}">
+                <button class="w3-btn w3-round w3-hover-red" type="button" onclick="aktion_remove({{ item[1] }})"
+                  aria-label="Regel {{ item[0] }} löschen" title="Regel löschen">
+                  <i class="fas fa-trash-alt" aria-hidden="true"></i>
                 </button>
-              </td>
-              <td><a class="w3-text-teal" href="/action/{{ item[1] }}">{{ item[0] }}</a></td>
-              <td>{% if item[3] %}{{ item[3] }}{% endif %}</td>
-              <td>
-                <a class="w3-button w3-round {% if item[2]>0 %}w3-pale-green w3-text-green{% else %}w3-pale-red w3-text-red{% endif %}"
+                <a class="w3-button w3-round {% if item[2]>0 %}w3-text-green w3-hover-pale-green{% else %}w3-text-red w3-hover-pale-red{% endif %}"
                   href="/aktion/SchalteUm/{{ item[1] }}" aria-label="Status von {{ item[0] }} umschalten"
                   title="Status umschalten">
                   {% if item[2]>0 %}
-                  <i class="fas fa-toggle-on" aria-hidden="true"></i> Aktiv
+                  <p class="w3-tooltip"><i class="fas fa-toggle-on" aria-hidden="true"></i>
+                    <span class="w3-text">Aktiv</span>
+                  </p>
                   {% else %}
-                  <i class="fas fa-toggle-off" aria-hidden="true"></i> Inaktiv
+                  <p class="w3-tooltip"><i class="fas fa-toggle-off" aria-hidden="true"></i>
+                    <span class="w3-text">Inaktiv</span>
+                  </p>
                   {% endif %}
                 </a>
               </td>
+              <td><a class="w3-text-teal" href="/action/{{ item[1] }}">{{ item[0] }}</a></td>
+              <td>{% if item[3] %}{{ item[3] }}{% endif %}</td>
             </tr>
             {% endfor %}
           </tbody>
@@ -79,11 +91,57 @@
     <div class="w3-panel w3-pale-yellow w3-leftbar w3-border-yellow">
       <p>Regeln geändert? Dann <a class="w3-text-teal" href="/reloadaktions">hier neu laden</a>.</p>
     </div>
-    <p><a class="w3-button w3-light-grey w3-round" href="/"><i class="fas fa-arrow-left"
-          aria-hidden="true"></i> Zurück</a></p>
+    <p><a class="w3-button w3-light-grey w3-round" href="/"><i class="fas fa-arrow-left" aria-hidden="true"></i>
+        Zurück</a></p>
   </main>
 
   <script>
+    var sortierSpalte = -1;
+    var aufsteigend = true;
+
+    function sortTable(column) {
+      if (sortierSpalte === column) {
+        aufsteigend = !aufsteigend;
+      } else {
+        sortierSpalte = column;
+        aufsteigend = true;
+      }
+
+      document.querySelectorAll("#T th[aria-sort]")
+        .forEach(function (header) {
+          var indicator = header.querySelector(".sort-indicator");
+          var isCurrent = Number(indicator.dataset.column) === column;
+          header.setAttribute(
+            "aria-sort",
+            isCurrent ? (aufsteigend ? "ascending" : "descending") : "none"
+          );
+          indicator.classList.remove("fa-sort-up", "fa-sort-down");
+          if (isCurrent) {
+            indicator.classList.add(aufsteigend ? "fa-sort-up" : "fa-sort-down");
+          }
+        });
+
+      var table = document.getElementById("T");
+      var tbody = table.tBodies[0];
+      var rows = Array.from(tbody.rows);
+      rows.sort(function (a, b) {
+        var aCell = a.cells[column];
+        var bCell = b.cells[column];
+        var aValue = aCell.getAttribute("data-sort");
+        var bValue = bCell.getAttribute("data-sort");
+        if (aValue === null) aValue = aCell.textContent.trim();
+        if (bValue === null) bValue = bCell.textContent.trim();
+        var comparison = aValue.localeCompare(bValue, "de", {
+          numeric: true,
+          sensitivity: "base"
+        });
+        return aufsteigend ? comparison : -comparison;
+      });
+      rows.forEach(function (row) {
+        tbody.appendChild(row);
+      });
+    }
+
     function aktion_remove(n) {
       if (confirm("Regel löschen (kein Undo!)")) {
         window.location.assign("/aktiondelete?actionid=" + n);

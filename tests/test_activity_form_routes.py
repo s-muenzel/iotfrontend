@@ -11,6 +11,28 @@ class ActivityFormRouteTests(unittest.TestCase):
         app.register_blueprint(routes_actions.actions_bp)
         self.client = app.test_client()
 
+    def test_actions_table_has_sortable_status_name_and_description(self):
+        with patch.object(
+                routes_actions.db, "get_activities",
+                return_value=[["Rule", 7, 1, "Description"]]):
+            response = self.client.get("/actions")
+
+        self.assertEqual(response.status_code, 200)
+        for column, heading in (
+                (1, "Status"), (2, "Regel"), (3, "Beschreibung")):
+            self.assertIn(
+                f'onclick="sortTable({column})" aria-sort="none">{heading}'.encode(),
+                response.data
+            )
+            self.assertIn(
+                f'class="fa sort-indicator" data-column="{column}"'.encode(),
+                response.data
+            )
+        self.assertIn(b'data-sort="1"', response.data)
+        self.assertIn(b'function sortTable(column)', response.data)
+        self.assertIn(b'fa-sort-up", "fa-sort-down"', response.data)
+        self.assertIn(b'class="status-header"', response.data)
+
     def test_create_and_edit_pages_use_one_shared_form(self):
         with patch.object(
                 routes_actions.db, "get_activity_devices",

@@ -82,6 +82,7 @@
 		</div>
 
 		<table id="T" class="w3-table-all w3-hoverable w3-card-4">
+            <thead>
 			<tr>
 				<th onclick="sortTable(0)">Gerät <i class="fa sort-indicator" data-column="0" aria-hidden="true"></i>
 				</th>
@@ -103,6 +104,8 @@
 				<th class="optional-column" onclick="sortTable(8)">Letzter Update <i class="fa sort-indicator"
 						data-column="8" aria-hidden="true"></i></th>
 			</tr>
+          </thead>
+          <tbody>
 
 			{% for item in eintraege %}
 			<tr>
@@ -135,6 +138,7 @@
 				<td class="optional-column">{{ item[8] }}</td>
 			</tr>
 			{% endfor %}
+		  </tbody>
 		</table>
 		<p>
 			Konfigurierte Regeln <a href="/actions"><small>...</small></a>
