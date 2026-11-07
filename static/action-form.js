@@ -24,8 +24,10 @@
     }
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = Math.floor(totalSeconds % 60);
     return String(hours).padStart(2, "0") + ":" +
-      String(minutes).padStart(2, "0");
+      String(minutes).padStart(2, "0") + ":" +
+      String(seconds).padStart(2, "0");
   }
 
   function canonicalValue(displayedValue, schema) {
@@ -33,8 +35,8 @@
       return displayedValue;
     }
 
-    const [hours, minutes] = displayedValue.split(":").map(Number);
-    return String(hours * 3600 + minutes * 60);
+    const [hours, minutes, seconds = 0] = displayedValue.split(":").map(Number);
+    return String(hours * 3600 + minutes * 60 + seconds);
   }
 
   function durationValue(days, time) {
@@ -96,8 +98,8 @@
           daysInput.max = String(maxDays);
           daysInput.step = "1";
           timeInput.min = "00:00";
-          timeInput.max = "23:59";
-          timeInput.step = "60";
+          timeInput.max = "23:59:59";
+          timeInput.step = schema.step === undefined ? "60" : schema.step;
         } else {
           input.min = schema.min === undefined ? "" : schema.min;
           input.max = schema.max === undefined ? "" : schema.max;
@@ -139,9 +141,11 @@
             const remainder = validValue ? totalSeconds % 86400 : 0;
             const hours = Math.floor(remainder / 3600);
             const minutes = Math.floor((remainder % 3600) / 60);
+            const seconds = Math.floor(remainder % 60);
             const time = validValue ?
               String(hours).padStart(2, "0") + ":" +
-                String(minutes).padStart(2, "0") : "";
+                String(minutes).padStart(2, "0") + ":" +
+                String(seconds).padStart(2, "0") : "";
             daysInput.value = validValue ? String(days) : "";
             timeInput.value = time;
             daysInput.setCustomValidity(rangeError(

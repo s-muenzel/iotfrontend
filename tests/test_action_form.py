@@ -15,6 +15,7 @@ class ActionFormTests(unittest.TestCase):
         schemas = build_type_schemas(["custom"])
 
         self.assertEqual(schemas["zeit"]["arg1"]["input"], "time")
+        self.assertEqual(schemas["zeit"]["arg1"]["step"], 1)
         self.assertEqual(schemas["temp"]["arg2"]["step"], 0.1)
         self.assertEqual(schemas["hell"]["arg1"]["max"], 65535)
         self.assertEqual(
@@ -33,8 +34,9 @@ class ActionFormTests(unittest.TestCase):
 
     def test_accepts_valid_numeric_values(self):
         validate_typed_arguments("temp", ("-10.5", "50"))
-        validate_typed_arguments("zeit", ("3600", "86340"))
+        validate_typed_arguments("zeit", ("3601", "86399"))
         validate_typed_arguments("rollo_last_move", ("86400", ""))
+        validate_typed_arguments("rollo_last_move", ("86401", ""))
         validate_typed_arguments("rollo_last_move", ("86399000", ""))
 
     def test_rejects_values_outside_type_constraints(self):
@@ -43,7 +45,7 @@ class ActionFormTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             validate_typed_arguments("hell", ("1.5", ""))
         with self.assertRaises(ValueError):
-            validate_typed_arguments("zeit", ("3601", ""))
+            validate_typed_arguments("zeit", ("86400", ""))
         with self.assertRaises(ValueError):
             validate_typed_arguments("heizung_soll", ("4", ""))
         with self.assertRaises(ValueError):

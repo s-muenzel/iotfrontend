@@ -21,7 +21,7 @@ ACTION_TYPES = ("mqtt", "fritz")
 
 
 _ARGUMENT_INPUTS = {
-    "zeit": {"input": "time", "step": 60},
+    "zeit": {"input": "time", "step": 1},
     "hell": {"input": "number", "step": 1},
     "temp": {"input": "number", "step": 0.1},
     "heizung_ist": {"input": "number", "step": 0.5},

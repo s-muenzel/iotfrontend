@@ -18,9 +18,9 @@
     {% elif input_kind == 'duration' %}
     <span class="duration-controls">
       <input type="number" form="{{ form_id }}" data-value-control
-             data-duration-days min="0" step="1"
+             data-duration-days min="0" step="1" max="999"
              aria-label="{{ label }} (Tage)" disabled>
-      <span>Tage</span>
+      <!-- <span>Tage</span> -->
       <input type="time" form="{{ form_id }}" data-value-control
              data-duration-time step="60"
              aria-label="{{ label }} (Uhrzeit)" disabled>
