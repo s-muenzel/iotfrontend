@@ -57,16 +57,21 @@
     .typed-value .duration-controls {
       display: flex;
       align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
+      gap: 4px;
+      flex-wrap: nowrap;
+      min-width: 0;
     }
 
     .typed-value .duration-controls [data-duration-days] {
-      width: 8em;
+      width: 5em;
+      flex: 0 1 5em;
+      min-width: 0;
     }
 
     .typed-value .duration-controls [data-duration-time] {
-      width: 12em;
+      width: 10em;
+      flex: 1 1 10em;
+      min-width: 0;
     }
 
     [data-row="condition"] {
