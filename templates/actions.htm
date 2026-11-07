@@ -26,6 +26,10 @@
     .w3-table-all th.status-header {
       text-align: right;
     }
+
+    .w3-table-all td.action-controls {
+      white-space: nowrap;
+    }
   </style>
 </head>
 
@@ -41,13 +45,13 @@
         <table id="T" class="w3-table-all w3-hoverable w3-card-4">
           <thead>
             <tr>
-              <th class="status-header" scope="col" onclick="sortTable(1)" aria-sort="none">Status
+              <th class="status-header" scope="col" onclick="sortTable(0)" aria-sort="none">Status
                 <i class="fa sort-indicator" data-column="1" aria-hidden="true"></i>
               </th>
-              <th scope="col" onclick="sortTable(2)" aria-sort="none">Regel
+              <th scope="col" onclick="sortTable(1)" aria-sort="none">Regel
                 <i class="fa sort-indicator" data-column="2" aria-hidden="true"></i>
               </th>
-              <th scope="col" onclick="sortTable(3)" aria-sort="none">Beschreibung
+              <th scope="col" onclick="sortTable(2)" aria-sort="none">Beschreibung
                 <i class="fa sort-indicator" data-column="3" aria-hidden="true"></i>
               </th>
             </tr>
@@ -55,7 +59,7 @@
           <tbody>
             {% for item in eintraege %}
             <tr>
-              <td data-sort="{% if item[2]>0 %}1{% else %}0{% endif %}">
+              <td class="action-controls" data-sort="{% if item[2]>0 %}1{% else %}0{% endif %}">
                 <button class="w3-btn w3-round w3-hover-red" type="button" onclick="aktion_remove({{ item[1] }})"
                   aria-label="Regel {{ item[0] }} löschen" title="Regel löschen">
                   <i class="fas fa-trash-alt" aria-hidden="true"></i>
@@ -64,13 +68,13 @@
                   href="/aktion/SchalteUm/{{ item[1] }}" aria-label="Status von {{ item[0] }} umschalten"
                   title="Status umschalten">
                   {% if item[2]>0 %}
-                  <p class="w3-tooltip"><i class="fas fa-toggle-on" aria-hidden="true"></i>
+                  <span class="w3-tooltip"><i class="fas fa-toggle-on" aria-hidden="true"></i>
                     <span class="w3-text">Aktiv</span>
-                  </p>
+                  </span>
                   {% else %}
-                  <p class="w3-tooltip"><i class="fas fa-toggle-off" aria-hidden="true"></i>
+                  <span class="w3-tooltip"><i class="fas fa-toggle-off" aria-hidden="true"></i>
                     <span class="w3-text">Inaktiv</span>
-                  </p>
+                  </span>
                   {% endif %}
                 </a>
               </td>

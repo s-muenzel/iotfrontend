@@ -28,5 +28,5 @@ CHECK_TYPE_RANGES = {
     "heizung_soll": ((0, 0), (8, 28)),
     "rollo_pos": ((0, 100),),
     "rollo_mode": ((0, 1),),
-    "rollo_last_move": ((0, 86399),),
+    "rollo_last_move": ((0, 86399000),),
 }

@@ -32,6 +32,9 @@ class ActivityFormRouteTests(unittest.TestCase):
         self.assertIn(b'function sortTable(column)', response.data)
         self.assertIn(b'fa-sort-up", "fa-sort-down"', response.data)
         self.assertIn(b'class="status-header"', response.data)
+        self.assertIn(b'class="action-controls" data-sort="1"', response.data)
+        self.assertIn(b'<span class="w3-tooltip">', response.data)
+        self.assertNotIn(b'<p class="w3-tooltip">', response.data)
 
     def test_create_and_edit_pages_use_one_shared_form(self):
         with patch.object(

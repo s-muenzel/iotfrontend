@@ -16,7 +16,7 @@
     "heizung_soll": °C (0: off, 8 - 28)
     "rollo_pos": Percentage (0-100),
     "rollo_mode": Schalter Aus (0), Schalter An (1)
-    "rollo_last_move": Sekunden seit der letzten Bewegung (0-86399)
+    "rollo_last_move": Sekunden seit der letzten Bewegung (0-86399000)
 
 The same ranges are available as Python constants in `check_types.py`.
 
