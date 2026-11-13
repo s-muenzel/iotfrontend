@@ -2,6 +2,7 @@
 import logging
 from flask import Blueprint, render_template, request, redirect
 import database as db
+import fritz_handler
 import mqtt_handler
 from action_form import (
     ACTION_TYPES,
@@ -14,6 +15,17 @@ from action_form import (
 )
 
 actions_bp = Blueprint('actions', __name__)
+
+
+def _get_activity_devices():
+    """Return MQTT devices and cached FRITZ!Box thermostat rooms."""
+    devices = db.get_activity_devices()
+    if not fritz_handler.ROOMS:
+        fritz_handler.hole_Temperatur_Daten()
+    devices.extend(
+        [[room, room] for room in fritz_handler.ROOMS]
+    )
+    return devices
 
 
 @actions_bp.route('/actions')
@@ -33,7 +45,7 @@ def aktion_add():
     """Web handler for /aktion/add - Form to create new action."""
     logging.info("aktion_add")
     try:
-        devices = db.get_activity_devices()
+        devices = _get_activity_devices()
         triggers = db.get_triggers()
         action_types = list(ACTION_TYPES)
         condition_types = list(CONDITION_TYPES)
@@ -207,7 +219,7 @@ def action(action_id):
     
     try:
         details = db.get_activity_details(action_id)
-        devices = db.get_activity_devices()
+        devices = _get_activity_devices()
         type_schemas = build_type_schemas(
             list(ACTION_TYPES) + list(CONDITION_TYPES) +
             details['cond_liste'] +

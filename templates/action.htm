@@ -174,7 +174,7 @@
         <label for="activity-description">Beschreibung</label>
         <input class="w3-input" type="text" id="activity-description" name="a_desc"
           value="{{ description }}">
-        <label for="activity-device">Gerät (Geräte-ID / MQTT-Präfix)</label>
+        <label for="activity-device">Gerät (Name / MQTT-Präfix bzw. Fritz-Id)</label>
         <select class="w3-select" id="activity-device" name="a_dev">
           <option value="" {% if not deviceid %}selected{% endif %}>
             Kein Gerät ausgewählt
