@@ -294,16 +294,21 @@ def get_activity_details(action_id):
 
         # Get all available triggers
         cursor = db_connection.cursor()
-        cursor.execute("SELECT DISTINCT topic FROM activity_trigger")
+        cursor.execute(
+            "SELECT DISTINCT topic FROM activity_trigger WHERE typ='mqtt'"
+        )
         result['trigger_liste'] = [topic[0] for topic in cursor]
         cursor.close()
 
         # Get triggers for this activity
         cursor = db_connection.cursor()
         cursor.execute(
-            "SELECT lfdnr, topic, min, max FROM activity_trigger WHERE id='{}'".format(action_id))
-        result['trigger'] = [[topic, min_val, max_val, lfdnr]
-                             for lfdnr, topic, min_val, max_val in cursor]
+            "SELECT lfdnr, typ, topic, min, max "
+            "FROM activity_trigger WHERE id='{}'".format(action_id))
+        result['trigger'] = [
+            [typ, topic, min_val, max_val, lfdnr]
+            for lfdnr, typ, topic, min_val, max_val in cursor
+        ]
         cursor.close()
 
         # Get all available condition types
@@ -450,7 +455,7 @@ def create_activity(new_id, name, device, description, trigger_data, action_data
         name: Activity name
         device: Device name
         description: Activity description
-        trigger_data: Tuple of (topic, min, max)
+        trigger_data: Tuple of (typ, topic, min, max)
         action_data: Tuple of (typ, arg1, arg2)
         condition_data: Tuple of (typ, min, max)
 
@@ -469,8 +474,10 @@ def create_activity(new_id, name, device, description, trigger_data, action_data
 
         # Insert trigger
         cursor = db_connection.cursor()
-        sql_str = ("INSERT INTO activity_trigger (id, topic, min, max) "
-                   "VALUES ({}, '{}', {}, '{}')".format(new_id, trigger_data[0], trigger_data[1], trigger_data[2]))
+        sql_str = ("INSERT INTO activity_trigger (id, typ, topic, min, max) "
+                   "VALUES ({}, '{}', '{}', {}, '{}')".format(
+                       new_id, trigger_data[0], trigger_data[1],
+                       trigger_data[2], trigger_data[3]))
         cursor.execute(sql_str)
         cursor.close()
 
@@ -589,7 +596,7 @@ def save_activity(activity_id, name, device_id, description,
             )
 
         record_tables = (
-            ("activity_trigger", ("topic", "min", "max"), triggers),
+            ("activity_trigger", ("typ", "topic", "min", "max"), triggers),
             ("activity_actions", ("typ", "arg1", "arg2"), actions),
             ("activity_conditions", ("typ", "min", "max"), conditions),
         )

@@ -18,10 +18,12 @@ CONDITION_TYPES = (
 
 # Keep in sync with the keys in iotcontroler/controler.py:ACTION_FUNCTIONS.
 ACTION_TYPES = ("mqtt", "fritz")
+TRIGGER_TYPES = ("mqtt", "time")
 
 
 _ARGUMENT_INPUTS = {
     "zeit": {"input": "time", "step": 1},
+    "time": {"input": "time", "step": 60},
     "hell": {"input": "number", "step": 1},
     "temp": {"input": "number", "step": 0.1},
     "heizung_ist": {"input": "number", "step": 0.5},
@@ -39,7 +41,7 @@ _TAG_INCOMPATIBLE_COMBINATIONS = (
 
 def build_type_schemas(types):
     """Build the form schema for known types, including special input types."""
-    type_names = set(types) | set(CHECK_TYPE_RANGES)
+    type_names = set(types) | set(CHECK_TYPE_RANGES) | set(TRIGGER_TYPES)
     schemas = {}
 
     for type_name in type_names:
@@ -160,3 +162,23 @@ def validate_action_type(type_name):
     """Reject action types that are not supported by the controller."""
     if type_name not in ACTION_TYPES:
         raise ValueError("Select a valid action type")
+
+
+def validate_trigger(type_name, topic, minimum, maximum):
+    """Validate a trigger and return its normalized database values."""
+    if type_name not in TRIGGER_TYPES:
+        raise ValueError("Select a valid trigger type")
+
+    if type_name == "mqtt":
+        if not topic:
+            raise ValueError("MQTT triggers require a topic")
+        return type_name, topic, minimum, maximum
+
+    validate_typed_arguments("zeit", (minimum, maximum))
+    for value in (minimum, maximum):
+        if value == "":
+            continue
+        number = Decimal(value)
+        if number % 60:
+            raise ValueError("Time triggers use whole-minute values")
+    return type_name, "", minimum, maximum

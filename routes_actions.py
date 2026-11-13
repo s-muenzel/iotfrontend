@@ -7,10 +7,12 @@ import mqtt_handler
 from action_form import (
     ACTION_TYPES,
     CONDITION_TYPES,
+    TRIGGER_TYPES,
     TAG_BITS,
     build_type_schemas,
     validate_action_type,
     validate_condition_type,
+    validate_trigger,
     validate_typed_arguments,
 )
 
@@ -50,7 +52,7 @@ def aktion_add():
         action_types = list(ACTION_TYPES)
         condition_types = list(CONDITION_TYPES)
         type_schemas = build_type_schemas(
-            action_types + condition_types + triggers
+            action_types + condition_types + list(TRIGGER_TYPES) + triggers
         )
         
         return render_template(
@@ -63,7 +65,7 @@ def aktion_add():
             devices=devices,
             device_ids={item[1] for item in devices},
             trigger_options=triggers,
-            triggers=[("", "", "")],
+            triggers=[("mqtt", "", "", "")],
             actions=[("", "", "")],
             conditions=[("", "", "")],
             action_types=action_types,
@@ -100,6 +102,7 @@ def add_aktion():
         
         validate_action_type(ak_typ)
         validate_typed_arguments(ak_typ, (ak_arg1, ak_arg2))
+        trigger = validate_trigger("mqtt", t_topic, t_min, t_max)
         validate_condition_type(c_typ)
         validate_typed_arguments(c_typ, (c_arg1, c_arg2))
         new_id = db.get_next_activity_id()
@@ -109,7 +112,7 @@ def add_aktion():
             c_arg2 = "0"
         if db.save_activity(
                 new_id, a_name, a_dev, a_desc,
-                [(t_topic, t_min, t_max)],
+                [trigger],
                 [(ak_typ, ak_arg1, ak_arg2)],
                 [(c_typ, c_arg1, c_arg2)], create=True):
             return redirect("/actions", code=307)
@@ -137,6 +140,16 @@ def save_activity():
         trigger_rows = _form_rows(
             "trigger_topic", "trigger_min", "trigger_max"
         )
+        trigger_types = request.form.getlist("trigger_type")
+        if not trigger_types:
+            trigger_types = ["mqtt"] * len(trigger_rows)
+        if len(trigger_types) != len(trigger_rows):
+            raise ValueError("Unvollständige Regel-Daten")
+        trigger_rows = [
+            validate_trigger(trigger_type, topic, minimum, maximum)
+            for trigger_type, (topic, minimum, maximum) in
+            zip(trigger_types, trigger_rows)
+        ]
         action_rows = _form_rows(
             "action_type", "action_arg1", "action_arg2"
         )
@@ -222,8 +235,9 @@ def action(action_id):
         devices = _get_activity_devices()
         type_schemas = build_type_schemas(
             list(ACTION_TYPES) + list(CONDITION_TYPES) +
+            list(TRIGGER_TYPES) +
             details['cond_liste'] +
-            [item[0] for item in details['trigger']] +
+            [item[1] for item in details['trigger'] if item[0] == "mqtt"] +
             [item[0] for item in details['actions']]
         )
         

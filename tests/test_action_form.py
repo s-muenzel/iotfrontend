@@ -6,6 +6,7 @@ from action_form import (
     build_type_schemas,
     validate_action_type,
     validate_condition_type,
+    validate_trigger,
     validate_typed_arguments,
 )
 
@@ -16,6 +17,8 @@ class ActionFormTests(unittest.TestCase):
 
         self.assertEqual(schemas["zeit"]["arg1"]["input"], "time")
         self.assertEqual(schemas["zeit"]["arg1"]["step"], 1)
+        self.assertEqual(schemas["time"]["arg1"]["input"], "time")
+        self.assertEqual(schemas["time"]["arg1"]["step"], 60)
         self.assertEqual(schemas["temp"]["arg2"]["step"], 0.1)
         self.assertEqual(schemas["hell"]["arg1"]["max"], 65535)
         self.assertEqual(
@@ -82,6 +85,16 @@ class ActionFormTests(unittest.TestCase):
         validate_action_type("fritz")
         with self.assertRaises(ValueError):
             validate_action_type("not_an_action")
+
+    def test_validates_and_normalizes_time_triggers(self):
+        self.assertEqual(
+            validate_trigger("time", "ignored", "82800", "3600"),
+            ("time", "", "82800", "3600")
+        )
+        with self.assertRaises(ValueError):
+            validate_trigger("time", "", "82801", "3600")
+        with self.assertRaises(ValueError):
+            validate_trigger("unknown", "topic", "", "")
 
 
 if __name__ == "__main__":

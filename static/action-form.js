@@ -4,7 +4,11 @@
   function schemaFor(form, field) {
     const schemas = JSON.parse(form.dataset.typeSchemas || "{}");
     const selector = document.getElementById(field.dataset.typeSelectorId);
-    const selectedType = selector.value;
+    const triggerRow = field.closest("[data-row='trigger']");
+    const triggerSelector = triggerRow &&
+      triggerRow.querySelector("[data-trigger-selector]");
+    const selectedType = triggerSelector && triggerSelector.value === "time" ?
+      "time" : selector.value;
     const argumentMatch = field.dataset.parameter.match(/(?:^a|_arg)([12])$/);
     const schemaArgument = field.dataset.schemaArgument ||
       (argumentMatch ? "arg" + argumentMatch[1] : "");
@@ -24,6 +28,10 @@
     }
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
+    if (schema.step === 60) {
+      return String(hours).padStart(2, "0") + ":" +
+        String(minutes).padStart(2, "0");
+    }
     const seconds = Math.floor(totalSeconds % 60);
     return String(hours).padStart(2, "0") + ":" +
       String(minutes).padStart(2, "0") + ":" +
@@ -256,7 +264,10 @@
   function initializeTypedForm(form) {
     const updateFields = function (selector) {
       form.querySelectorAll(".typed-value").forEach(function (field) {
-        if (field.dataset.typeSelectorId === selector.id) {
+        const triggerRow = field.closest("[data-row='trigger']");
+        if (field.dataset.typeSelectorId === selector.id ||
+            (selector.matches("[data-trigger-selector]") &&
+             triggerRow === selector.closest("[data-row='trigger']"))) {
           updateField(form, field);
         }
       });
@@ -268,6 +279,7 @@
     form.querySelectorAll(".typed-value").forEach(function (field) {
       updateField(form, field);
     });
+    updateTriggerTopics(form);
 
     form.addEventListener("focusin", function (event) {
       if (event.target.matches("[data-tag-selector]")) {
@@ -287,6 +299,9 @@
     form.addEventListener("change", function (event) {
       if (event.target.matches("[data-type-selector]")) {
         updateFields(event.target);
+        if (event.target.matches("[data-trigger-selector]")) {
+          updateTriggerTopics(form);
+        }
       } else if (event.target.matches("[data-value-control]")) {
         synchronizeField(event.target.closest(".typed-value"));
       }
@@ -340,6 +355,17 @@
     });
     form.addEventListener("submit", function () {
       form.querySelectorAll(".typed-value").forEach(synchronizeField);
+    });
+  }
+
+  function updateTriggerTopics(form) {
+    form.querySelectorAll("[data-row='trigger']").forEach(function (row) {
+      const selector = row.querySelector("[data-trigger-selector]");
+      const topic = row.querySelector("[data-trigger-topic]");
+      const input = topic.querySelector("input");
+      const usesMqtt = selector.value === "mqtt";
+      topic.hidden = !usesMqtt;
+      input.required = usesMqtt;
     });
   }
 

@@ -111,11 +111,20 @@
     {% macro trigger_row(index, item) -%}
     <fieldset class="w3-card-2 w3-white" data-row="trigger">
       <legend class="w3-text-teal"><strong>Trigger</strong></legend>
-      <label for="trigger-{{ index }}-type">Topic</label>
-      <input class="w3-input" id="trigger-{{ index }}-type" type="text" name="trigger_topic"
-        value="{{ item[0] }}" list="trigger_list" data-type-selector required>
-      {{ typed_value("activity-form", "trigger_min", "Mindestwert", item[1], "trigger-" ~ index ~ "-type", tag_values=tag_values, schema_argument="arg1") }}
-      {{ typed_value("activity-form", "trigger_max", "Maximalwert", item[2], "trigger-" ~ index ~ "-type", tag_values=tag_values, schema_argument="arg2") }}
+      <label for="trigger-{{ index }}-type">Typ</label>
+      <select class="w3-select" id="trigger-{{ index }}-type" name="trigger_type"
+        data-type-selector data-trigger-selector required>
+        <option value="mqtt" {% if item[0] == "mqtt" %}selected{% endif %}>MQTT</option>
+        <option value="time" {% if item[0] == "time" %}selected{% endif %}>Zeit</option>
+      </select>
+      <label for="trigger-{{ index }}-topic" data-trigger-topic>
+        Topic
+        <input class="w3-input" id="trigger-{{ index }}-topic" type="text"
+          name="trigger_topic" value="{{ item[1] }}" list="trigger_list"
+          data-type-selector required>
+      </label>
+      {{ typed_value("activity-form", "trigger_min", "Mindestwert", item[2], "trigger-" ~ index ~ "-topic", tag_values=tag_values, schema_argument="arg1") }}
+      {{ typed_value("activity-form", "trigger_max", "Maximalwert", item[3], "trigger-" ~ index ~ "-topic", tag_values=tag_values, schema_argument="arg2") }}
     </fieldset>
     {%- endmacro %}
 

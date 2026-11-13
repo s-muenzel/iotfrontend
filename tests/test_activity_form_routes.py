@@ -51,7 +51,7 @@ class ActivityFormRouteTests(unittest.TestCase):
             "devicename": "mqtt/device",
             "geraetname": "Device",
             "trigger_liste": ["sensor/temp"],
-            "trigger": [["sensor/temp", "", "", 1]],
+            "trigger": [["mqtt", "sensor/temp", "", "", 1]],
             "cond_liste": ["temp"],
             "conditions": [["temp", "20", "", 2]],
             "action_liste": [],
@@ -69,16 +69,28 @@ class ActivityFormRouteTests(unittest.TestCase):
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.data.count(b"<form"), 1)
             self.assertNotIn(b'data-add-row="trigger"', response.data)
-            self.assertEqual(response.data.count(b'data-row="trigger"'), 1)
+            self.assertEqual(
+                response.data.count(
+                    b'<fieldset class="w3-card-2 w3-white" data-row="trigger">'
+                ),
+                1
+            )
             self.assertNotIn(b'data-add-row="action"', response.data)
             self.assertIn(b'data-add-row="condition"', response.data)
-            self.assertEqual(response.data.count(b'data-row="action"'), 1)
+            self.assertEqual(
+                response.data.count(
+                    b'<fieldset class="w3-card-2 w3-white" data-row="action">'
+                ),
+                1
+            )
             self.assertIn(b"<fieldset>\n    <legend>Bedingungen</legend>", response.data)
             self.assertIn(b"<div data-row=\"condition\">", response.data)
             self.assertNotIn(b"<fieldset data-row=\"condition\">", response.data)
 
         self.assertIn(b'value="Rule"', edit_response.data)
         self.assertIn(b'value="sensor/temp"', edit_response.data)
+        self.assertIn(b'name="trigger_type"', edit_response.data)
+        self.assertIn(b'value="mqtt"', edit_response.data)
 
     def test_create_page_renders_duration_controls(self):
         with patch.object(
@@ -121,7 +133,7 @@ class ActivityFormRouteTests(unittest.TestCase):
         self.assertTrue(response.location.endswith("/actions"))
         args, kwargs = submitted[0]
         self.assertEqual(args[0], 23)
-        self.assertEqual(args[4], [("topic/one", "", "")])
+        self.assertEqual(args[4], [("mqtt", "topic/one", "", "")])
         self.assertEqual(args[5], [("mqtt", "first", "")])
         self.assertEqual(args[6][0], ("tag", "1", "0"))
         self.assertTrue(kwargs["create"])
@@ -154,6 +166,48 @@ class ActivityFormRouteTests(unittest.TestCase):
         self.assertEqual(args[0], 7)
         self.assertEqual(args[5], [("mqtt", "topic", "value")])
         self.assertFalse(kwargs["create"])
+
+    def test_save_activity_stores_time_trigger_without_topic(self):
+        submitted = []
+        with patch.object(
+                routes_actions.db, "save_activity",
+                side_effect=lambda *args, **kwargs:
+                submitted.append((args, kwargs)) or True):
+            response = self.client.post("/save_activity", data={
+                "a_name": "Time rule",
+                "trigger_type": "time",
+                "trigger_topic": "must be ignored",
+                "trigger_min": "82800",
+                "trigger_max": "3600",
+                "action_type": "mqtt",
+                "action_arg1": "topic",
+                "action_arg2": "value",
+                "condition_type": "temp",
+                "condition_min": "20",
+                "condition_max": "",
+            })
+
+        self.assertEqual(response.status_code, 303)
+        self.assertEqual(submitted[0][0][4], [("time", "", "82800", "3600")])
+
+    def test_save_activity_rejects_time_trigger_seconds(self):
+        with patch.object(routes_actions.db, "save_activity") as save:
+            response = self.client.post("/save_activity", data={
+                "a_name": "Time rule",
+                "trigger_type": "time",
+                "trigger_topic": "",
+                "trigger_min": "82801",
+                "trigger_max": "3600",
+                "action_type": "mqtt",
+                "action_arg1": "topic",
+                "action_arg2": "value",
+                "condition_type": "temp",
+                "condition_min": "20",
+                "condition_max": "",
+            })
+
+        self.assertEqual(response.status_code, 400)
+        save.assert_not_called()
 
     def test_save_activity_accepts_rollo_last_move_over_one_day(self):
         submitted = []
