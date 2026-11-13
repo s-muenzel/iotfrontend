@@ -17,7 +17,7 @@ CONDITION_TYPES = (
 )
 
 # Keep in sync with the keys in iotcontroler/controler.py:ACTION_FUNCTIONS.
-ACTION_TYPES = ("mqtt", "fritz")
+ACTION_TYPES = ("mqtt", "fritz", "http")
 TRIGGER_TYPES = ("mqtt", "time")
 
 

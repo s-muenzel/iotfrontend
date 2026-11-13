@@ -27,4 +27,5 @@ the holiday API reports a holiday. If several qualifiers are selected, all
 must match.
 For "tag" at least one weekday or one qualifier must be present, but multiple selections are allowed.
 For qualifiers only `Feiertag` and `Wochenende` can be present at the same time.
- 
+
+For "zeit": min > max means range crosses midnight
