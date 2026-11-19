@@ -241,10 +241,14 @@ def get_activities():
         db_connection = get_connection()
         cursor = db_connection.cursor()
         cursor.execute(
-            "SELECT id, name, description, activ FROM activities ORDER BY name"
+            "SELECT id, name, description, activ, raum, typ "
+            "FROM activities ORDER BY name"
         )
-        for activity_id, name, description, activ in cursor:
-            activities.append([name, activity_id, activ, description or ""])
+        for activity_id, name, description, activ, raum, typ in cursor:
+            activities.append(
+                [name, activity_id, activ, description or "", raum or "",
+                 typ or "_"]
+            )
         cursor.close()
         db_connection.close()
     except mariadb.Error as err:
@@ -265,6 +269,8 @@ def get_activity_details(action_id):
     result = {
         'actionname': 'unbekannt',
         'description': '',
+        'raum': '',
+        'typ': '_',
         'devicename': 'unbekannt',
         'geraetname': 'unbekannt',
         'trigger_liste': [],
@@ -281,13 +287,16 @@ def get_activity_details(action_id):
         # Get activity info
         cursor = db_connection.cursor()
         cursor.execute("SELECT activities.name as name, activities.description, "
+                       "activities.raum, activities.typ, "
                        "activities.device as device, device.name as geraet "
                        "FROM activities LEFT JOIN device ON "
                        "activities.device = device.mqtt_name "
                        "WHERE activities.id='{}'".format(action_id))
-        for name, description, device, geraet in cursor:
+        for name, description, raum, typ, device, geraet in cursor:
             result['actionname'] = name
             result['description'] = description or ''
+            result['raum'] = raum or ''
+            result['typ'] = typ or '_'
             result['devicename'] = device or ''
             result['geraetname'] = geraet or 'unbekannt'
         cursor.close()
@@ -447,7 +456,8 @@ def get_condition_types():
     return types
 
 
-def create_activity(new_id, name, device, description, trigger_data, action_data, condition_data):
+def create_activity(new_id, name, device, description, trigger_data,
+                    action_data, condition_data, raum="", typ="_"):
     """Create a new activity with all related data.
 
     Args:
@@ -467,9 +477,12 @@ def create_activity(new_id, name, device, description, trigger_data, action_data
         cursor = db_connection.cursor()
 
         # Insert activity
-        sql_str = ("INSERT INTO activities (id, name, device, description) "
-                   "VALUES ({}, '{}', '{}', '{}')".format(new_id, name, device, description))
-        cursor.execute(sql_str)
+        cursor.execute(
+            "INSERT INTO activities "
+            "(id, name, device, description, raum, typ) "
+            "VALUES (%s, %s, %s, %s, %s, %s)",
+            (new_id, name, device, description, raum, typ)
+        )
         cursor.close()
 
         # Insert trigger
@@ -546,15 +559,17 @@ def update_activity_status(activity_id):
         return False
 
 
-def update_activity_details(activity_id, name, description, device_id):
+def update_activity_details(activity_id, name, description, device_id,
+                            raum=None, typ=None):
     """Update an activity's editable identifying information."""
     try:
         db_connection = get_connection()
         cursor = db_connection.cursor()
         cursor.execute(
-            "UPDATE activities SET name=%s, description=%s, device=%s "
+            "UPDATE activities SET name=%s, description=%s, device=%s, "
+            "raum=COALESCE(%s, raum), typ=COALESCE(%s, typ) "
             "WHERE id=%s",
-            (name, description, device_id, activity_id)
+            (name, description, device_id, raum, typ, activity_id)
         )
         db_connection.commit()
         cursor.close()
@@ -566,7 +581,8 @@ def update_activity_details(activity_id, name, description, device_id):
 
 
 def save_activity(activity_id, name, device_id, description,
-                  triggers, actions, conditions, create=False):
+                  triggers, actions, conditions, create=False,
+                  raum="", typ="_"):
     """Create or replace an activity and its trigger/action/condition rows."""
     db_connection = None
     cursor = None
@@ -575,9 +591,10 @@ def save_activity(activity_id, name, device_id, description,
         cursor = db_connection.cursor()
         if create:
             cursor.execute(
-                "INSERT INTO activities (id, name, device, description) "
-                "VALUES (%s, %s, %s, %s)",
-                (activity_id, name, device_id, description)
+                "INSERT INTO activities "
+                "(id, name, device, description, raum, typ) "
+                "VALUES (%s, %s, %s, %s, %s, %s)",
+                (activity_id, name, device_id, description, raum, typ)
             )
         else:
             cursor.execute(
@@ -590,9 +607,10 @@ def save_activity(activity_id, name, device_id, description,
                 )
                 return False
             cursor.execute(
-                "UPDATE activities SET name=%s, device=%s, description=%s "
+                "UPDATE activities SET name=%s, device=%s, description=%s, "
+                "raum=%s, typ=%s "
                 "WHERE id=%s",
-                (name, device_id, description, activity_id)
+                (name, device_id, description, raum, typ, activity_id)
             )
 
         record_tables = (

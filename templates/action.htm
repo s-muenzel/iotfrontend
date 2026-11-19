@@ -183,6 +183,16 @@
         <label for="activity-description">Beschreibung</label>
         <input class="w3-input" type="text" id="activity-description" name="a_desc"
           value="{{ description }}">
+        <label for="activity-room">Raum</label>
+        <input class="w3-input" type="text" id="activity-room" name="raum"
+          value="{{ raum }}">
+        <label for="activity-type">Typ</label>
+        <select class="w3-select" id="activity-type" name="typ" required>
+          {% for category in activity_categories %}
+          <option value="{{ category }}"
+            {% if typ == category %}selected{% endif %}>{{ category }}</option>
+          {% endfor %}
+        </select>
         <label for="activity-device">Gerät (Name / MQTT-Präfix bzw. Fritz-Id)</label>
         <select class="w3-select" id="activity-device" name="a_dev">
           <option value="" {% if not deviceid %}selected{% endif %}>

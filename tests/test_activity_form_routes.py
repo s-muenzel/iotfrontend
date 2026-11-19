@@ -11,15 +11,16 @@ class ActivityFormRouteTests(unittest.TestCase):
         app.register_blueprint(routes_actions.actions_bp)
         self.client = app.test_client()
 
-    def test_actions_table_has_sortable_status_name_and_description(self):
+    def test_actions_table_orders_columns_and_matches_sort_indicators(self):
         with patch.object(
                 routes_actions.db, "get_activities",
-                return_value=[["Rule", 7, 1, "Description"]]):
+                return_value=[["Rule", 7, 1, "Description", "Living room", "Rollo"]]):
             response = self.client.get("/actions")
 
         self.assertEqual(response.status_code, 200)
         for column, heading in (
-                (1, "Status"), (2, "Regel"), (3, "Beschreibung")):
+                (0, "Status"), (1, "Regel"), (2, "Raum"),
+                (3, "Typ"), (4, "Beschreibung")):
             self.assertIn(
                 f'onclick="sortTable({column})" aria-sort="none">{heading}'.encode(),
                 response.data
@@ -28,6 +29,11 @@ class ActivityFormRouteTests(unittest.TestCase):
                 f'class="fa sort-indicator" data-column="{column}"'.encode(),
                 response.data
             )
+        headings = [
+            response.data.index(b">" + heading.encode() + b"\n")
+            for heading in ("Status", "Regel", "Raum", "Typ", "Beschreibung")
+        ]
+        self.assertEqual(headings, sorted(headings))
         self.assertIn(b'data-sort="1"', response.data)
         self.assertIn(b'function sortTable(column)', response.data)
         self.assertIn(b'fa-sort-up", "fa-sort-down"', response.data)
@@ -35,6 +41,8 @@ class ActivityFormRouteTests(unittest.TestCase):
         self.assertIn(b'class="action-controls" data-sort="1"', response.data)
         self.assertIn(b'<span class="w3-tooltip">', response.data)
         self.assertNotIn(b'<p class="w3-tooltip">', response.data)
+        self.assertIn(b"<td>Living room</td>", response.data)
+        self.assertIn(b"<td>Rollo</td>", response.data)
 
     def test_create_and_edit_pages_use_one_shared_form(self):
         with patch.object(
@@ -48,6 +56,8 @@ class ActivityFormRouteTests(unittest.TestCase):
         details = {
             "actionname": "Rule",
             "description": "Description",
+            "raum": "Living room",
+            "typ": "Rollo",
             "devicename": "mqtt/device",
             "geraetname": "Device",
             "trigger_liste": ["sensor/temp"],
@@ -91,6 +101,13 @@ class ActivityFormRouteTests(unittest.TestCase):
         self.assertIn(b'value="sensor/temp"', edit_response.data)
         self.assertIn(b'name="trigger_type"', edit_response.data)
         self.assertIn(b'value="mqtt"', edit_response.data)
+        self.assertIn(b'name="raum"', edit_response.data)
+        self.assertIn(b'value="Living room"', edit_response.data)
+        self.assertIn(b'name="typ"', edit_response.data)
+        self.assertIn(
+            b'<option value="Rollo"\n            selected>Rollo</option>',
+            edit_response.data
+        )
 
     def test_create_page_renders_duration_controls(self):
         with patch.object(
@@ -117,6 +134,8 @@ class ActivityFormRouteTests(unittest.TestCase):
             response = self.client.post("/save_activity", data={
                 "a_name": "New rule",
                 "a_desc": "Description",
+                "raum": "Kitchen",
+                "typ": "Leuchte",
                 "a_dev": "mqtt/device",
                 "trigger_topic": ["topic/one"],
                 "trigger_min": [""],
@@ -137,6 +156,8 @@ class ActivityFormRouteTests(unittest.TestCase):
         self.assertEqual(args[5], [("mqtt", "first", "")])
         self.assertEqual(args[6][0], ("tag", "1", "0"))
         self.assertTrue(kwargs["create"])
+        self.assertEqual(kwargs["raum"], "Kitchen")
+        self.assertEqual(kwargs["typ"], "Leuchte")
 
     def test_save_activity_updates_existing_rule(self):
         submitted = []
@@ -148,6 +169,8 @@ class ActivityFormRouteTests(unittest.TestCase):
                 "actionid": "7",
                 "a_name": "Updated rule",
                 "a_desc": "",
+                "raum": "Office",
+                "typ": "Heizung",
                 "a_dev": "mqtt/device",
                 "trigger_topic": "topic",
                 "trigger_min": "",
@@ -166,6 +189,28 @@ class ActivityFormRouteTests(unittest.TestCase):
         self.assertEqual(args[0], 7)
         self.assertEqual(args[5], [("mqtt", "topic", "value")])
         self.assertFalse(kwargs["create"])
+        self.assertEqual(kwargs["raum"], "Office")
+        self.assertEqual(kwargs["typ"], "Heizung")
+
+    def test_save_activity_rejects_unknown_activity_type(self):
+        with patch.object(routes_actions.db, "save_activity") as save:
+            response = self.client.post("/save_activity", data={
+                "a_name": "Rule",
+                "raum": "Office",
+                "typ": "Unknown",
+                "trigger_topic": "topic",
+                "trigger_min": "",
+                "trigger_max": "",
+                "action_type": "mqtt",
+                "action_arg1": "topic",
+                "action_arg2": "value",
+                "condition_type": "temp",
+                "condition_min": "20",
+                "condition_max": "",
+            })
+
+        self.assertEqual(response.status_code, 400)
+        save.assert_not_called()
 
     def test_save_activity_stores_time_trigger_without_topic(self):
         submitted = []

@@ -5,12 +5,14 @@ import database as db
 import fritz_handler
 import mqtt_handler
 from action_form import (
+    ACTIVITY_CATEGORIES,
     ACTION_TYPES,
     CONDITION_TYPES,
     TRIGGER_TYPES,
     TAG_BITS,
     build_type_schemas,
     validate_action_type,
+    validate_activity_category,
     validate_condition_type,
     validate_trigger,
     validate_typed_arguments,
@@ -60,6 +62,9 @@ def aktion_add():
             is_new=True,
             actionname="",
             description="",
+            raum="",
+            typ="_",
+            activity_categories=ACTIVITY_CATEGORIES,
             device="",
             deviceid="",
             devices=devices,
@@ -86,6 +91,8 @@ def add_aktion():
     try:
         a_name = request.values.get("a_name", "")
         a_desc = request.values.get("a_desc", "")
+        raum = request.values.get("raum", "")
+        activity_type = request.values.get("typ", "_")
         a_dev = request.values.get("a_dev", "")
         
         t_topic = request.values.get("t_topic", "")
@@ -101,6 +108,7 @@ def add_aktion():
         c_arg2 = request.values.get("c_arg2", "")
         
         validate_action_type(ak_typ)
+        validate_activity_category(activity_type)
         validate_typed_arguments(ak_typ, (ak_arg1, ak_arg2))
         trigger = validate_trigger("mqtt", t_topic, t_min, t_max)
         validate_condition_type(c_typ)
@@ -114,7 +122,8 @@ def add_aktion():
                 new_id, a_name, a_dev, a_desc,
                 [trigger],
                 [(ak_typ, ak_arg1, ak_arg2)],
-                [(c_typ, c_arg1, c_arg2)], create=True):
+                [(c_typ, c_arg1, c_arg2)], create=True,
+                raum=raum, typ=activity_type):
             return redirect("/actions", code=307)
         else:
             return _error_response("Fehler beim Erstellen der Aktion")
@@ -131,11 +140,14 @@ def save_activity():
     action_id = request.form.get("actionid", "").strip()
     name = request.form.get("a_name", "").strip()
     description = request.form.get("a_desc", "")
+    raum = request.form.get("raum", "")
+    activity_type = request.form.get("typ", "_")
     device_id = request.form.get("a_dev", "")
 
     try:
         if not name:
             raise ValueError("Regelname darf nicht leer sein")
+        validate_activity_category(activity_type)
 
         trigger_rows = _form_rows(
             "trigger_topic", "trigger_min", "trigger_max"
@@ -182,7 +194,8 @@ def save_activity():
 
         if db.save_activity(
                 action_id, name, device_id, description,
-                trigger_rows, action_rows, condition_rows, create=is_new):
+                trigger_rows, action_rows, condition_rows, create=is_new,
+                raum=raum, typ=activity_type):
             destination = "/actions" if is_new else "/action/{}".format(action_id)
             return redirect(destination, code=303)
         return _error_response("Fehler beim Speichern der Regel")
@@ -250,6 +263,9 @@ def action(action_id):
             triggers=details['trigger'],
             condition_types=CONDITION_TYPES,
             conditions=details['conditions'],
+            raum=details['raum'],
+            typ=details['typ'],
+            activity_categories=ACTIVITY_CATEGORIES,
             action_types=ACTION_TYPES,
             actions=details['actions'],
             actionid=action_id,
@@ -272,14 +288,18 @@ def update_activity():
     name = request.form.get("a_name", "").strip()
     description = request.form.get("a_desc", "")
     device_id = request.form.get("a_dev", "")
+    raum = request.form.get("raum")
+    activity_type = request.form.get("typ")
 
     if not name:
         return _error_response("Regelname darf nicht leer sein", status=400)
 
     try:
+        if activity_type is not None:
+            validate_activity_category(activity_type)
         action_id = int(action_id)
         if db.update_activity_details(
-                action_id, name, description, device_id):
+                action_id, name, description, device_id, raum, activity_type):
             return redirect("/action/{}".format(action_id), code=303)
         return _error_response("Fehler beim Aktualisieren der Regel")
     except ValueError as err:

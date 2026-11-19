@@ -19,6 +19,7 @@ CONDITION_TYPES = (
 # Keep in sync with the keys in iotcontroler/controler.py:ACTION_FUNCTIONS.
 ACTION_TYPES = ("mqtt", "fritz", "http")
 TRIGGER_TYPES = ("mqtt", "time")
+ACTIVITY_CATEGORIES = ("_", "Rollo", "Heizung", "Leuchte")
 
 
 _ARGUMENT_INPUTS = {
@@ -162,6 +163,12 @@ def validate_action_type(type_name):
     """Reject action types that are not supported by the controller."""
     if type_name not in ACTION_TYPES:
         raise ValueError("Select a valid action type")
+
+
+def validate_activity_category(category):
+    """Reject activity categories that are not supported by the database."""
+    if category not in ACTIVITY_CATEGORIES:
+        raise ValueError("Select a valid activity type")
 
 
 def validate_trigger(type_name, topic, minimum, maximum):

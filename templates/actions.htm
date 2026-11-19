@@ -46,13 +46,19 @@
           <thead>
             <tr>
               <th class="status-header" scope="col" onclick="sortTable(0)" aria-sort="none">Status
-                <i class="fa sort-indicator" data-column="1" aria-hidden="true"></i>
+                <i class="fa sort-indicator" data-column="0" aria-hidden="true"></i>
               </th>
               <th scope="col" onclick="sortTable(1)" aria-sort="none">Regel
+                <i class="fa sort-indicator" data-column="1" aria-hidden="true"></i>
+              </th>
+              <th scope="col" onclick="sortTable(2)" aria-sort="none">Raum
                 <i class="fa sort-indicator" data-column="2" aria-hidden="true"></i>
               </th>
-              <th scope="col" onclick="sortTable(2)" aria-sort="none">Beschreibung
+              <th scope="col" onclick="sortTable(3)" aria-sort="none">Typ
                 <i class="fa sort-indicator" data-column="3" aria-hidden="true"></i>
+              </th>
+              <th scope="col" onclick="sortTable(4)" aria-sort="none">Beschreibung
+                <i class="fa sort-indicator" data-column="4" aria-hidden="true"></i>
               </th>
             </tr>
           </thead>
@@ -79,6 +85,8 @@
                 </a>
               </td>
               <td><a class="w3-text-teal" href="/action/{{ item[1] }}">{{ item[0] }}</a></td>
+              <td>{{ item[4] }}</td>
+              <td>{{ item[5] }}</td>
               <td>{% if item[3] %}{{ item[3] }}{% endif %}</td>
             </tr>
             {% endfor %}
