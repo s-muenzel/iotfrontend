@@ -1,5 +1,5 @@
 #/bin/sh
-
+echo on
 
 LOGS_CMD=echo
 
@@ -24,7 +24,8 @@ DOCKER_NAME=`pwd | awk -F/ '{print $NF}'`
 
 RUN_CMD_ARGS=`awk '/##run_cmd_arg##/{$1=""; print $0}' Dockerfile`
 
-sudo docker stop $DOCKER_NAME
+# sudo docker stop $DOCKER_NAME
+sudo synowebapi --exec api=SYNO.Docker.Container version=1 method=stop name=\"$DOCKER_NAME\"
 
 sudo docker container rm $DOCKER_NAME
 

@@ -49,6 +49,9 @@ class ActivityFormRouteTests(unittest.TestCase):
                 routes_actions.db, "get_activity_devices",
                 return_value=[["Device", "mqtt/device"]]), \
                 patch.object(
+                    routes_actions.db, "get_heating_rooms",
+                    return_value=["Tim"]), \
+                patch.object(
                     routes_actions.db, "get_triggers",
                     return_value=["sensor/temp"]):
             create_response = self.client.get("/aktion/add")
@@ -70,6 +73,9 @@ class ActivityFormRouteTests(unittest.TestCase):
         with patch.object(
                 routes_actions.db, "get_activity_devices",
                 return_value=[["Device", "mqtt/device"]]), \
+                patch.object(
+                    routes_actions.db, "get_heating_rooms",
+                    return_value=["Tim"]), \
                 patch.object(
                     routes_actions.db, "get_activity_details",
                     return_value=details):
@@ -116,6 +122,9 @@ class ActivityFormRouteTests(unittest.TestCase):
                 routes_actions.db, "get_activity_devices",
                 return_value=[]), \
                 patch.object(
+                    routes_actions.db, "get_heating_rooms",
+                    return_value=[]), \
+                patch.object(
                     routes_actions.db, "get_triggers",
                     return_value=[]):
             response = self.client.get("/aktion/add")
@@ -123,6 +132,22 @@ class ActivityFormRouteTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'data-duration-days', response.data)
         self.assertIn(b'data-duration-time', response.data)
+
+    def test_activity_devices_include_database_heating_rooms(self):
+        with patch.object(
+                routes_actions.db, "get_activity_devices",
+                return_value=[["Device", "mqtt/device"]]), \
+                patch.object(
+                    routes_actions.db, "get_heating_rooms",
+                    return_value=["Tim", "Eva"]) as get_rooms:
+            devices = routes_actions._get_activity_devices()
+
+        self.assertEqual(devices, [
+            ["Device", "mqtt/device"],
+            ["Tim", "Tim"],
+            ["Eva", "Eva"],
+        ])
+        get_rooms.assert_called_once_with()
 
     def test_save_activity_persists_one_trigger_and_action(self):
         submitted = []

@@ -2,7 +2,6 @@
 import logging
 from flask import Blueprint, render_template, request, redirect
 import database as db
-import fritz_handler
 import mqtt_handler
 from action_form import (
     ACTIVITY_CATEGORIES,
@@ -22,12 +21,10 @@ actions_bp = Blueprint('actions', __name__)
 
 
 def _get_activity_devices():
-    """Return MQTT devices and cached FRITZ!Box thermostat rooms."""
+    """Return MQTT devices and rooms with recent heating readings."""
     devices = db.get_activity_devices()
-    if not fritz_handler.ROOMS:
-        fritz_handler.hole_Temperatur_Daten()
     devices.extend(
-        [[room, room] for room in fritz_handler.ROOMS]
+        [[room, room] for room in db.get_heating_rooms()]
     )
     return devices
 

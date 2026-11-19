@@ -16,12 +16,6 @@ from routes_web import web_bp
 from routes_actions import actions_bp
 from routes_status import status_bp
 
-# Configure logging
-logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
 
 
 def create_app():
@@ -51,6 +45,15 @@ atexit.register(mqtt_handler.stop_mqtt)
 
 
 if __name__ == '__main__':
+    # Configure logging
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+    logger = logging.getLogger(__name__)
+    logging.getLogger("mysql.connector").setLevel(logging.INFO)
+    logging.getLogger("werkzeug").setLevel(logging.WARNING)
+
     # Development server only
     try:
         app.run(host='0.0.0.0', port=80)

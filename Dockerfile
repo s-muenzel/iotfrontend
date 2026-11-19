@@ -11,7 +11,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY *.py db.cnf mq.cnf fritz.cnf ./
+COPY [acdmnr]*.py db.cnf mq.cnf ./
 
 COPY templates/*.htm ./templates/
 COPY templates/partials/*.htm ./templates/partials/
