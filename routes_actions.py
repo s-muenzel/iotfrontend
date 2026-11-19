@@ -387,7 +387,13 @@ def submitchange():
 def reload_aktions():
     """Web handler for /reloadaktions - Reload actions."""
     logging.info("reloadaktions")
-    mqtt_handler.reload_actions()
+    try:
+        mqtt_handler.reload_actions()
+    except Exception:
+        logging.exception("Error publishing action reload request")
+        return _error_response(
+            "Aktionen konnten nicht neu geladen werden.", status=502
+        )
     return redirect("/actions", code=307)
 
 

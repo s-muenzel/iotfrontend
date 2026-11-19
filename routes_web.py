@@ -1,12 +1,20 @@
 """routes_web.py: Web routes for main pages and device information."""
+from functools import lru_cache
 import logging
+import math
 from flask import Blueprint, jsonify, redirect, render_template, request, url_for
 import database as db
-# import mqtt_handler
+import mqtt_handler
 from netzwerk import check_netzwerkfehler
 
 
 web_bp = Blueprint('web', __name__)
+
+
+@lru_cache(maxsize=1)
+def _get_heating_rooms():
+    """Load the available heating rooms once for this process."""
+    return tuple(db.get_heating_rooms())
 
 
 @web_bp.route('/')
@@ -43,23 +51,38 @@ def heizung_status():
 
 @web_bp.route('/heizung/sollwert', methods=['POST'])
 def heizung_sollwert():
-    """Set the target temperature for a configured room."""
-    from fritz_handler import (
-        InvalidTargetError, ROOMS, setze_Soll_Temperatur
-    )
-
+    """Set a room's target temperature through MQTT."""
     room = request.form.get('room', '')
-    if room not in ROOMS:
+    if room not in _get_heating_rooms():
         return _error_response("Unbekannter Heizungsraum"), 400
 
+    target_value = request.form.get('target', '')
     try:
-        setze_Soll_Temperatur(room, request.form.get('target', ''))
+        target = float(target_value)
+    except (TypeError, ValueError):
+        error = "Bitte eine g\u00fcltige Solltemperatur eingeben."
+        return _render_top(heating_error=error), 400
+
+    if (not math.isfinite(target)
+            or (target != 0 and not 8 <= target <= 28)):
+        error = (
+            "Die Solltemperatur muss 0 oder zwischen 8 und 28 \u00b0C liegen."
+        )
+        return _render_top(heating_error=error), 400
+
+    if target != 0:
+        target = math.floor(target * 2 + 0.5) / 2
+    target_payload = "0" if target == 0 else f"{target:g}"
+
+    try:
+        if mqtt_handler.mqtt_client_instance is None:
+            raise RuntimeError("MQTT client not initialized")
+        mqtt_handler.publish_message(
+            f"Aktor/Fritz////{room}", target_payload
+        )
         return redirect(url_for('web.top') + '#heizung', code=303)
-    except InvalidTargetError as err:
-        logging.info("Invalid heating target for %s: %s", room, err)
-        return _render_top(heating_error=str(err)), 400
     except Exception:
-        logging.exception("Error setting heating target for %s", room)
+        logging.exception("Error publishing heating target for %s", room)
         return _render_top(
             heating_error="Solltemperatur konnte nicht gesetzt werden."
         ), 502
@@ -75,7 +98,8 @@ def _render_top(heating_error=None):
         H=weather['hell'],
         R=weather['regen'],
         P=weather['proz'],
-        heating_error=heating_error
+        heating_error=heating_error,
+        heating_rooms=_get_heating_rooms()
     )
 
 

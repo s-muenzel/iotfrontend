@@ -1,7 +1,7 @@
 <section data-poll-section="heizung">
 	<h2 id="heizung">Heizung</h2>
 	<div class="w3-row-padding">
-		{% for room in ("Tim", "Eva", "Hobbykeller", "Wintergarten") %}
+		{% for room in heating_rooms %}
 		<section class="w3-half w3-margin-top" data-heating-room="{{ room }}">
 			<div class="w3-card w3-padding">
 				<h3>{{ room }}</h3>
@@ -11,7 +11,7 @@
 					<label for="target-{{ loop.index }}">Solltemperatur (&deg;C)</label>
 					<div class="w3-section">
 						<input class="w3-input w3-border" id="target-{{ loop.index }}"
-							name="target" type="number" min="8" max="28" step="0.5" required>
+							name="target" type="number" min="0" max="28" step="any" required>
 					</div>
 					<button class="w3-button w3-teal" type="submit">Sollwert setzen</button>
 				</form>

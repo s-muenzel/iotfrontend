@@ -18,6 +18,27 @@ def get_connection():
     return mariadb.connect(option_files="db.cnf", database="iot")
 
 
+def get_heating_rooms():
+    """Fetch rooms with heating values recorded in the last day."""
+    query = """
+        SELECT DISTINCT raum
+        FROM fritz_values
+        WHERE typ IN ('ist', 'soll')
+          AND timestamp >= NOW() - INTERVAL 1 DAY
+        ORDER BY raum
+    """
+    db_connection = get_connection()
+    try:
+        cursor = db_connection.cursor()
+        try:
+            cursor.execute(query)
+            return [row[0] for row in cursor if row[0] is not None]
+        finally:
+            cursor.close()
+    finally:
+        db_connection.close()
+
+
 def get_heating_data():
     """Fetch the latest actual and target temperatures for each room."""
     query = """
