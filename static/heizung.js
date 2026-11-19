@@ -7,18 +7,19 @@ function Werte_Init_Heizung() {
 			return response.json();
 		})
 		.then(data => {
-			Object.entries(data.rooms).forEach(([room, temperature]) => {
-				const roomElement = document.querySelector(
-					'[data-heating-room="' + room + '"]'
-				);
-				if (!roomElement) {
-					return;
-				}
+			document.querySelectorAll("[data-heating-room]").forEach(roomElement => {
+				const temperature =
+					data.rooms[roomElement.dataset.heatingRoom];
 				roomElement.querySelector(".heating-actual").textContent =
-					temperature ? temperature.actual.toFixed(1) + " °C" : "Nicht verfügbar";
+					temperature && temperature.actual !== null
+						? temperature.actual.toFixed(1) + " °C"
+						: "Nicht verfügbar";
 				const targetInput = roomElement.querySelector('[name="target"]');
 				if (!targetInput.dataset.userEdited) {
-					targetInput.value = temperature ? temperature.target : "";
+					targetInput.value =
+						temperature && temperature.target !== null
+							? temperature.target
+							: "";
 				}
 			});
 		})

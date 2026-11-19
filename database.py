@@ -18,6 +18,49 @@ def get_connection():
     return mariadb.connect(option_files="db.cnf", database="iot")
 
 
+def get_heating_data():
+    """Fetch the latest actual and target temperatures for each room."""
+    query = """
+        SELECT current_value.raum, current_value.typ, current_value.value
+        FROM fritz_values AS current_value
+        WHERE current_value.typ IN ('ist', 'soll')
+          AND NOT EXISTS (
+              SELECT 1
+              FROM fritz_values AS newer_value
+              WHERE newer_value.raum = current_value.raum
+                AND newer_value.typ = current_value.typ
+                AND newer_value.typ IN ('ist', 'soll')
+                AND (
+                    newer_value.timestamp > current_value.timestamp
+                    OR (
+                        newer_value.timestamp = current_value.timestamp
+                        AND newer_value.id > current_value.id
+                    )
+                )
+          )
+    """
+    db_connection = get_connection()
+    try:
+        cursor = db_connection.cursor()
+        try:
+            cursor.execute(query)
+            heating_data = {}
+            for room, measurement_type, value in cursor:
+                temperature = value / 10 if value is not None else None
+                room_data = heating_data.setdefault(
+                    room, {"actual": None, "target": None}
+                )
+                if measurement_type == "ist":
+                    room_data["actual"] = temperature
+                else:
+                    room_data["target"] = temperature
+            return heating_data
+        finally:
+            cursor.close()
+    finally:
+        db_connection.close()
+
+
 def getColor(type, value):
     """Return an interpolated hex color."""
     # Definition der MinMax-Werte für jeden Typ

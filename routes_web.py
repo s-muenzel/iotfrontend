@@ -33,11 +33,9 @@ def iot():
 
 @web_bp.route('/heizung/status')
 def heizung_status():
-    """Return current thermostat readings for the dashboard."""
-    from fritz_handler import hole_Temperatur_Daten
-
+    """Return the latest thermostat readings stored in the database."""
     try:
-        return jsonify(rooms=hole_Temperatur_Daten())
+        return jsonify(rooms=db.get_heating_data())
     except Exception:
         logging.exception("Error loading heating status")
         return jsonify(error="Heizungsdaten konnten nicht geladen werden."), 503
