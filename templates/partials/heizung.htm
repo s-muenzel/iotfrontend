@@ -10,8 +10,8 @@
 					<input type="hidden" name="room" value="{{ room }}">
 					<label for="target-{{ loop.index }}">Solltemperatur (&deg;C)</label>
 					<div class="w3-section">
-						<input class="w3-input w3-border" id="target-{{ loop.index }}"
-							name="target" type="number" min="0" max="28" step="any" required>
+						<input class="w3-input w3-border" id="target-{{ loop.index }}" name="target" type="number"
+							min="0" max="28" step="any" required>
 					</div>
 					<button class="w3-button w3-teal" type="submit">Sollwert setzen</button>
 				</form>
@@ -19,4 +19,7 @@
 		</section>
 		{% endfor %}
 	</div>
+	<div class="w3-container w3-mobile"><a
+			href="http://diskstation.ar14.s-muenzel.de:3000/goto/s99kb6?orgId=default">Langfristige
+			Temperaturdaten</a></div>
 </section>

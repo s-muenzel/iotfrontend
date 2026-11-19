@@ -41,24 +41,26 @@ def get_heating_rooms():
 
 def get_heating_data():
     """Fetch the latest actual and target temperatures for each room."""
-    query = """
-        SELECT current_value.raum, current_value.typ, current_value.value
-        FROM fritz_values AS current_value
-        WHERE current_value.typ IN ('ist', 'soll')
-          AND NOT EXISTS (
-              SELECT 1
-              FROM fritz_values AS newer_value
-              WHERE newer_value.raum = current_value.raum
-                AND newer_value.typ = current_value.typ
-                AND newer_value.typ IN ('ist', 'soll')
-                AND (
-                    newer_value.timestamp > current_value.timestamp
-                    OR (
-                        newer_value.timestamp = current_value.timestamp
-                        AND newer_value.id > current_value.id
-                    )
-                )
-          )
+    query = """WITH recent_values AS (
+        SELECT
+            raum,
+            typ,
+            value,
+            ROW_NUMBER() OVER (
+                PARTITION BY raum, typ
+                ORDER BY timestamp DESC, id DESC
+            ) AS rn
+        FROM fritz_values
+        WHERE typ IN ('ist', 'soll')
+        AND timestamp >= NOW() - INTERVAL 1 DAY
+    )
+    SELECT
+        raum,
+        typ,
+        value
+    FROM recent_values
+    WHERE rn = 1
+    ORDER BY raum, typ;
     """
     db_connection = get_connection()
     try:
