@@ -5,7 +5,6 @@ on:
     branches:
       - master
     paths:
-      - "fritz_handler.py"
       - "Check_Types.md"
       - "check_types.py"
 
@@ -13,7 +12,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  sync-fritz:
+  sync-datastructures:
     runs-on: ubuntu-latest
 
     steps:
@@ -34,7 +33,6 @@ jobs:
       # Copy files managed by this workflow
       - name: Copy files
         run: |
-          cp iotfrontend/fritz_handler.py iotcontroler/fritz_handler.py
           cp iotfrontend/Check_Types.md iotcontroler/Check_Types.md
           cp iotfrontend/check_types.py iotcontroler/check_types.py
 
@@ -45,7 +43,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add fritz_handler.py Check_Types.md check_types.py
+          git add Check_Types.md check_types.py
 
           if git diff --cached --quiet; then
             echo "No changes detected in synced files"
