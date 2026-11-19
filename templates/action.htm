@@ -244,7 +244,8 @@
         {{ condition_row("__INDEX__", ("", "", "")) }}
       </template>
 
-      <button class="w3-button w3-theme w3-round w3-margin-top" type="submit">
+      <button class="w3-button w3-theme w3-round w3-margin-top" type="submit"
+        {% if not is_new %}data-dirty-save disabled{% endif %}>
         <i class="fas fa-save" aria-hidden="true"></i>
         {% if is_new %}Regel hinzufügen{% else %}Änderungen speichern{% endif %}
       </button>

@@ -97,6 +97,8 @@ class ActivityFormRouteTests(unittest.TestCase):
             self.assertIn(b"<div data-row=\"condition\">", response.data)
             self.assertNotIn(b"<fieldset data-row=\"condition\">", response.data)
 
+        self.assertNotIn(b"data-dirty-save", create_response.data)
+        self.assertIn(b"data-dirty-save disabled", edit_response.data)
         self.assertIn(b'value="Rule"', edit_response.data)
         self.assertIn(b'value="sensor/temp"', edit_response.data)
         self.assertIn(b'name="trigger_type"', edit_response.data)

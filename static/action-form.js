@@ -238,6 +238,29 @@
     }
   }
 
+  function formState(form) {
+    const controls = Array.from(
+      form.querySelectorAll("input[name], select[name], textarea[name]")
+    ).filter(function (control) {
+      return !control.disabled;
+    }).map(function (control) {
+      const selectedValues = control instanceof HTMLSelectElement &&
+        control.multiple ?
+        Array.from(control.selectedOptions).map(function (option) {
+          return option.value;
+        }) : control.value;
+      const checked = control instanceof HTMLInputElement &&
+        ["checkbox", "radio"].includes(control.type) ?
+        control.checked : null;
+      return [control.name, selectedValues, checked];
+    });
+    const rows = Array.from(form.querySelectorAll("[data-row]"))
+      .map(function (row) {
+        return row.dataset.row;
+      });
+    return JSON.stringify([controls, rows]);
+  }
+
   function setFormEnabled(form, enabled) {
     form.querySelectorAll("[data-canonical-value]").forEach(function (input) {
       input.disabled = !enabled;
@@ -356,6 +379,17 @@
     form.addEventListener("submit", function () {
       form.querySelectorAll(".typed-value").forEach(synchronizeField);
     });
+
+    const saveButton = form.querySelector("[data-dirty-save]");
+    if (saveButton) {
+      const originalState = formState(form);
+      const updateSaveButton = function () {
+        saveButton.disabled = formState(form) === originalState;
+      };
+      form.addEventListener("input", updateSaveButton);
+      form.addEventListener("change", updateSaveButton);
+      form.addEventListener("click", updateSaveButton);
+    }
   }
 
   function updateTriggerTopics(form) {
