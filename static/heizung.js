@@ -16,8 +16,6 @@ function Werte_Init_Heizung() {
 				}
 				roomElement.querySelector(".heating-actual").textContent =
 					temperature ? temperature.actual.toFixed(1) + " °C" : "Nicht verfügbar";
-				roomElement.querySelector(".heating-target").textContent =
-					temperature ? temperature.target + " °C" : "Nicht verfügbar";
 				const targetInput = roomElement.querySelector('[name="target"]');
 				if (!targetInput.dataset.userEdited) {
 					targetInput.value = temperature ? temperature.target : "";
