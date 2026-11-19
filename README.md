@@ -46,12 +46,14 @@ fritz:
 
 ## Running
 
-Install the Python dependencies used by the application (see `Dockerfile`),
-provide the configuration files, then run:
+Install the Python dependencies from `requirements.txt`, provide the
+configuration files, then run:
 
 ```powershell
+python -m pip install -r requirements.txt
 python app.py
 ```
 
-The development server listens on port 80. The Docker image copies the
-dashboard partials into Flask's `templates/partials/` directory.
+The development server listens on port 80. The Docker image installs the same
+dependencies and copies the dashboard partials into Flask's
+`templates/partials/` directory.
