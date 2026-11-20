@@ -27,6 +27,42 @@
       text-align: right;
     }
 
+    .w3-table-all th .filter-toggle,
+    .w3-table-all th .filter-visibility-toggle {
+      margin-left: 0.35em;
+      padding: 4px 8px;
+      vertical-align: middle;
+    }
+
+    .w3-table-all th .filter-toggle.filter-active {
+      color: #ffeb3b;
+    }
+
+    .w3-table-all th .filter-visibility-toggle[hidden] {
+      display: none;
+    }
+
+    .w3-table-all tr.filter-row[hidden] {
+      display: none;
+    }
+
+    .filter-options {
+      max-height: 8rem;
+      overflow-y: auto;
+      text-align: left;
+      font-weight: normal;
+    }
+
+    .filter-option {
+      display: block;
+      white-space: nowrap;
+    }
+
+    .filter-text {
+      box-sizing: border-box;
+      width: 100%;
+    }
+
     .w3-table-all td.action-controls {
       white-space: nowrap;
     }
@@ -45,7 +81,18 @@
         <table id="T" class="w3-table-all w3-hoverable w3-card-4">
           <thead>
             <tr>
-              <th class="status-header" scope="col" onclick="sortTable(0)" aria-sort="none">Status
+              <th class="status-header" scope="col" onclick="sortTable(0)" aria-sort="none">
+                <button class="w3-button w3-round filter-toggle" type="button" onclick="toggleFilters(event)"
+                  aria-label="Filter aktivieren" aria-pressed="false"
+                  title="Filter aktivieren">
+                  <i class="fas fa-filter" aria-hidden="true"></i>
+                </button>
+                <button class="w3-button w3-round filter-visibility-toggle" type="button"
+                  onclick="toggleFilterVisibility(event)" aria-label="Filterbereich ausblenden"
+                  aria-expanded="false" aria-controls="filterRow" title="Filterbereich ausblenden" hidden>
+                  <i class="fas fa-eye" aria-hidden="true"></i>
+                </button>
+                Status
                 <i class="fa sort-indicator" data-column="0" aria-hidden="true"></i>
               </th>
               <th scope="col" onclick="sortTable(1)" aria-sort="none">Regel
@@ -59,6 +106,25 @@
               </th>
               <th scope="col" onclick="sortTable(4)" aria-sort="none">Beschreibung
                 <i class="fa sort-indicator" data-column="4" aria-hidden="true"></i>
+              </th>
+            </tr>
+            <tr id="filterRow" class="filter-row" hidden>
+              <th scope="col">
+                <div class="filter-options" data-filter-column="0"></div>
+              </th>
+              <th scope="col">
+                <input class="filter-text" type="search" data-filter-column="1" aria-label="Regel filtern"
+                  placeholder="Regel filtern">
+              </th>
+              <th scope="col">
+                <div class="filter-options" data-filter-column="2"></div>
+              </th>
+              <th scope="col">
+                <div class="filter-options" data-filter-column="3"></div>
+              </th>
+              <th scope="col">
+                <input class="filter-text" type="search" data-filter-column="4" aria-label="Beschreibung filtern"
+                  placeholder="Beschreibung filtern">
               </th>
             </tr>
           </thead>
@@ -106,6 +172,113 @@
   <script>
     var sortierSpalte = -1;
     var aufsteigend = true;
+    var filtersEnabled = false;
+    var filterControlsVisible = false;
+
+    function toggleFilters(event) {
+      event.stopPropagation();
+      filtersEnabled = !filtersEnabled;
+      filterControlsVisible = filtersEnabled;
+
+      var filterRow = document.getElementById("filterRow");
+      var toggle = document.querySelector(".filter-toggle");
+      var visibilityToggle = document.querySelector(".filter-visibility-toggle");
+      toggle.classList.toggle("filter-active", filtersEnabled);
+      toggle.setAttribute("aria-pressed", String(filtersEnabled));
+      toggle.setAttribute("aria-label", filtersEnabled ? "Filter deaktivieren" : "Filter aktivieren");
+      toggle.title = filtersEnabled ? "Filter deaktivieren" : "Filter aktivieren";
+      visibilityToggle.hidden = !filtersEnabled;
+      updateFilterControlsVisibility();
+      applyTableFilters();
+    }
+
+    function toggleFilterVisibility(event) {
+      event.stopPropagation();
+      if (!filtersEnabled) return;
+      filterControlsVisible = !filterControlsVisible;
+      updateFilterControlsVisibility();
+    }
+
+    function updateFilterControlsVisibility() {
+      document.getElementById("filterRow").hidden = !filterControlsVisible;
+      var toggle = document.querySelector(".filter-visibility-toggle");
+      toggle.setAttribute("aria-expanded", String(filterControlsVisible));
+      toggle.setAttribute("aria-label", filterControlsVisible ? "Filterbereich ausblenden" : "Filterbereich anzeigen");
+      toggle.title = filterControlsVisible ? "Filterbereich ausblenden" : "Filterbereich anzeigen";
+      var icon = toggle.querySelector("i");
+      icon.classList.toggle("fa-eye", filterControlsVisible);
+      icon.classList.toggle("fa-eye-slash", !filterControlsVisible);
+    }
+
+    function initializeFilters() {
+      document.querySelectorAll(".filter-options").forEach(function (container) {
+        var column = Number(container.dataset.filterColumn);
+        var values = new Set();
+        Array.from(document.getElementById("T").tBodies[0].rows).forEach(function (row) {
+          var cell = row.cells[column];
+          var value = column === 0 ? cell.getAttribute("data-sort") : cell.textContent.trim();
+          values.add(value === null ? "" : value);
+        });
+
+        Array.from(values).sort(function (a, b) {
+          return a.localeCompare(b, "de", { sensitivity: "base", numeric: true });
+        }).forEach(function (value) {
+          var label = document.createElement("label");
+          label.className = "filter-option";
+          var checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.value = value;
+          checkbox.dataset.filterColumn = String(column);
+          checkbox.addEventListener("change", applyTableFilters);
+          label.appendChild(checkbox);
+
+          var displayValue = column === 0
+            ? (value === "1" ? "Active" : "Inactive")
+            : (value || "(leer)");
+          label.appendChild(document.createTextNode(" " + displayValue));
+          container.appendChild(label);
+        });
+      });
+
+      document.querySelectorAll(".filter-text").forEach(function (input) {
+        input.addEventListener("input", applyTableFilters);
+      });
+    }
+
+    function applyTableFilters() {
+      var table = document.getElementById("T");
+      var rows = Array.from(table.tBodies[0].rows);
+      if (!filtersEnabled) {
+        rows.forEach(function (row) {
+          row.style.display = "";
+        });
+        return;
+      }
+
+      rows.forEach(function (row) {
+        var matches = true;
+        document.querySelectorAll(".filter-options").forEach(function (container) {
+          if (!matches) return;
+          var column = Number(container.dataset.filterColumn);
+          var selectedValues = Array.from(container.querySelectorAll("input:checked"))
+            .map(function (checkbox) { return checkbox.value; });
+          if (selectedValues.length === 0) return;
+
+          var cell = row.cells[column];
+          var value = column === 0 ? cell.getAttribute("data-sort") : cell.textContent.trim();
+          if (selectedValues.indexOf(value === null ? "" : value) === -1) matches = false;
+        });
+
+        document.querySelectorAll(".filter-text").forEach(function (input) {
+          if (!matches || !input.value.trim()) return;
+          var column = Number(input.dataset.filterColumn);
+          var text = row.cells[column].textContent.toLocaleLowerCase("de");
+          if (text.indexOf(input.value.trim().toLocaleLowerCase("de")) === -1) matches = false;
+        });
+
+        row.style.display = matches ? "" : "none";
+      });
+    }
 
     function sortTable(column) {
       if (sortierSpalte === column) {
@@ -149,6 +322,8 @@
         tbody.appendChild(row);
       });
     }
+
+    initializeFilters();
 
     function aktion_remove(n) {
       if (confirm("Regel löschen (kein Undo!)")) {

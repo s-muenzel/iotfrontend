@@ -86,7 +86,6 @@ def status_lampen():
 @status_bp.route('/status_s')
 def status_s():
     """Sendet die aktuellen Strom-Werte"""
-    logging.debug("status_s")
     
     try:
         # power_data = modbus_handler.get_power_status()
@@ -94,19 +93,7 @@ def status_s():
         
         if power_data is None:
             return _error_response("keine Verbindung zum Solaredge")
-        
-        # return ('<!DOCTYPE html><html><head><meta charset="UTF-8">'
-        #         '<title>Strom</title></head><body>'
-        #         '<h1>Leistung Solaranlage: {p_solar}W</h1>'
-        #         '<h1>Leistung Haus: {p_haus}W</h1>'
-        #         '<h1>Leistung Netz: {p_grid}W</h1>'
-        #         '<h1>Leistung Batterie: {p_batterie}W</h1>'
-        #         '</body></html>'.format(
-        #             p_solar=int(power_data['p_solar']),
-        #             p_haus=int(power_data['p_haus']),
-        #             p_grid=int(power_data['p_grid']),
-        #             p_batterie=int(power_data['p_battery'])
-                # ))
+
         return json.dumps(power_data)
     except Exception as err:
         logging.warning("Error in strom(): %s", str(err))
