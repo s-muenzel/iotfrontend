@@ -1,13 +1,13 @@
 """mqtt_handler.py: MQTT handling and Bewässerung (irrigation) state management."""
 import json
 import logging
-import time
 import paho.mqtt.client as mqtt_client
 import yaml
 
 mqtt_client_instance = None
-MQTT_CONNECT_TIMEOUT = 10
 MQTT_PUBLISH_TIMEOUT = 5
+MQTT_RECONNECT_MIN_DELAY = 1
+MQTT_RECONNECT_MAX_DELAY = 30
 
 # Global state variable for Solar/Electricity data
 _solar_data = {
@@ -48,16 +48,28 @@ def on_message(client, userdata, msg):
 
 
 def on_connect(client, userdata, connect_flags, reason_code, properties):
-    """Log the broker's connection response."""
-    if reason_code == 0:
-        logging.info("Connected to MQTT broker")
-    else:
+    """Log successful connections and restore subscriptions after reconnect."""
+    if reason_code != 0:
         logging.error("MQTT broker rejected connection: %s", reason_code)
+        return
+
+    logging.info("Connected to MQTT broker")
+    for topic in MQTT_TOPICS:
+        result, _ = client.subscribe(topic)
+        if result != mqtt_client.MQTT_ERR_SUCCESS:
+            logging.error(
+                "MQTT subscribe to %s failed with code %s", topic, result
+            )
+        else:
+            logging.info("Subscribed to topic: %s", topic)
 
 
 def on_disconnect(client, userdata, disconnect_flags, reason_code, properties):
     """Log MQTT connection loss."""
-    logging.warning("Disconnected from MQTT broker: %s", reason_code)
+    if reason_code == 0:
+        logging.info("Disconnected from MQTT broker")
+    else:
+        logging.warning("Disconnected from MQTT broker: %s", reason_code)
 
 
 def init_mqtt():
@@ -72,7 +84,6 @@ def init_mqtt():
         stop_mqtt()
     mqtt_client_instance = None
     client = None
-    loop_started = False
     try:
         mqtt_config = yaml.safe_load(open("mq.cnf"))
         client = mqtt_client.Client(
@@ -82,33 +93,26 @@ def init_mqtt():
         client.on_message = on_message
         client.on_connect = on_connect
         client.on_disconnect = on_disconnect
+        client.reconnect_delay_set(
+            min_delay=MQTT_RECONNECT_MIN_DELAY,
+            max_delay=MQTT_RECONNECT_MAX_DELAY
+        )
+        paho_logger = logging.getLogger("mqtt_handler.paho")
+        paho_logger.setLevel(logging.WARNING)
+        client.enable_logger(paho_logger)
 
-        connect_result = client.connect(
+        client.connect_async(
             host=mqtt_config["mqtt"]["mqttserver"],
             port=mqtt_config["mqtt"]["mqttport"]
         )
-        if connect_result != mqtt_client.MQTT_ERR_SUCCESS:
+        loop_result = client.loop_start()
+        if loop_result != mqtt_client.MQTT_ERR_SUCCESS:
             raise RuntimeError(
-                f"MQTT connect failed with code {connect_result}"
+                f"MQTT network loop failed to start with code {loop_result}"
             )
 
-        client.loop_start()
-        loop_started = True
-        deadline = time.monotonic() + MQTT_CONNECT_TIMEOUT
-        while not client.is_connected() and time.monotonic() < deadline:
-            time.sleep(0.1)
-        if not client.is_connected():
-            raise TimeoutError("Timed out waiting for MQTT connection")
-
-        for topic in MQTT_TOPICS:
-            result, _ = client.subscribe(topic)
-            if result != mqtt_client.MQTT_ERR_SUCCESS:
-                raise RuntimeError(
-                    f"MQTT subscribe to {topic!r} failed with code {result}"
-                )
-            logging.info("Subscribed to topic: %s", topic)
-
         mqtt_client_instance = client
+        logging.info("MQTT client started; connecting to broker")
         return client
     except Exception as err:
         mqtt_client_instance = None
@@ -118,12 +122,11 @@ def init_mqtt():
             except Exception:
                 logging.debug("Failed to disconnect MQTT client after init error",
                               exc_info=True)
-            if loop_started:
-                try:
-                    client.loop_stop()
-                except Exception:
-                    logging.debug("Failed to stop MQTT loop after init error",
-                                  exc_info=True)
+            try:
+                client.loop_stop()
+            except Exception:
+                logging.debug("Failed to stop MQTT loop after init error",
+                              exc_info=True)
         logging.exception("Failed to initialize MQTT: %s", err)
         return None
 

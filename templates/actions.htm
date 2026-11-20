@@ -74,13 +74,9 @@
                   href="/aktion/SchalteUm/{{ item[1] }}" aria-label="Status von {{ item[0] }} umschalten"
                   title="Status umschalten">
                   {% if item[2]>0 %}
-                  <span class="w3-tooltip"><i class="fas fa-toggle-on" aria-hidden="true"></i>
-                    <span class="w3-text">Aktiv</span>
-                  </span>
+                  <span><i class="fas fa-toggle-on" aria-hidden="true"></i></span>
                   {% else %}
-                  <span class="w3-tooltip"><i class="fas fa-toggle-off" aria-hidden="true"></i>
-                    <span class="w3-text">Inaktiv</span>
-                  </span>
+                  <span><i class="fas fa-toggle-off" aria-hidden="true"></i></span>
                   {% endif %}
                 </a>
               </td>

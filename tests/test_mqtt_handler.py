@@ -66,10 +66,9 @@ class MqttHandlerTests(unittest.TestCase):
             timeout=mqtt_handler.MQTT_PUBLISH_TIMEOUT
         )
 
-    def test_initialization_stores_client_only_after_connection(self):
+    def test_initialization_uses_async_connection_and_resubscribes(self):
         client = MagicMock()
-        client.connect.return_value = mqtt_handler.mqtt_client.MQTT_ERR_SUCCESS
-        client.is_connected.return_value = True
+        client.loop_start.return_value = mqtt_handler.mqtt_client.MQTT_ERR_SUCCESS
         client.subscribe.return_value = (
             mqtt_handler.mqtt_client.MQTT_ERR_SUCCESS, 1
         )
@@ -83,14 +82,20 @@ class MqttHandlerTests(unittest.TestCase):
                 patch("builtins.open"):
             initialized = mqtt_handler.init_mqtt()
             self.assertIs(mqtt_handler.mqtt_client_instance, client)
+            client.connect_async.assert_called_once_with(
+                host="broker", port=1883
+            )
+            client.connect.assert_not_called()
             client.loop_start.assert_called_once()
+            client.subscribe.assert_not_called()
+            client.on_connect(client, None, None, 0, None)
             client.subscribe.assert_called_once_with("Sensor/Solar/////+")
 
         self.assertIs(initialized, client)
 
     def test_failed_initialization_clears_global_client(self):
         client = MagicMock()
-        client.connect.side_effect = OSError("broker unavailable")
+        client.connect_async.side_effect = OSError("invalid MQTT configuration")
         config = {"mqtt": {"mqttserver": "broker", "mqttport": 1883}}
 
         with patch.object(mqtt_handler, "mqtt_client_instance", None), \
@@ -103,8 +108,9 @@ class MqttHandlerTests(unittest.TestCase):
 
         self.assertIsNone(initialized)
         self.assertIsNone(mqtt_handler.mqtt_client_instance)
+        client.connect_async.assert_called_once()
         client.disconnect.assert_called_once()
-        client.loop_stop.assert_not_called()
+        client.loop_stop.assert_called_once()
 
     def test_action_reload_reports_publish_failure(self):
         app = Flask(__name__)

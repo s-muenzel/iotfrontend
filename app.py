@@ -8,6 +8,14 @@ Listet alle konfigurierte Aktionen und bietet die Möglichtkeit zum Editieren
 WSGI Compliant: This module exports an 'app' object at module level for WSGI servers.
 """
 import logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logging.getLogger("mysql.connector").setLevel(logging.INFO)
+logging.getLogger("werkzeug").setLevel(logging.WARNING)
+logger = logging.getLogger(__name__)
+
 import atexit
 from flask import Flask
 
@@ -46,13 +54,7 @@ atexit.register(mqtt_handler.stop_mqtt)
 
 if __name__ == '__main__':
     # Configure logging
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
-    logger = logging.getLogger(__name__)
-    logging.getLogger("mysql.connector").setLevel(logging.INFO)
-    logging.getLogger("werkzeug").setLevel(logging.WARNING)
+
 
     # Development server only
     try:
