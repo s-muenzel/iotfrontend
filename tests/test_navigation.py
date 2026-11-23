@@ -1,9 +1,11 @@
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from flask import Flask
 from jinja2 import Environment, FileSystemLoader
 
+import routes_actions
 import routes_web
 
 
@@ -48,6 +50,52 @@ class NavigationTests(unittest.TestCase):
         self.assertIn(b"Verwaltung...", response.data)
         self.assertIn(b"Historie", response.data)
         self.assertIn(b"Historie", response.data)
+
+    def test_dashboard_device_and_rules_pages_use_shared_site_layout(self):
+        app = Flask(__name__, template_folder=str(TEMPLATES))
+        app.register_blueprint(routes_web.web_bp)
+        app.register_blueprint(routes_actions.actions_bp)
+        weather = {
+            "temp": {},
+            "feucht": {},
+            "hell": {},
+            "regen": {},
+            "proz": {},
+        }
+
+        with patch.object(routes_web.db, "get_weather_data", return_value=weather), \
+                patch.object(routes_web, "_get_heating_rooms", return_value=()), \
+                patch.object(routes_web.db, "get_device_list", return_value=[]), \
+                patch.object(routes_web, "check_netzwerkfehler", return_value=[]), \
+                patch.object(routes_actions.db, "get_activities", return_value=[]):
+            client = app.test_client()
+            responses = [
+                client.get("/"),
+                client.get("/iot.htm"),
+                client.get("/actions"),
+            ]
+
+        for response in responses:
+            self.assertEqual(response.status_code, 200)
+            self.assertIn(b"/static/site.css", response.data)
+            self.assertIn(b'id="mySidebar"', response.data)
+
+    def test_activity_form_uses_document_base_without_site_navigation(self):
+        app = Flask(__name__, template_folder=str(TEMPLATES))
+        app.register_blueprint(routes_actions.actions_bp)
+
+        with patch.object(
+                routes_actions.db, "get_activity_devices", return_value=[]), \
+                patch.object(
+                    routes_actions.db, "get_heating_rooms", return_value=[]), \
+                patch.object(
+                    routes_actions.db, "get_triggers", return_value=[]):
+            response = app.test_client().get("/aktion/add")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"/static/site.css", response.data)
+        self.assertNotIn(b'id="mySidebar"', response.data)
+        self.assertIn(b'id="activity-form"', response.data)
 
 
 if __name__ == "__main__":

@@ -15,7 +15,7 @@ COPY *.py db.cnf mq.cnf ./
 
 COPY templates/*.htm ./templates/
 COPY templates/partials/*.htm ./templates/partials/
-COPY static/*.png static/*.js static/*.ico ./static/
+COPY static/*.png static/*.js static/*.ico static/*.css ./static/
 
 EXPOSE 80/tcp
 

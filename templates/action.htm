@@ -1,22 +1,11 @@
-<!DOCTYPE html>
-<html>
+{% extends "base.htm" %}
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" sizes="any">
-  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32.png') }}">
-  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
-  <title>Alte Rinne 14 - IOT Regel-Details</title>
-  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-  <link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-teal.css">
+{% block title %}Alte Rinne 14 - IOT Regel-Details{% endblock %}
+
+{% block extra_head %}
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css"
     integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
   <style>
-    body {
-      font-family: "Roboto", sans-serif;
-    }
-
     #activity-form > fieldset,
     [data-row="trigger"],
     [data-row="action"],
@@ -101,9 +90,9 @@
     }
 
   </style>
-</head>
+{% endblock %}
 
-<body>
+{% block page %}
   <header class="w3-container w3-theme w3-padding-32">
     <h1 class="w3-xxxlarge">Alte Rinne 14 - IOT Regel-Details</h1>
   </header>
@@ -258,6 +247,8 @@
       <i class="fas fa-arrow-left" aria-hidden="true"></i> Zurück
     </a></p>
   </main>
+{% endblock %}
+
+{% block scripts %}
   <script src="{{ url_for('static', filename='action-form.js') }}" defer></script>
-</body>
-</html>
+{% endblock %}

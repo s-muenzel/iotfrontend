@@ -1,0 +1,25 @@
+{% extends "base.htm" %}
+
+{% block page %}
+	{% include "partials/navigation.htm" %}
+	<div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="w3_close()"
+		style="cursor:pointer" id="myOverlay"></div>
+	<div class="w3-main site-main">
+		<div id="myTop" class="w3-container w3-top w3-theme w3-large">
+			<p><i class="fa fa-bars w3-button w3-teal w3-hide-large w3-xlarge"
+				onclick="w3_open()"></i><span id="myIntro" class="w3-hide">Alte Rinne 14</span></p>
+		</div>
+		<header class="w3-container w3-theme site-header">
+			<h1 class="w3-xxxlarge">{% block page_title %}Alte Rinne 14{% endblock %}</h1>
+			{% block page_header %}{% endblock %}
+		</header>
+		<main class="{% block main_class %}site-content{% endblock %}">
+			{% block content %}{% endblock %}
+		</main>
+	</div>
+{% endblock %}
+
+{% block scripts %}
+	<script src="{{ url_for('static', filename='site.js') }}"></script>
+	{% block page_scripts %}{% endblock %}
+{% endblock %}

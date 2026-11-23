@@ -18,9 +18,18 @@ Strom and Heizung are dashboard sections; their data endpoints remain in use.
 
 ## Dashboard templates
 
-`templates/top.htm` defines the dashboard shell, navigation, JavaScript, and
-section visibility observer. Each section's HTML is a Jinja partial in
-`templates/partials/`:
+`templates/base.htm` defines shared document metadata and common assets.
+`templates/site_page.htm` adds the standard sidebar, responsive page frame,
+header, and content blocks used by the dashboard, devices, and rules pages.
+The history page remains on its existing shell pending migration. The
+activity form extends the document base but keeps its focused layout and does
+not include the site navigation.
+
+Common presentation and sidebar/top-bar behavior live in `static/site.css`
+and `static/site.js`. Page-specific CSS and scripts remain with their
+templates where they are not shared. The dashboard's section visibility
+observer and status polling remain in `templates/top.htm`. Each dashboard
+section's HTML is a Jinja partial in `templates/partials/`:
 
 - `wetter.htm`
 - `rollos.htm`
@@ -35,9 +44,10 @@ aware: Rollos, Garage, Leuchten, and Strom update every 10 seconds while
 visible; Heizung fetches readings when visible and refreshes every 5 minutes
 while visible. Polling stops when the section leaves the viewport.
 
-The other full-page templates (`iot.htm`, `actions.htm`, and `action.htm`)
-serve their respective pages. `action.htm` handles both creating and editing
-an activity.
+`iot.htm` and `actions.htm` extend the shared site page. `historie.htm` is
+still a placeholder page using its existing standalone shell. `action.htm`
+handles both creating and editing an activity and extends only the shared
+document base.
 
 ## Service and data modules
 
@@ -57,6 +67,7 @@ an activity.
 | --- | --- |
 | `/` | Main dashboard |
 | `/iot.htm` | IoT device list |
+| `/historie.htm` | History placeholder for applied rules |
 | `/status_r` | Roller shutter status |
 | `/status_g` | Garage status |
 | `/status_l` | Light status |
@@ -67,9 +78,9 @@ an activity.
 
 ## Container templates
 
-The `Dockerfile` copies top-level templates to `/templates/` and dashboard
-partials to `/templates/partials/`. Keep these paths aligned with the Jinja
-include paths in `templates/top.htm`.
+The `Dockerfile` copies top-level templates to `/templates/`, dashboard
+partials to `/templates/partials/`, and static assets to `/static/`. Keep
+these paths aligned with the Jinja references in the templates.
 
 Configuration is read from `db.cnf`, `mq.cnf`, and `fritz.cnf`. Keep actual
 credentials out of source control.
