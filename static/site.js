@@ -30,7 +30,7 @@ function initializeDataTable(table) {
 	const filterVisibilityToggle = controls.querySelector(
 		"[data-filter-visibility-toggle]"
 	);
-	const viewToggle = controls.querySelector("[data-table-view-toggle]");
+	const viewOptions = controls.querySelectorAll("[data-table-view]");
 	let filtersEnabled = false;
 	let filterControlsVisible = false;
 	let sortedColumn = -1;
@@ -145,15 +145,20 @@ function initializeDataTable(table) {
 		updateFilterVisibility();
 	});
 
-	viewToggle.addEventListener("click", function () {
-		const expanded = viewToggle.getAttribute("aria-expanded") === "true";
-		table.classList.toggle("show-optional-columns", !expanded);
-		viewToggle.setAttribute("aria-expanded", String(!expanded));
-		viewToggle.setAttribute("aria-pressed", String(!expanded));
-		viewToggle.title = expanded
-			? "Weitere Spalten sind verborgen"
-			: "Alle Spalten angezeigt";
-		viewToggle.textContent = expanded ? "Kompakt" : "Komplett";
+	function setTableView(view) {
+		const showAllColumns = view === "complete";
+		table.classList.toggle("show-optional-columns", showAllColumns);
+		viewOptions.forEach(function (option) {
+			const selected = option.dataset.tableView === view;
+			option.classList.toggle("is-selected", selected);
+			option.setAttribute("aria-pressed", String(selected));
+		});
+	}
+
+	viewOptions.forEach(function (option) {
+		option.addEventListener("click", function () {
+			setTableView(option.dataset.tableView);
+		});
 	});
 
 	table.querySelectorAll("th[data-sort-column]").forEach(function (header) {

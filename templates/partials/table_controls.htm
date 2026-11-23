@@ -1,0 +1,24 @@
+{% macro table_controls(table_id, filter_row_id) -%}
+<div class="table-toolbar" data-controls-for="{{ table_id }}">
+	<div class="table-filter-controls">
+		<button class="w3-button w3-round filter-toggle" type="button" data-filter-toggle
+			aria-label="Filter aktivieren" aria-pressed="false" title="Filter aktivieren">
+			<i class="fa fa-filter" aria-hidden="true"></i> Filter
+		</button>
+		<button class="w3-button w3-round filter-visibility-toggle" type="button"
+			data-filter-visibility-toggle aria-label="Filterbereich anzeigen" aria-expanded="false"
+			aria-controls="{{ filter_row_id }}" title="Filterbereich anzeigen" hidden>
+			<i class="fa fa-eye" aria-hidden="true"></i>
+		</button>
+	</div>
+	<div class="table-view-control" role="group" aria-label="Tabellendarstellung">
+		<!-- <span class="table-toolbar-label">Spalten:</span> -->
+		<div class="table-view-switch">
+			<button class="table-view-option is-selected" type="button" data-table-view="compact"
+				aria-pressed="true" aria-controls="{{ table_id }}">Weniger</button>
+			<button class="table-view-option" type="button" data-table-view="complete"
+				aria-pressed="false" aria-controls="{{ table_id }}">Alles</button>
+		</div>
+	</div>
+</div>
+{%- endmacro %}

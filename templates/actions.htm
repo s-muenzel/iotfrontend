@@ -1,5 +1,6 @@
 {% extends "site_page.htm" %}
 {% set active_page = "rules" %}
+{% from "partials/table_controls.htm" import table_controls %}
 
 {% block title %}Alte Rinne 14 - Regeln{% endblock %}
 
@@ -17,21 +18,7 @@
 {% block content %}
       <section class="w3-card-4 w3-white">
         <h2 class="w3-container w3-teal">Regeln</h2>
-        <div class="table-toolbar" data-controls-for="T">
-          <button class="w3-button w3-round filter-toggle" type="button" data-filter-toggle
-            aria-label="Filter aktivieren" aria-pressed="false" title="Filter aktivieren">
-            <i class="fa fa-filter" aria-hidden="true"></i> Filter
-          </button>
-          <button class="w3-button w3-round filter-visibility-toggle" type="button"
-            data-filter-visibility-toggle aria-label="Filterbereich anzeigen" aria-expanded="false"
-            aria-controls="filterRow" title="Filterbereich anzeigen" hidden>
-            <i class="fa fa-eye" aria-hidden="true"></i>
-          </button>
-          <span class="table-toolbar-label">Ansicht:</span>
-          <button class="w3-button w3-small w3-round w3-blue w3-border" type="button"
-            data-table-view-toggle aria-expanded="false" aria-pressed="false" aria-controls="T"
-            title="Weitere Spalten sind verborgen">Kompakt</button>
-        </div>
+        {{ table_controls("T", "filterRow") }}
         <div class="w3-responsive">
           <table id="T" class="w3-table-all w3-hoverable w3-card-4 data-table"
             data-sortable-filterable>

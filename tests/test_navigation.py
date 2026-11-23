@@ -87,7 +87,8 @@ class NavigationTests(unittest.TestCase):
 
         for response in responses[1:]:
             self.assertIn(b"data-sortable-filterable", response.data)
-            self.assertIn(b"data-table-view-toggle", response.data)
+            self.assertIn(b'data-table-view="compact"', response.data)
+            self.assertIn(b'data-table-view="complete"', response.data)
             self.assertIn(b"data-filter-toggle", response.data)
 
     def test_activity_form_uses_document_base_without_site_navigation(self):
