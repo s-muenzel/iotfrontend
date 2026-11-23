@@ -41,8 +41,13 @@ def iot():
 
 @web_bp.route('/historie.htm')
 def historie():
-    """Render the history page placeholder."""
-    return render_template('historie.htm')
+    """Render the history of successfully applied activities."""
+    try:
+        eintraege = db.get_activities_history()
+        return render_template('historie.htm', eintraege=eintraege)
+    except Exception as err:
+        logging.warning("Error in historie(): %s", str(err))
+        return _error_response("allgemeiner Fehler")
 
 
 @web_bp.route('/heizung/status')

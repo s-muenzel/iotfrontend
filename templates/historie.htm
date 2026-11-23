@@ -34,7 +34,34 @@
             <h2 class="w3-xlarge">Historie</h2>
         </header>
         <main class="w3-container" style="padding:32px">
-            <p>Historie der erfolgreich angewendeten Regeln.</p>
+            {% if eintraege %}
+            <div class="w3-responsive">
+                <table class="w3-table-all w3-hoverable w3-card-4">
+                    <thead>
+                        <tr>
+                            <th scope="col">Zeit</th>
+                            <th scope="col">Regel</th>
+                            <th scope="col">Raum</th>
+                            <th scope="col">Typ</th>
+                            <th scope="col">Wert</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for eintrag in eintraege %}
+                        <tr>
+                            <td>{{ eintrag[0] }}</td>
+                            <td>{{ eintrag[1] }}</td>
+                            <td>{{ eintrag[2] }}</td>
+                            <td>{{ eintrag[3] }}</td>
+                            <td>{{ eintrag[4] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p>Noch keine erfolgreich angewendeten Regeln.</p>
+            {% endif %}
         </main>
     </div>
     <script>

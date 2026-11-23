@@ -84,6 +84,25 @@ def get_heating_data():
         db_connection.close()
 
 
+def get_activities_history():
+    """Fetch activity history entries from the Aktivitaeten view."""
+    query = """
+        SELECT time, name, raum, typ, wert
+        FROM Aktivitaeten
+        ORDER BY time DESC
+    """
+    db_connection = get_connection()
+    try:
+        cursor = db_connection.cursor()
+        try:
+            cursor.execute(query)
+            return [row for row in cursor]
+        finally:
+            cursor.close()
+    finally:
+        db_connection.close()
+
+
 def getColor(type, value):
     """Return an interpolated hex color."""
     # Definition der MinMax-Werte für jeden Typ
