@@ -1,0 +1,30 @@
+<nav class="w3-sidebar w3-bar-block w3-collapse w3-animate-left w3-card" style="z-index:3;width:250px;"
+	id="mySidebar">
+	<a class="w3-bar-item w3-button w3-hide-large w3-large" href="javascript:void(0)"
+		onclick="w3_close()">Schliessen <i class="fa fa-remove"></i></a>
+	<a class="w3-bar-item w3-button {% if active_page == 'dashboard' %}w3-teal{% endif %}"
+		href="/" {% if active_page == 'dashboard' %}aria-current="page"{% endif %}>Home</a>
+	<a class="w3-bar-item w3-button" href="/#wetter">Wetter</a>
+	<a class="w3-bar-item w3-button" href="/#rollos">Rollos</a>
+	<a class="w3-bar-item w3-button" href="/#garage">Garage</a>
+	<a class="w3-bar-item w3-button" href="/#leuchten">Leuchten</a>
+	<a class="w3-bar-item w3-button" href="/#wasser">Wasser</a>
+	<a class="w3-bar-item w3-button" href="/#heizung">Heizung</a>
+	<a class="w3-bar-item w3-button" href="/#strom">Strom</a>
+	<a class="w3-bar-item w3-button {% if active_page in ['devices', 'rules', 'history'] %}w3-teal{% endif %}"
+		href="/iot.htm" {% if active_page in ['devices', 'rules', 'history'] %}aria-current="page"{% endif %}>
+		Verwaltung...</a>
+	{% if active_page in ['devices', 'rules', 'history'] %}
+	<div class="w3-bar-block" style="margin-left:16px;border-left:4px solid #009688">
+		<a class="w3-bar-item w3-button {% if active_page == 'devices' %}w3-light-grey{% endif %}"
+			style="padding-left:32px" href="/iot.htm"
+			{% if active_page == 'devices' %}aria-current="page"{% endif %}>Ger&auml;te</a>
+		<a class="w3-bar-item w3-button {% if active_page == 'rules' %}w3-light-grey{% endif %}"
+			style="padding-left:32px" href="/actions"
+			{% if active_page == 'rules' %}aria-current="page"{% endif %}>Regeln</a>
+		<a class="w3-bar-item w3-button {% if active_page == 'history' %}w3-light-grey{% endif %}"
+			style="padding-left:32px" href="/historie.htm"
+			{% if active_page == 'history' %}aria-current="page"{% endif %}>Historie</a>
+	</div>
+	{% endif %}
+</nav>

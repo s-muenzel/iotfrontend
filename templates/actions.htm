@@ -17,6 +17,11 @@
       font-family: "Roboto", sans-serif;
     }
 
+    .w3-bar-block .w3-bar-item {
+      padding: 16px;
+      font-weight: bold;
+    }
+
     .w3-table-all td,
     .w3-table-all th {
       vertical-align: middle;
@@ -73,6 +78,15 @@
 </head>
 
 <body>
+  {% set active_page = "rules" %}
+  {% include "partials/navigation.htm" %}
+  <div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="w3_close()"
+    style="cursor:pointer" id="myOverlay"></div>
+  <div class="w3-main" style="margin-left:250px;">
+    <div id="myTop" class="w3-container w3-top w3-theme w3-large">
+      <p><i class="fa fa-bars w3-button w3-teal w3-hide-large w3-xlarge"
+          onclick="w3_open()"></i><span id="myIntro" class="w3-hide">Alte Rinne 14</span></p>
+    </div>
   <header class="w3-container w3-theme w3-padding-32">
     <h1 class="w3-xxxlarge">Alte Rinne 14 - IOT Regeln</h1>
   </header>
@@ -171,6 +185,7 @@
     <p><a class="w3-button w3-light-grey w3-round" href="/"><i class="fas fa-arrow-left" aria-hidden="true"></i>
         Zurück</a></p>
   </main>
+  </div>
 
   <script>
     var sortierSpalte = -1;
@@ -333,6 +348,29 @@
         window.location.assign("/aktiondelete?actionid=" + n);
       }
     }
+  </script>
+  <script>
+    function w3_open() {
+      document.getElementById("mySidebar").style.display = "block";
+      document.getElementById("myOverlay").style.display = "block";
+    }
+
+    function w3_close() {
+      document.getElementById("mySidebar").style.display = "none";
+      document.getElementById("myOverlay").style.display = "none";
+    }
+
+    window.onscroll = function () {
+      var top = document.getElementById("myTop");
+      var intro = document.getElementById("myIntro");
+      if (document.body.scrollTop > 80 || document.documentElement.scrollTop > 80) {
+        top.classList.add("w3-card-4", "w3-animate-opacity");
+        intro.classList.add("w3-show-inline-block");
+      } else {
+        intro.classList.remove("w3-show-inline-block");
+        top.classList.remove("w3-card-4", "w3-animate-opacity");
+      }
+    };
   </script>
 </body>
 

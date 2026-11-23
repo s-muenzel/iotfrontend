@@ -39,6 +39,12 @@ def iot():
         return _error_response("allgemeiner Fehler")
 
 
+@web_bp.route('/historie.htm')
+def historie():
+    """Render the history page placeholder."""
+    return render_template('historie.htm')
+
+
 @web_bp.route('/heizung/status')
 def heizung_status():
     """Return the latest thermostat readings stored in the database."""

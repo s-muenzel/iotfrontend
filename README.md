@@ -22,8 +22,10 @@ can be set in 0.5 degree increments from 8 to 28 degrees C.
 
 ## Other pages
 
-- `/iot.htm` lists configured IoT devices.
-- `/actions` and related routes manage configured activities and actions.
+- `/iot.htm` lists network devices.
+- `/actions` lists configured automation rules; related routes manage them.
+- `/historie.htm` is the placeholder page for the history of successfully
+  applied rules.
 
 There are no separate `/strom` or `/heizung` pages. Their content is part of
 the home dashboard. The dashboard uses `/status_s` for power data and
