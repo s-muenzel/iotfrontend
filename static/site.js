@@ -33,8 +33,78 @@ function initializeDataTable(table) {
 	const viewOptions = controls.querySelectorAll("[data-table-view]");
 	let filtersEnabled = false;
 	let filterControlsVisible = false;
+	let filterStorageAvailable = true;
 	let sortedColumn = -1;
 	let ascending = true;
+	const filterStorageKey = "iotfrontend:table-filters:"
+		+ window.location.pathname + ":" + table.id;
+
+	function readSavedFilterState() {
+		let serializedState;
+		try {
+			serializedState = window.localStorage.getItem(filterStorageKey);
+		} catch (error) {
+			filterStorageAvailable = false;
+			console.error("Could not read saved table filters.", error);
+			return null;
+		}
+		if (serializedState === null) return null;
+
+		let savedState;
+		try {
+			savedState = JSON.parse(serializedState);
+		} catch (error) {
+			console.error("Could not parse saved table filters.", error);
+			return null;
+		}
+
+		const isRecord = function (value) {
+			return value !== null && typeof value === "object"
+				&& !Array.isArray(value);
+		};
+		if (!isRecord(savedState)
+			|| savedState.version !== 1
+			|| typeof savedState.filtersEnabled !== "boolean"
+			|| typeof savedState.filterControlsVisible !== "boolean"
+			|| !isRecord(savedState.textFilters)
+			|| !isRecord(savedState.selectedValues)) {
+			console.error("Ignoring invalid saved table filters.");
+			return null;
+		}
+
+		return savedState;
+	}
+
+	function saveFilterState() {
+		if (!filterStorageAvailable) return;
+
+		const textFilters = {};
+		table.querySelectorAll(".filter-text").forEach(function (input) {
+			textFilters[input.dataset.filterColumn] = input.value;
+		});
+		const selectedValues = {};
+		table.querySelectorAll(".filter-options").forEach(function (container) {
+			selectedValues[container.dataset.filterColumn] = Array.from(
+				container.querySelectorAll("input:checked")
+			).map(function (checkbox) { return checkbox.value; });
+		});
+
+		const savedState = {
+			version: 1,
+			filtersEnabled: filtersEnabled,
+			filterControlsVisible: filterControlsVisible,
+			textFilters: textFilters,
+			selectedValues: selectedValues
+		};
+		try {
+			window.localStorage.setItem(
+				filterStorageKey, JSON.stringify(savedState)
+			);
+		} catch (error) {
+			filterStorageAvailable = false;
+			console.error("Could not save table filters.", error);
+		}
+	}
 
 	function updateFilterVisibility() {
 		filterRow.hidden = !filterControlsVisible;
@@ -49,6 +119,17 @@ function initializeDataTable(table) {
 		const icon = filterVisibilityToggle.querySelector("i");
 		icon.classList.toggle("fa-eye", filterControlsVisible);
 		icon.classList.toggle("fa-eye-slash", !filterControlsVisible);
+	}
+
+	function updateFilterToggle() {
+		filterToggle.classList.toggle("filter-active", filtersEnabled);
+		filterToggle.setAttribute("aria-pressed", String(filtersEnabled));
+		const label = filtersEnabled
+			? "Filter deaktivieren"
+			: "Filter aktivieren";
+		filterToggle.setAttribute("aria-label", label);
+		filterToggle.title = label;
+		filterVisibilityToggle.hidden = !filtersEnabled;
 	}
 
 	function applyFilters() {
@@ -113,7 +194,10 @@ function initializeDataTable(table) {
 			const checkbox = document.createElement("input");
 			checkbox.type = "checkbox";
 			checkbox.value = value;
-			checkbox.addEventListener("change", applyFilters);
+			checkbox.addEventListener("change", function () {
+				applyFilters();
+				saveFilterState();
+			});
 			label.appendChild(checkbox);
 			label.appendChild(document.createTextNode(
 				" " + values.get(value)
@@ -122,27 +206,48 @@ function initializeDataTable(table) {
 		});
 	});
 
+	const savedFilterState = readSavedFilterState();
+	if (savedFilterState) {
+		filtersEnabled = savedFilterState.filtersEnabled;
+		filterControlsVisible = filtersEnabled
+			&& savedFilterState.filterControlsVisible;
+		table.querySelectorAll(".filter-text").forEach(function (input) {
+			const value = savedFilterState.textFilters[input.dataset.filterColumn];
+			if (value !== undefined) input.value = value;
+		});
+		table.querySelectorAll(".filter-options").forEach(function (container) {
+			const values =
+				savedFilterState.selectedValues[container.dataset.filterColumn];
+			if (!Array.isArray(values)) return;
+			container.querySelectorAll("input[type=checkbox]").forEach(
+				function (checkbox) {
+					checkbox.checked = values.indexOf(checkbox.value) !== -1;
+				}
+			);
+		});
+	}
+
 	table.querySelectorAll(".filter-text").forEach(function (input) {
-		input.addEventListener("input", applyFilters);
+		input.addEventListener("input", function () {
+			applyFilters();
+			saveFilterState();
+		});
 	});
 
 	filterToggle.addEventListener("click", function () {
 		filtersEnabled = !filtersEnabled;
 		filterControlsVisible = filtersEnabled;
-		filterToggle.classList.toggle("filter-active", filtersEnabled);
-		filterToggle.setAttribute("aria-pressed", String(filtersEnabled));
-		const label = filtersEnabled ? "Filter deaktivieren" : "Filter aktivieren";
-		filterToggle.setAttribute("aria-label", label);
-		filterToggle.title = label;
-		filterVisibilityToggle.hidden = !filtersEnabled;
+		updateFilterToggle();
 		updateFilterVisibility();
 		applyFilters();
+		saveFilterState();
 	});
 
 	filterVisibilityToggle.addEventListener("click", function () {
 		if (!filtersEnabled) return;
 		filterControlsVisible = !filterControlsVisible;
 		updateFilterVisibility();
+		saveFilterState();
 	});
 
 	function setTableView(view) {
@@ -220,7 +325,9 @@ function initializeDataTable(table) {
 		});
 	});
 
+	updateFilterToggle();
 	updateFilterVisibility();
+	applyFilters();
 }
 
 document.querySelectorAll("table[data-sortable-filterable]").forEach(
