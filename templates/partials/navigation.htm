@@ -16,13 +16,13 @@
 		Verwaltung...</a>
 	{% if active_page in ['devices', 'rules', 'history'] %}
 	<div class="w3-bar-block" style="margin-left:16px;border-left:4px solid #009688">
-		<a class="w3-bar-item w3-button {% if active_page == 'devices' %}w3-light-grey{% endif %}"
+		<a class="w3-bar-item w3-button {% if active_page == 'devices' %}w3-teal{% endif %}"
 			style="padding-left:32px" href="/iot.htm"
 			{% if active_page == 'devices' %}aria-current="page"{% endif %}>Ger&auml;te</a>
-		<a class="w3-bar-item w3-button {% if active_page == 'rules' %}w3-light-grey{% endif %}"
+		<a class="w3-bar-item w3-button {% if active_page == 'rules' %}w3-teal{% endif %}"
 			style="padding-left:32px" href="/actions"
 			{% if active_page == 'rules' %}aria-current="page"{% endif %}>Regeln</a>
-		<a class="w3-bar-item w3-button {% if active_page == 'history' %}w3-light-grey{% endif %}"
+		<a class="w3-bar-item w3-button {% if active_page == 'history' %}w3-teal{% endif %}"
 			style="padding-left:32px" href="/historie.htm"
 			{% if active_page == 'history' %}aria-current="page"{% endif %}>Historie</a>
 	</div>

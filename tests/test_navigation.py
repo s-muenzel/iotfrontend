@@ -33,6 +33,7 @@ class NavigationTests(unittest.TestCase):
         self.assertIn('href="/actions"', navigation)
         self.assertIn('href="/historie.htm"', navigation)
         self.assertIn('aria-current="page">Ger&auml;te</a>', navigation)
+        self.assertEqual(navigation.count("w3-teal"), 2)
 
     def test_history_route_renders_shared_navigation(self):
         app = Flask(

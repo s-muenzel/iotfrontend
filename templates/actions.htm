@@ -7,7 +7,7 @@
   <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" sizes="any">
   <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32.png') }}">
   <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
-  <title>Alte Rinne 14 - IOT Regeln</title>
+  <title>Alte Rinne 14 - Regeln für die Automatisierung</title>
   <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
   <link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-teal.css">
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css"
@@ -80,111 +80,111 @@
 <body>
   {% set active_page = "rules" %}
   {% include "partials/navigation.htm" %}
-  <div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="w3_close()"
-    style="cursor:pointer" id="myOverlay"></div>
+  <div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="w3_close()" style="cursor:pointer" id="myOverlay">
+  </div>
   <div class="w3-main" style="margin-left:250px;">
     <div id="myTop" class="w3-container w3-top w3-theme w3-large">
-      <p><i class="fa fa-bars w3-button w3-teal w3-hide-large w3-xlarge"
-          onclick="w3_open()"></i><span id="myIntro" class="w3-hide">Alte Rinne 14</span></p>
+      <p><i class="fa fa-bars w3-button w3-teal w3-hide-large w3-xlarge" onclick="w3_open()"></i><span id="myIntro"
+          class="w3-hide">Alte Rinne 14</span></p>
     </div>
-  <header class="w3-container w3-theme w3-padding-32">
-    <h1 class="w3-xxxlarge">Alte Rinne 14 - IOT Regeln</h1>
-  </header>
+    <header class="w3-container w3-theme" style="padding:64px 32px">
+      <h1 class="w3-xxxlarge">Alte Rinne 14</h1>
+      <h2 class="w3-xlarge">Regeln für die Automatisierung</h2>
+    </header>
 
-  <main class="w3-content w3-padding-32" style="max-width:1100px">
-    <section class="w3-card-4 w3-white">
-      <h2 class="w3-container w3-teal">Regeln</h2>
-      <div class="w3-responsive">
-        <table id="T" class="w3-table-all w3-hoverable w3-card-4">
-          <thead>
-            <tr>
-              <th class="status-header" scope="col" onclick="sortTable(0)" aria-sort="none">
-                <button class="w3-button w3-round filter-toggle" type="button" onclick="toggleFilters(event)"
-                  aria-label="Filter aktivieren" aria-pressed="false"
-                  title="Filter aktivieren">
-                  <i class="fas fa-filter" aria-hidden="true"></i>
-                </button>
-                <button class="w3-button w3-round filter-visibility-toggle" type="button"
-                  onclick="toggleFilterVisibility(event)" aria-label="Filterbereich ausblenden"
-                  aria-expanded="false" aria-controls="filterRow" title="Filterbereich ausblenden" hidden>
-                  <i class="fas fa-eye" aria-hidden="true"></i>
-                </button>
-                Status
-                <i class="fa sort-indicator" data-column="0" aria-hidden="true"></i>
-              </th>
-              <th scope="col" onclick="sortTable(1)" aria-sort="none">Regel
-                <i class="fa sort-indicator" data-column="1" aria-hidden="true"></i>
-              </th>
-              <th scope="col" onclick="sortTable(2)" aria-sort="none">Raum
-                <i class="fa sort-indicator" data-column="2" aria-hidden="true"></i>
-              </th>
-              <th scope="col" onclick="sortTable(3)" aria-sort="none">Typ
-                <i class="fa sort-indicator" data-column="3" aria-hidden="true"></i>
-              </th>
-              <th scope="col" onclick="sortTable(4)" aria-sort="none">Beschreibung
-                <i class="fa sort-indicator" data-column="4" aria-hidden="true"></i>
-              </th>
-            </tr>
-            <tr id="filterRow" class="filter-row" hidden>
-              <th scope="col">
-                <div class="filter-options" data-filter-column="0"></div>
-              </th>
-              <th scope="col">
-                <input class="filter-text" type="search" data-filter-column="1" aria-label="Regel filtern"
-                  placeholder="Regel filtern">
-              </th>
-              <th scope="col">
-                <div class="filter-options" data-filter-column="2"></div>
-              </th>
-              <th scope="col">
-                <div class="filter-options" data-filter-column="3"></div>
-              </th>
-              <th scope="col">
-                <input class="filter-text" type="search" data-filter-column="4" aria-label="Beschreibung filtern"
-                  placeholder="Beschreibung filtern">
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for item in eintraege %}
-            <tr>
-              <td class="action-controls" data-sort="{% if item[2]>0 %}1{% else %}0{% endif %}">
-                <button class="w3-btn w3-round w3-hover-red" type="button" onclick="aktion_remove({{ item[1] }})"
-                  aria-label="Regel {{ item[0] }} löschen" title="Regel löschen">
-                  <i class="fas fa-trash-alt" aria-hidden="true"></i>
-                </button>
-                <a class="w3-button w3-round {% if item[2]>0 %}w3-text-green w3-hover-pale-green{% else %}w3-text-red w3-hover-pale-red{% endif %}"
-                  href="/aktion/SchalteUm/{{ item[1] }}" aria-label="Status von {{ item[0] }} umschalten"
-                  title="Status umschalten">
-                  {% if item[2]>0 %}
-                  <span><i class="fas fa-toggle-on" aria-hidden="true"></i></span>
-                  {% else %}
-                  <span><i class="fas fa-toggle-off" aria-hidden="true"></i></span>
-                  {% endif %}
-                </a>
-              </td>
-              <td><a class="w3-text-teal" href="/action/{{ item[1] }}">{{ item[0] }}</a></td>
-              <td>{{ item[4] }}</td>
-              <td>{{ item[5] }}</td>
-              <td>{% if item[3] %}{{ item[3] }}{% endif %}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-      <div class="w3-container w3-padding">
-        <a class="w3-button w3-theme w3-round" href="/aktion/add">
-          <i class="fas fa-plus" aria-hidden="true"></i> Regel hinzufügen
-        </a>
-      </div>
-    </section>
+    <main class="w3-content w3-padding-32" style="max-width:1100px">
+      <section class="w3-card-4 w3-white">
+        <h2 class="w3-container w3-teal">Regeln</h2>
+        <div class="w3-responsive">
+          <table id="T" class="w3-table-all w3-hoverable w3-card-4">
+            <thead>
+              <tr>
+                <th class="status-header" scope="col" onclick="sortTable(0)" aria-sort="none">
+                  <button class="w3-button w3-round filter-toggle" type="button" onclick="toggleFilters(event)"
+                    aria-label="Filter aktivieren" aria-pressed="false" title="Filter aktivieren">
+                    <i class="fas fa-filter" aria-hidden="true"></i>
+                  </button>
+                  <button class="w3-button w3-round filter-visibility-toggle" type="button"
+                    onclick="toggleFilterVisibility(event)" aria-label="Filterbereich ausblenden" aria-expanded="false"
+                    aria-controls="filterRow" title="Filterbereich ausblenden" hidden>
+                    <i class="fas fa-eye" aria-hidden="true"></i>
+                  </button>
+                  Status
+                  <i class="fa sort-indicator" data-column="0" aria-hidden="true"></i>
+                </th>
+                <th scope="col" onclick="sortTable(1)" aria-sort="none">Regel
+                  <i class="fa sort-indicator" data-column="1" aria-hidden="true"></i>
+                </th>
+                <th scope="col" onclick="sortTable(2)" aria-sort="none">Raum
+                  <i class="fa sort-indicator" data-column="2" aria-hidden="true"></i>
+                </th>
+                <th scope="col" onclick="sortTable(3)" aria-sort="none">Typ
+                  <i class="fa sort-indicator" data-column="3" aria-hidden="true"></i>
+                </th>
+                <th scope="col" onclick="sortTable(4)" aria-sort="none">Beschreibung
+                  <i class="fa sort-indicator" data-column="4" aria-hidden="true"></i>
+                </th>
+              </tr>
+              <tr id="filterRow" class="filter-row" hidden>
+                <th scope="col">
+                  <div class="filter-options" data-filter-column="0"></div>
+                </th>
+                <th scope="col">
+                  <input class="filter-text" type="search" data-filter-column="1" aria-label="Regel filtern"
+                    placeholder="Regel filtern">
+                </th>
+                <th scope="col">
+                  <div class="filter-options" data-filter-column="2"></div>
+                </th>
+                <th scope="col">
+                  <div class="filter-options" data-filter-column="3"></div>
+                </th>
+                <th scope="col">
+                  <input class="filter-text" type="search" data-filter-column="4" aria-label="Beschreibung filtern"
+                    placeholder="Beschreibung filtern">
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in eintraege %}
+              <tr>
+                <td class="action-controls" data-sort="{% if item[2]>0 %}1{% else %}0{% endif %}">
+                  <button class="w3-btn w3-round w3-hover-red" type="button" onclick="aktion_remove({{ item[1] }})"
+                    aria-label="Regel {{ item[0] }} löschen" title="Regel löschen">
+                    <i class="fas fa-trash-alt" aria-hidden="true"></i>
+                  </button>
+                  <a class="w3-button w3-round {% if item[2]>0 %}w3-text-green w3-hover-pale-green{% else %}w3-text-red w3-hover-pale-red{% endif %}"
+                    href="/aktion/SchalteUm/{{ item[1] }}" aria-label="Status von {{ item[0] }} umschalten"
+                    title="Status umschalten">
+                    {% if item[2]>0 %}
+                    <span><i class="fas fa-toggle-on" aria-hidden="true"></i></span>
+                    {% else %}
+                    <span><i class="fas fa-toggle-off" aria-hidden="true"></i></span>
+                    {% endif %}
+                  </a>
+                </td>
+                <td><a class="w3-text-teal" href="/action/{{ item[1] }}">{{ item[0] }}</a></td>
+                <td>{{ item[4] }}</td>
+                <td>{{ item[5] }}</td>
+                <td>{% if item[3] %}{{ item[3] }}{% endif %}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="w3-container w3-padding">
+          <a class="w3-button w3-theme w3-round" href="/aktion/add">
+            <i class="fas fa-plus" aria-hidden="true"></i> Regel hinzufügen
+          </a>
+        </div>
+      </section>
 
-    <div class="w3-panel w3-pale-yellow w3-leftbar w3-border-yellow">
-      <p>Regeln geändert? Dann <a class="w3-text-teal" href="/reloadaktions">hier neu laden</a>.</p>
-    </div>
-    <p><a class="w3-button w3-light-grey w3-round" href="/"><i class="fas fa-arrow-left" aria-hidden="true"></i>
-        Zurück</a></p>
-  </main>
+      <div class="w3-panel w3-pale-yellow w3-leftbar w3-border-yellow">
+        <p>Regeln geändert? Dann <a class="w3-text-teal" href="/reloadaktions">hier neu laden</a>.</p>
+      </div>
+      <p><a class="w3-button w3-light-grey w3-round" href="/"><i class="fas fa-arrow-left" aria-hidden="true"></i>
+          Zurück</a></p>
+    </main>
   </div>
 
   <script>
