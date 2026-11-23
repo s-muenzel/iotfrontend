@@ -1,91 +1,82 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" sizes="any">
-    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-    <link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-teal.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <style>
-        body {
-            font-family: "Roboto", sans-serif
-        }
+{% extends "site_page.htm" %}
+{% set active_page = "history" %}
 
-        .w3-bar-block .w3-bar-item {
-            padding: 16px;
-            font-weight: bold;
-        }
-    </style>
-    <title>Alte Rinne 14 - Historie</title>
-</head>
-<body>
-    {% set active_page = "history" %}
-    {% include "partials/navigation.htm" %}
-    <div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="w3_close()"
-        style="cursor:pointer" id="myOverlay"></div>
-    <div class="w3-main" style="margin-left:250px;">
-        <div id="myTop" class="w3-container w3-top w3-theme w3-large">
-            <p><i class="fa fa-bars w3-button w3-teal w3-hide-large w3-xlarge"
-                    onclick="w3_open()"></i><span id="myIntro" class="w3-hide">Alte Rinne 14</span></p>
-        </div>
-        <header class="w3-container w3-theme" style="padding:64px 32px">
-            <h1 class="w3-xxxlarge">Alte Rinne 14</h1>
-            <h2 class="w3-xlarge">Historie</h2>
-        </header>
-        <main class="w3-container" style="padding:32px">
-            {% if eintraege %}
-            <div class="w3-responsive">
-                <table class="w3-table-all w3-hoverable w3-card-4">
-                    <thead>
-                        <tr>
-                            <th scope="col">Zeit</th>
-                            <th scope="col">Regel</th>
-                            <th scope="col">Raum</th>
-                            <th scope="col">Typ</th>
-                            <th scope="col">Wert</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for eintrag in eintraege %}
-                        <tr>
-                            <td>{{ eintrag[0] }}</td>
-                            <td>{{ eintrag[1] }}</td>
-                            <td>{{ eintrag[2] }}</td>
-                            <td>{{ eintrag[3] }}</td>
-                            <td>{{ eintrag[4] }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% else %}
-            <p>Noch keine erfolgreich angewendeten Regeln.</p>
-            {% endif %}
-        </main>
-    </div>
-    <script>
-        function w3_open() {
-            document.getElementById("mySidebar").style.display = "block";
-            document.getElementById("myOverlay").style.display = "block";
-        }
+{% block title %}Alte Rinne 14 - Historie{% endblock %}
 
-        function w3_close() {
-            document.getElementById("mySidebar").style.display = "none";
-            document.getElementById("myOverlay").style.display = "none";
-        }
+{% block page_header %}
+	<h2 class="w3-xlarge">Historie</h2>
+{% endblock %}
 
-        window.onscroll = function () {
-            var top = document.getElementById("myTop");
-            var intro = document.getElementById("myIntro");
-            if (document.body.scrollTop > 80 || document.documentElement.scrollTop > 80) {
-                top.classList.add("w3-card-4", "w3-animate-opacity");
-                intro.classList.add("w3-show-inline-block");
-            } else {
-                intro.classList.remove("w3-show-inline-block");
-                top.classList.remove("w3-card-4", "w3-animate-opacity");
-            }
-        };
-    </script>
-</body>
-</html>
+{% block main_class %}site-content site-content--wide{% endblock %}
+
+{% block content %}
+	{% if eintraege %}
+	<section class="w3-card-4 w3-white">
+		<h2 class="w3-container w3-teal">Historie</h2>
+		<div class="table-toolbar" data-controls-for="T">
+			<button class="w3-button w3-round filter-toggle" type="button" data-filter-toggle
+				aria-label="Filter aktivieren" aria-pressed="false" title="Filter aktivieren">
+				<i class="fa fa-filter" aria-hidden="true"></i> Filter
+			</button>
+			<button class="w3-button w3-round filter-visibility-toggle" type="button"
+				data-filter-visibility-toggle aria-label="Filterbereich anzeigen" aria-expanded="false"
+				aria-controls="filterRow" title="Filterbereich anzeigen" hidden>
+				<i class="fa fa-eye" aria-hidden="true"></i>
+			</button>
+			<span class="table-toolbar-label">Ansicht:</span>
+			<button class="w3-button w3-small w3-round w3-blue w3-border" type="button"
+				data-table-view-toggle aria-expanded="false" aria-pressed="false" aria-controls="T"
+				title="Weitere Spalten sind verborgen">Kompakt</button>
+		</div>
+		<div class="w3-responsive">
+			<table id="T" class="w3-table-all w3-hoverable w3-card-4 data-table"
+				data-sortable-filterable>
+				<thead>
+					<tr>
+						<th scope="col" data-sort-column="0" tabindex="0" aria-sort="none">Zeit
+							<i class="fa fa-sort sort-indicator" aria-hidden="true"></i>
+						</th>
+						<th scope="col" data-sort-column="1" tabindex="0" aria-sort="none">Regel
+							<i class="fa fa-sort sort-indicator" aria-hidden="true"></i>
+						</th>
+						<th class="optional-column" scope="col" data-sort-column="2" tabindex="0" aria-sort="none">Raum
+							<i class="fa fa-sort sort-indicator" aria-hidden="true"></i>
+						</th>
+						<th class="optional-column" scope="col" data-sort-column="3" tabindex="0" aria-sort="none">Typ
+							<i class="fa fa-sort sort-indicator" aria-hidden="true"></i>
+						</th>
+						<th class="optional-column"  scope="col" data-sort-column="4" tabindex="0" aria-sort="none">Wert
+							<i class="fa fa-sort sort-indicator" aria-hidden="true"></i>
+						</th>
+					</tr>
+					<tr id="filterRow" class="filter-row" hidden>
+						<th scope="col"><input class="filter-text" type="search" data-filter-column="0"
+							aria-label="Zeit filtern" placeholder="Zeit filtern"></th>
+						<th scope="col"><input class="filter-text" type="search" data-filter-column="1"
+							aria-label="Regel filtern" placeholder="Regel filtern"></th>
+						<th class="optional-column" scope="col"><input class="filter-text" type="search"
+							data-filter-column="2" aria-label="Raum filtern" placeholder="Raum filtern"></th>
+						<th class="optional-column" scope="col"><input class="filter-text" type="search"
+							data-filter-column="3" aria-label="Typ filtern" placeholder="Typ filtern"></th>
+						<th scope="col"><input class="filter-text" type="search" data-filter-column="4"
+							aria-label="Wert filtern" placeholder="Wert filtern"></th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for eintrag in eintraege %}
+					<tr>
+						<td>{{ eintrag[0] }}</td>
+						<td>{{ eintrag[1] }}</td>
+						<td class="optional-column">{{ eintrag[2] }}</td>
+						<td class="optional-column">{{ eintrag[3] }}</td>
+						<td>{{ eintrag[4] }}</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</section>
+	{% else %}
+	<p>Noch keine erfolgreich angewendeten Regeln.</p>
+	{% endif %}
+{% endblock %}

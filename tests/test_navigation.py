@@ -67,18 +67,28 @@ class NavigationTests(unittest.TestCase):
                 patch.object(routes_web, "_get_heating_rooms", return_value=()), \
                 patch.object(routes_web.db, "get_device_list", return_value=[]), \
                 patch.object(routes_web, "check_netzwerkfehler", return_value=[]), \
-                patch.object(routes_actions.db, "get_activities", return_value=[]):
+                patch.object(routes_actions.db, "get_activities", return_value=[]), \
+                patch.object(
+                    routes_web.db, "get_activities_history",
+                    return_value=[("2024-05-01", "Rule", "Kitchen", "temp", "20")]
+                ):
             client = app.test_client()
             responses = [
                 client.get("/"),
                 client.get("/iot.htm"),
                 client.get("/actions"),
+                client.get("/historie.htm"),
             ]
 
         for response in responses:
             self.assertEqual(response.status_code, 200)
             self.assertIn(b"/static/site.css", response.data)
             self.assertIn(b'id="mySidebar"', response.data)
+
+        for response in responses[1:]:
+            self.assertIn(b"data-sortable-filterable", response.data)
+            self.assertIn(b"data-table-view-toggle", response.data)
+            self.assertIn(b"data-filter-toggle", response.data)
 
     def test_activity_form_uses_document_base_without_site_navigation(self):
         app = Flask(__name__, template_folder=str(TEMPLATES))

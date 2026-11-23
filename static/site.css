@@ -19,9 +19,77 @@ body {
 	padding: 32px;
 }
 
-.site-content--wide {
-	max-width: 1100px;
-	margin: 0 auto;
+.table-toolbar {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	padding: 1rem;
+}
+
+.table-toolbar-label {
+	margin-right: 0.25rem;
+}
+
+.data-table td,
+.data-table th {
+	vertical-align: middle;
+}
+
+.data-table th[data-sort-column] {
+	cursor: pointer;
+}
+
+.data-table th.status-header {
+	text-align: right;
+}
+
+.table-toolbar .filter-toggle,
+.table-toolbar .filter-visibility-toggle {
+	margin-left: 0.35em;
+	padding: 4px 8px;
+	vertical-align: middle;
+}
+
+.table-toolbar .filter-toggle.filter-active {
+	color: #ffeb3b;
+}
+
+.table-toolbar .filter-visibility-toggle[hidden] {
+	display: none;
+}
+
+.data-table .filter-row[hidden] {
+	display: none;
+}
+
+.data-table .optional-column {
+	display: none;
+}
+
+.data-table.show-optional-columns .optional-column {
+	display: table-cell;
+}
+
+.data-table .filter-options {
+	max-height: 8rem;
+	overflow-y: auto;
+	text-align: left;
+	font-weight: normal;
+}
+
+.data-table .filter-option {
+	display: block;
+	white-space: nowrap;
+}
+
+.data-table .filter-text {
+	box-sizing: border-box;
+	width: 100%;
+}
+
+.data-table td.action-controls {
+	white-space: nowrap;
 }
 
 @media (max-width: 992px) {

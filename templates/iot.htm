@@ -3,168 +3,123 @@
 
 {% block title %}Alte Rinne 14 - IoT Geräte{% endblock %}
 
-{% block extra_head %}
-	<script src="https://kit.fontawesome.com/d76bf21353.js" crossorigin="anonymous"></script>
-	<style>
-		#T .optional-column {
-			display: none;
-		}
-
-		#T.show-optional-columns .optional-column {
-			display: table-cell;
-		}
-	</style>
-{% endblock %}
-
 {% block page_header %}
 	<h2 class="w3-xlarge">Ger&auml;te</h2>
 {% endblock %}
 
+{% block main_class %}site-content site-content--wide{% endblock %}
+
 {% block content %}
 	{% if netzfehler %}
-		<div class="w3-container" style="padding:32px">
-			<h2 class="w3-xlarge w3-red">Netzwerkfehler</h2>
-			<ul class="w3-ul w3-card-4 w3-hoverable">
-				{% for fehler in netzfehler %}
-				<li>{{ fehler.device }}: {{ fehler.fehler }} (soll: {{ fehler.soll }}, ist: {{ fehler.ist }})</li>
-				{% endfor %}
-			</ul>
-		</div>
-		{% endif %}
-
-		<div class="w3-container" style="padding:32px">
-			Ansicht:
-			<button id="toggle-columns" class="w3-btn w3-small w3-ripple w3-round-small w3-blue w3-border" type="button"
-				onclick="toggleColumns()" aria-expanded="false" aria-controls="T"
-				title="Weitere Spalten sind verborgen">
-				Kompakt
-			</button>
-		</div>
-
-		<table id="T" class="w3-table-all w3-hoverable w3-card-4">
-            <thead>
-			<tr>
-				<th onclick="sortTable(0)">Gerät <i class="fa sort-indicator" data-column="0" aria-hidden="true"></i>
-				</th>
-				<th onclick="sortTable(1)">Status <i class="fa sort-indicator" data-column="1" aria-hidden="true"></i>
-				</th>
-				<th onclick="sortTable(2)">Beschreibung <i class="fa sort-indicator" data-column="2"
-						aria-hidden="true"></i></th>
-				<th onclick="sortTable(3)">Typ <i class="fa sort-indicator" data-column="3" aria-hidden="true"></i></th>
-				<th class="optional-column" onclick="sortTable(4)">IPv4 <i class="fa sort-indicator" data-column="4"
-						aria-hidden="true"></i>
-				</th>
-				<th class="optional-column" onclick="sortTable(5)">MAC <i class="fa sort-indicator" data-column="5"
-						aria-hidden="true"></i></th>
-				<th class="optional-column" onclick="sortTable(6)">Com-Typ <i class="fa sort-indicator" data-column="6"
-						aria-hidden="true"></i>
-				</th>
-				<th class="optional-column" onclick="sortTable(7)">MQTT-Name <i class="fa sort-indicator"
-						data-column="7" aria-hidden="true"></i></th>
-				<th class="optional-column" onclick="sortTable(8)">Letzter Update <i class="fa sort-indicator"
-						data-column="8" aria-hidden="true"></i></th>
-			</tr>
-          </thead>
-          <tbody>
-
-			{% for item in eintraege %}
-			<tr>
-				<td>
-					{% if item[7] == "up"%}
-					{% if item[5] == "http" %}
-					<a href="http://{{ item[1] }}" target="_blank">{{ item[0] }}</a>
-					{%else%}
-					{{ item[0] }}
-					{%endif%}
-					{% else %}
-					{{ item[0] }}
-					{% endif %}
-				</td>
-				<td>
-					{% if item[7]=="up" %}
-					<i class="fa-regular fa-thumbs-up" style="color: rgb(0, 255, 0);"></i>
-					{% elif item[7]=="down" %}
-					<i class="fa-regular fa-thumbs-down" style="color: rgb(255, 0, 0);"></i>
-					{% else %}
-					<i class="fa-regular fa-regular fa-circle-question"></i>
-					{% endif %}
-				</td>
-				<td>{{ item[3] }}</td>
-				<td>{{ item[4] }}</td>
-				<td class="optional-column">{{ item[1] }}</td>
-				<td class="optional-column">{{ item[2] }}</td>
-				<td class="optional-column">{{ item[5] }}</td>
-				<td class="optional-column">{{ item[6] }}</td>
-				<td class="optional-column">{{ item[8] }}</td>
-			</tr>
+	<div class="w3-panel w3-pale-red w3-leftbar w3-border-red">
+		<h2 class="w3-xlarge">Netzwerkfehler</h2>
+		<ul class="w3-ul w3-card-4 w3-hoverable">
+			{% for fehler in netzfehler %}
+			<li>{{ fehler.device }}: {{ fehler.fehler }} (soll: {{ fehler.soll }}, ist: {{ fehler.ist }})</li>
 			{% endfor %}
-		  </tbody>
-		</table>
-{% endblock %}
+		</ul>
+	</div>
+	{% endif %}
 
-{% block page_scripts %}
-<script>
-	var sortierSpalte = -1;
-	var aufsteigend = true;
-	function sortTable(col) {
-		if (sortierSpalte === col) {
-			aufsteigend = !aufsteigend;
-		} else {
-			sortierSpalte = col;
-			aufsteigend = true;
-		}
-		var indicators = document.querySelectorAll(".sort-indicator");
-		for (var indicator of indicators) {
-			indicator.classList.remove("fa-sort-asc", "fa-sort-desc");
-			if (Number(indicator.dataset.column) === col) {
-				indicator.classList.add(aufsteigend ? "fa-sort-desc" : "fa-sort-asc");
-			}
-		}
-		var table, rows, switching, i, x, y, shouldSwitch;
-		table = document.getElementById("T");
-		switching = true;
-		/*Make a loop that will continue until
-		no switching has been done:*/
-		while (switching) {
-			//start by saying: no switching is done:
-			switching = false;
-			rows = table.rows;
-			/*Loop through all table rows (except the
-			first, which contains table headers):*/
-			for (i = 1; i < (rows.length - 1); i++) {
-				//start by saying there should be no switching:
-				shouldSwitch = false;
-				/*Get the two elements you want to compare,
-				one from current row and one from the next:*/
-				x = rows[i].getElementsByTagName("TD")[col];
-				y = rows[i + 1].getElementsByTagName("TD")[col];
-				//check if the two rows should switch place:
-				if ((aufsteigend && x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) ||
-					(!aufsteigend && x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase())) {
-					//if so, mark as a switch and break the loop:
-					shouldSwitch = true;
-					break;
-				}
-			}
-			if (shouldSwitch) {
-				/*If a switch has been marked, make the switch
-				and mark that a switch has been done:*/
-				rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-				switching = true;
-			}
-		}
-	}
-
-	function toggleColumns() {
-		var table = document.getElementById("T");
-		var button = document.getElementById("toggle-columns");
-		var expanded = button.getAttribute("aria-expanded") === "true";
-
-		table.classList.toggle("show-optional-columns", !expanded);
-		button.setAttribute("aria-expanded", String(!expanded));
-		button.title = expanded ? "Weitere Spalten sind verborgen" : "Alle Spalten angezeigt";
-		button.textContent = expanded ? "Kompakt" : "Komplett";
-	}
-
-</script>
+	<section class="w3-card-4 w3-white">
+		<h2 class="w3-container w3-teal">Ger&auml;te</h2>
+		<div class="table-toolbar" data-controls-for="T">
+			<button class="w3-button w3-round filter-toggle" type="button" data-filter-toggle
+				aria-label="Filter aktivieren" aria-pressed="false" title="Filter aktivieren">
+				<i class="fa fa-filter" aria-hidden="true"></i> Filter
+			</button>
+			<button class="w3-button w3-round filter-visibility-toggle" type="button"
+				data-filter-visibility-toggle aria-label="Filterbereich anzeigen" aria-expanded="false"
+				aria-controls="filterRow" title="Filterbereich anzeigen" hidden>
+				<i class="fa fa-eye" aria-hidden="true"></i>
+			</button>
+			<span class="table-toolbar-label">Ansicht:</span>
+			<button class="w3-button w3-small w3-round w3-blue w3-border" type="button"
+				data-table-view-toggle aria-expanded="false" aria-pressed="false" aria-controls="T"
+				title="Weitere Spalten sind verborgen">Kompakt</button>
+		</div>
+		<div class="w3-responsive">
+			<table id="T" class="w3-table-all w3-hoverable w3-card-4 data-table"
+				data-sortable-filterable>
+				<thead>
+					<tr>
+						<th scope="col" data-sort-column="0" tabindex="0" aria-sort="none">Ger&auml;t
+							<i class="fa fa-sort sort-indicator" aria-hidden="true"></i>
+						</th>
+						<th scope="col" data-sort-column="1" tabindex="0" aria-sort="none">Status
+							<i class="fa fa-sort sort-indicator" aria-hidden="true"></i>
+						</th>
+						<th scope="col" data-sort-column="2" tabindex="0" aria-sort="none">Beschreibung
+							<i class="fa fa-sort sort-indicator" aria-hidden="true"></i>
+						</th>
+						<th scope="col" data-sort-column="3" tabindex="0" aria-sort="none">Typ
+							<i class="fa fa-sort sort-indicator" aria-hidden="true"></i>
+						</th>
+						<th class="optional-column" scope="col" data-sort-column="4" tabindex="0" aria-sort="none">IPv4
+							<i class="fa fa-sort sort-indicator" aria-hidden="true"></i>
+						</th>
+						<th class="optional-column" scope="col" data-sort-column="5" tabindex="0" aria-sort="none">MAC
+							<i class="fa fa-sort sort-indicator" aria-hidden="true"></i>
+						</th>
+						<th class="optional-column" scope="col" data-sort-column="6" tabindex="0" aria-sort="none">Com-Typ
+							<i class="fa fa-sort sort-indicator" aria-hidden="true"></i>
+						</th>
+						<th class="optional-column" scope="col" data-sort-column="7" tabindex="0" aria-sort="none">MQTT-Name
+							<i class="fa fa-sort sort-indicator" aria-hidden="true"></i>
+						</th>
+						<th class="optional-column" scope="col" data-sort-column="8" tabindex="0" aria-sort="none">Letzter Update
+							<i class="fa fa-sort sort-indicator" aria-hidden="true"></i>
+						</th>
+					</tr>
+					<tr id="filterRow" class="filter-row" hidden>
+						<th scope="col"><input class="filter-text" type="search" data-filter-column="0"
+							aria-label="Gerät filtern" placeholder="Gerät filtern"></th>
+						<th scope="col"><div class="filter-options" data-filter-column="1"></div></th>
+						<th scope="col"><input class="filter-text" type="search" data-filter-column="2"
+							aria-label="Beschreibung filtern" placeholder="Beschreibung filtern"></th>
+						<th scope="col"><div class="filter-options" data-filter-column="3"></div></th>
+						<th class="optional-column" scope="col"><input class="filter-text" type="search"
+							data-filter-column="4" aria-label="IPv4 filtern" placeholder="IPv4 filtern"></th>
+						<th class="optional-column" scope="col"><input class="filter-text" type="search"
+							data-filter-column="5" aria-label="MAC filtern" placeholder="MAC filtern"></th>
+						<th class="optional-column" scope="col"><div class="filter-options" data-filter-column="6"></div></th>
+						<th class="optional-column" scope="col"><input class="filter-text" type="search"
+							data-filter-column="7" aria-label="MQTT-Name filtern" placeholder="MQTT-Name filtern"></th>
+						<th class="optional-column" scope="col"><input class="filter-text" type="search"
+							data-filter-column="8" aria-label="Letztes Update filtern" placeholder="Letztes Update filtern"></th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for item in eintraege %}
+					<tr>
+						<td>
+							{% if item[7] == "up" and item[5] == "http" %}
+							<a href="http://{{ item[1] }}" target="_blank" rel="noopener">{{ item[0] }}</a>
+							{% else %}
+							{{ item[0] }}
+							{% endif %}
+						</td>
+						<td data-sort="{{ item[7] or '' }}" data-filter-value="{{ item[7] or '' }}"
+							data-filter-label="{% if item[7] == 'up' %}Online{% elif item[7] == 'down' %}Offline{% else %}Unbekannt{% endif %}">
+							{% if item[7] == "up" %}
+							<i class="fa fa-thumbs-up" style="color: rgb(0, 180, 0);" aria-label="Online"></i>
+							{% elif item[7] == "down" %}
+							<i class="fa fa-thumbs-down" style="color: rgb(255, 0, 0);" aria-label="Offline"></i>
+							{% else %}
+							<i class="fa fa-question-circle" aria-label="Unbekannt"></i>
+							{% endif %}
+						</td>
+						<td>{{ item[3] }}</td>
+						<td>{{ item[4] }}</td>
+						<td class="optional-column">{{ item[1] }}</td>
+						<td class="optional-column">{{ item[2] }}</td>
+						<td class="optional-column">{{ item[5] }}</td>
+						<td class="optional-column">{{ item[6] }}</td>
+						<td class="optional-column">{{ item[8] }}</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</section>
 {% endblock %}

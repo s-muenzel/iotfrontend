@@ -6,60 +6,6 @@
 {% block extra_head %}
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css"
     integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
-  <style>
-    .w3-table-all td,
-    .w3-table-all th {
-      vertical-align: middle;
-    }
-
-    .w3-table-all th[onclick] {
-      cursor: pointer;
-    }
-
-    .w3-table-all th.status-header {
-      text-align: right;
-    }
-
-    .w3-table-all th .filter-toggle,
-    .w3-table-all th .filter-visibility-toggle {
-      margin-left: 0.35em;
-      padding: 4px 8px;
-      vertical-align: middle;
-    }
-
-    .w3-table-all th .filter-toggle.filter-active {
-      color: #ffeb3b;
-    }
-
-    .w3-table-all th .filter-visibility-toggle[hidden] {
-      display: none;
-    }
-
-    .w3-table-all tr.filter-row[hidden] {
-      display: none;
-    }
-
-    .filter-options {
-      max-height: 8rem;
-      overflow-y: auto;
-      text-align: left;
-      font-weight: normal;
-    }
-
-    .filter-option {
-      display: block;
-      white-space: nowrap;
-    }
-
-    .filter-text {
-      box-sizing: border-box;
-      width: 100%;
-    }
-
-    .w3-table-all td.action-controls {
-      white-space: nowrap;
-    }
-  </style>
 {% endblock %}
 
 {% block page_header %}
@@ -71,34 +17,43 @@
 {% block content %}
       <section class="w3-card-4 w3-white">
         <h2 class="w3-container w3-teal">Regeln</h2>
+        <div class="table-toolbar" data-controls-for="T">
+          <button class="w3-button w3-round filter-toggle" type="button" data-filter-toggle
+            aria-label="Filter aktivieren" aria-pressed="false" title="Filter aktivieren">
+            <i class="fa fa-filter" aria-hidden="true"></i> Filter
+          </button>
+          <button class="w3-button w3-round filter-visibility-toggle" type="button"
+            data-filter-visibility-toggle aria-label="Filterbereich anzeigen" aria-expanded="false"
+            aria-controls="filterRow" title="Filterbereich anzeigen" hidden>
+            <i class="fa fa-eye" aria-hidden="true"></i>
+          </button>
+          <span class="table-toolbar-label">Ansicht:</span>
+          <button class="w3-button w3-small w3-round w3-blue w3-border" type="button"
+            data-table-view-toggle aria-expanded="false" aria-pressed="false" aria-controls="T"
+            title="Weitere Spalten sind verborgen">Kompakt</button>
+        </div>
         <div class="w3-responsive">
-          <table id="T" class="w3-table-all w3-hoverable w3-card-4">
+          <table id="T" class="w3-table-all w3-hoverable w3-card-4 data-table"
+            data-sortable-filterable>
             <thead>
               <tr>
-                <th class="status-header" scope="col" onclick="sortTable(0)" aria-sort="none">
-                  <button class="w3-button w3-round filter-toggle" type="button" onclick="toggleFilters(event)"
-                    aria-label="Filter aktivieren" aria-pressed="false" title="Filter aktivieren">
-                    <i class="fas fa-filter" aria-hidden="true"></i>
-                  </button>
-                  <button class="w3-button w3-round filter-visibility-toggle" type="button"
-                    onclick="toggleFilterVisibility(event)" aria-label="Filterbereich ausblenden" aria-expanded="false"
-                    aria-controls="filterRow" title="Filterbereich ausblenden" hidden>
-                    <i class="fas fa-eye" aria-hidden="true"></i>
-                  </button>
-                  Status
-                  <i class="fa sort-indicator" data-column="0" aria-hidden="true"></i>
+                <th scope="col" data-sort-column="0" tabindex="0" aria-sort="none">Status
+                  <i class="fa fa-sort sort-indicator" aria-hidden="true"></i>
                 </th>
-                <th scope="col" onclick="sortTable(1)" aria-sort="none">Regel
-                  <i class="fa sort-indicator" data-column="1" aria-hidden="true"></i>
+                <th scope="col" data-sort-column="1" tabindex="0" aria-sort="none">Regel
+                  <i class="fa fa-sort sort-indicator" aria-hidden="true"></i>
                 </th>
-                <th scope="col" onclick="sortTable(2)" aria-sort="none">Raum
-                  <i class="fa sort-indicator" data-column="2" aria-hidden="true"></i>
+                <th scope="col" data-sort-column="2" tabindex="0" aria-sort="none">Raum
+                  <i class="fa fa-sort sort-indicator" aria-hidden="true"></i>
                 </th>
-                <th scope="col" onclick="sortTable(3)" aria-sort="none">Typ
-                  <i class="fa sort-indicator" data-column="3" aria-hidden="true"></i>
+                <th scope="col" data-sort-column="3" tabindex="0" aria-sort="none">Typ
+                  <i class="fa fa-sort sort-indicator" aria-hidden="true"></i>
                 </th>
-                <th scope="col" onclick="sortTable(4)" aria-sort="none">Beschreibung
-                  <i class="fa sort-indicator" data-column="4" aria-hidden="true"></i>
+                <th scope="col" data-sort-column="4" tabindex="0" aria-sort="none">Beschreibung
+                  <i class="fa fa-sort sort-indicator" aria-hidden="true"></i>
+                </th>
+                <th class="optional-column" scope="col" data-sort-column="5" tabindex="0" aria-sort="none">Bedingungen
+                  <i class="fa fa-sort sort-indicator" aria-hidden="true"></i>
                 </th>
               </tr>
               <tr id="filterRow" class="filter-row" hidden>
@@ -106,8 +61,7 @@
                   <div class="filter-options" data-filter-column="0"></div>
                 </th>
                 <th scope="col">
-                  <input class="filter-text" type="search" data-filter-column="1" aria-label="Regel filtern"
-                    placeholder="Regel filtern">
+                  <input class="filter-text" type="search" data-filter-column="1" aria-label="Regel filtern" placeholder="Regel filtern">
                 </th>
                 <th scope="col">
                   <div class="filter-options" data-filter-column="2"></div>
@@ -119,12 +73,18 @@
                   <input class="filter-text" type="search" data-filter-column="4" aria-label="Beschreibung filtern"
                     placeholder="Beschreibung filtern">
                 </th>
+                <th class="optional-column" scope="col">
+                  <input class="filter-text" type="search" data-filter-column="5" aria-label="Bedingungen filtern"
+                    placeholder="Bedingungen filtern">
+                </th>
               </tr>
             </thead>
             <tbody>
               {% for item in eintraege %}
               <tr>
-                <td class="action-controls" data-sort="{% if item[2]>0 %}1{% else %}0{% endif %}">
+                <td class="action-controls" data-sort="{% if item[2]>0 %}1{% else %}0{% endif %}"
+                  data-filter-value="{% if item[2]>0 %}1{% else %}0{% endif %}"
+                  data-filter-label="{% if item[2]>0 %}Aktiv{% else %}Inaktiv{% endif %}">
                   <button class="w3-btn w3-round w3-hover-red" type="button" onclick="aktion_remove({{ item[1] }})"
                     aria-label="Regel {{ item[0] }} löschen" title="Regel löschen">
                     <i class="fas fa-trash-alt" aria-hidden="true"></i>
@@ -143,6 +103,7 @@
                 <td>{{ item[4] }}</td>
                 <td>{{ item[5] }}</td>
                 <td>{% if item[3] %}{{ item[3] }}{% endif %}</td>
+                <td class="optional-column">{{ item[6]|join(", ") }}</td>
               </tr>
               {% endfor %}
             </tbody>
@@ -164,161 +125,6 @@
 
 {% block page_scripts %}
   <script>
-    var sortierSpalte = -1;
-    var aufsteigend = true;
-    var filtersEnabled = false;
-    var filterControlsVisible = false;
-
-    function toggleFilters(event) {
-      event.stopPropagation();
-      filtersEnabled = !filtersEnabled;
-      filterControlsVisible = filtersEnabled;
-
-      var filterRow = document.getElementById("filterRow");
-      var toggle = document.querySelector(".filter-toggle");
-      var visibilityToggle = document.querySelector(".filter-visibility-toggle");
-      toggle.classList.toggle("filter-active", filtersEnabled);
-      toggle.setAttribute("aria-pressed", String(filtersEnabled));
-      toggle.setAttribute("aria-label", filtersEnabled ? "Filter deaktivieren" : "Filter aktivieren");
-      toggle.title = filtersEnabled ? "Filter deaktivieren" : "Filter aktivieren";
-      visibilityToggle.hidden = !filtersEnabled;
-      updateFilterControlsVisibility();
-      applyTableFilters();
-    }
-
-    function toggleFilterVisibility(event) {
-      event.stopPropagation();
-      if (!filtersEnabled) return;
-      filterControlsVisible = !filterControlsVisible;
-      updateFilterControlsVisibility();
-    }
-
-    function updateFilterControlsVisibility() {
-      document.getElementById("filterRow").hidden = !filterControlsVisible;
-      var toggle = document.querySelector(".filter-visibility-toggle");
-      toggle.setAttribute("aria-expanded", String(filterControlsVisible));
-      toggle.setAttribute("aria-label", filterControlsVisible ? "Filterbereich ausblenden" : "Filterbereich anzeigen");
-      toggle.title = filterControlsVisible ? "Filterbereich ausblenden" : "Filterbereich anzeigen";
-      var icon = toggle.querySelector("i");
-      icon.classList.toggle("fa-eye", filterControlsVisible);
-      icon.classList.toggle("fa-eye-slash", !filterControlsVisible);
-    }
-
-    function initializeFilters() {
-      document.querySelectorAll(".filter-options").forEach(function (container) {
-        var column = Number(container.dataset.filterColumn);
-        var values = new Set();
-        Array.from(document.getElementById("T").tBodies[0].rows).forEach(function (row) {
-          var cell = row.cells[column];
-          var value = column === 0 ? cell.getAttribute("data-sort") : cell.textContent.trim();
-          values.add(value === null ? "" : value);
-        });
-
-        Array.from(values).sort(function (a, b) {
-          return a.localeCompare(b, "de", { sensitivity: "base", numeric: true });
-        }).forEach(function (value) {
-          var label = document.createElement("label");
-          label.className = "filter-option";
-          var checkbox = document.createElement("input");
-          checkbox.type = "checkbox";
-          checkbox.value = value;
-          checkbox.dataset.filterColumn = String(column);
-          checkbox.addEventListener("change", applyTableFilters);
-          label.appendChild(checkbox);
-
-          var displayValue = column === 0
-            ? (value === "1" ? "Active" : "Inactive")
-            : (value || "(leer)");
-          label.appendChild(document.createTextNode(" " + displayValue));
-          container.appendChild(label);
-        });
-      });
-
-      document.querySelectorAll(".filter-text").forEach(function (input) {
-        input.addEventListener("input", applyTableFilters);
-      });
-    }
-
-    function applyTableFilters() {
-      var table = document.getElementById("T");
-      var rows = Array.from(table.tBodies[0].rows);
-      if (!filtersEnabled) {
-        rows.forEach(function (row) {
-          row.style.display = "";
-        });
-        return;
-      }
-
-      rows.forEach(function (row) {
-        var matches = true;
-        document.querySelectorAll(".filter-options").forEach(function (container) {
-          if (!matches) return;
-          var column = Number(container.dataset.filterColumn);
-          var selectedValues = Array.from(container.querySelectorAll("input:checked"))
-            .map(function (checkbox) { return checkbox.value; });
-          if (selectedValues.length === 0) return;
-
-          var cell = row.cells[column];
-          var value = column === 0 ? cell.getAttribute("data-sort") : cell.textContent.trim();
-          if (selectedValues.indexOf(value === null ? "" : value) === -1) matches = false;
-        });
-
-        document.querySelectorAll(".filter-text").forEach(function (input) {
-          if (!matches || !input.value.trim()) return;
-          var column = Number(input.dataset.filterColumn);
-          var text = row.cells[column].textContent.toLocaleLowerCase("de");
-          if (text.indexOf(input.value.trim().toLocaleLowerCase("de")) === -1) matches = false;
-        });
-
-        row.style.display = matches ? "" : "none";
-      });
-    }
-
-    function sortTable(column) {
-      if (sortierSpalte === column) {
-        aufsteigend = !aufsteigend;
-      } else {
-        sortierSpalte = column;
-        aufsteigend = true;
-      }
-
-      document.querySelectorAll("#T th[aria-sort]")
-        .forEach(function (header) {
-          var indicator = header.querySelector(".sort-indicator");
-          var isCurrent = Number(indicator.dataset.column) === column;
-          header.setAttribute(
-            "aria-sort",
-            isCurrent ? (aufsteigend ? "ascending" : "descending") : "none"
-          );
-          indicator.classList.remove("fa-sort-up", "fa-sort-down");
-          if (isCurrent) {
-            indicator.classList.add(aufsteigend ? "fa-sort-up" : "fa-sort-down");
-          }
-        });
-
-      var table = document.getElementById("T");
-      var tbody = table.tBodies[0];
-      var rows = Array.from(tbody.rows);
-      rows.sort(function (a, b) {
-        var aCell = a.cells[column];
-        var bCell = b.cells[column];
-        var aValue = aCell.getAttribute("data-sort");
-        var bValue = bCell.getAttribute("data-sort");
-        if (aValue === null) aValue = aCell.textContent.trim();
-        if (bValue === null) bValue = bCell.textContent.trim();
-        var comparison = aValue.localeCompare(bValue, "de", {
-          numeric: true,
-          sensitivity: "base"
-        });
-        return aufsteigend ? comparison : -comparison;
-      });
-      rows.forEach(function (row) {
-        tbody.appendChild(row);
-      });
-    }
-
-    initializeFilters();
-
     function aktion_remove(n) {
       if (confirm("Regel löschen (kein Undo!)")) {
         window.location.assign("/aktiondelete?actionid=" + n);

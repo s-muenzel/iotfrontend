@@ -319,7 +319,7 @@ def get_activities():
     """Fetch all activities (actions).
 
     Returns:
-        list: List of [name, id, activ] for each activity
+        list: List of activity details, including their conditions
     """
     activities = []
     try:
@@ -329,12 +329,33 @@ def get_activities():
             "SELECT id, name, description, activ, raum, typ "
             "FROM activities ORDER BY name"
         )
-        for activity_id, name, description, activ, raum, typ in cursor:
-            activities.append(
-                [name, activity_id, activ, description or "", raum or "",
-                 typ or "_"]
+        activity_rows = list(cursor)
+        cursor.close()
+
+        cursor = db_connection.cursor()
+        cursor.execute(
+            "SELECT id, typ, min, max FROM activity_conditions "
+            "ORDER BY id, lfdnr"
+        )
+        conditions_by_activity = {}
+        for activity_id, condition_type, minimum, maximum in cursor:
+            values = [
+                str(value) for value in (minimum, maximum)
+                if value not in (None, "")
+            ]
+            condition = condition_type
+            if values:
+                condition += " ({})".format(", ".join(values))
+            conditions_by_activity.setdefault(activity_id, []).append(
+                condition
             )
         cursor.close()
+
+        for activity_id, name, description, activ, raum, typ in activity_rows:
+            activities.append([
+                name, activity_id, activ, description or "", raum or "",
+                typ or "_", conditions_by_activity.get(activity_id, [])
+            ])
         db_connection.close()
     except mariadb.Error as err:
         logging.warning("Database failure: %s", err)

@@ -1,7 +1,8 @@
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from flask import Flask
+import database
 import routes_actions
 
 
@@ -14,35 +15,66 @@ class ActivityFormRouteTests(unittest.TestCase):
     def test_actions_table_orders_columns_and_matches_sort_indicators(self):
         with patch.object(
                 routes_actions.db, "get_activities",
-                return_value=[["Rule", 7, 1, "Description", "Living room", "Rollo"]]):
+                return_value=[[
+                    "Rule", 7, 1, "Description", "Living room", "Rollo",
+                    ["temp (20, 25)"]
+                ]]):
             response = self.client.get("/actions")
 
         self.assertEqual(response.status_code, 200)
         for column, heading in (
                 (0, "Status"), (1, "Regel"), (2, "Raum"),
-                (3, "Typ"), (4, "Beschreibung")):
+                (3, "Typ"), (4, "Beschreibung"), (5, "Bedingungen")):
             self.assertIn(
-                f'onclick="sortTable({column})" aria-sort="none">{heading}'.encode(),
+                f'data-sort-column="{column}" tabindex="0" aria-sort="none">{heading}'.encode(),
                 response.data
             )
             self.assertIn(
-                f'class="fa sort-indicator" data-column="{column}"'.encode(),
+                b'class="fa fa-sort sort-indicator"',
                 response.data
             )
         headings = [
             response.data.index(b">" + heading.encode() + b"\n")
-            for heading in ("Status", "Regel", "Raum", "Typ", "Beschreibung")
+            for heading in (
+                "Status", "Regel", "Raum", "Typ", "Beschreibung", "Bedingungen"
+            )
         ]
         self.assertEqual(headings, sorted(headings))
         self.assertIn(b'data-sort="1"', response.data)
-        self.assertIn(b'function sortTable(column)', response.data)
-        self.assertIn(b'fa-sort-up", "fa-sort-down"', response.data)
-        self.assertIn(b'class="status-header"', response.data)
+        self.assertIn(b'data-sortable-filterable', response.data)
+        self.assertIn(b'data-table-view-toggle', response.data)
+        self.assertIn(b'data-filter-toggle', response.data)
+        self.assertIn(b'class="optional-column">temp (20, 25)</td>', response.data)
         self.assertIn(b'class="action-controls" data-sort="1"', response.data)
-        self.assertIn(b'<span class="w3-tooltip">', response.data)
-        self.assertNotIn(b'<p class="w3-tooltip">', response.data)
         self.assertIn(b"<td>Living room</td>", response.data)
         self.assertIn(b"<td>Rollo</td>", response.data)
+
+    def test_get_activities_includes_conditions_for_matching_activity(self):
+        activity_cursor = MagicMock()
+        activity_cursor.__iter__.return_value = iter([
+            (7, "Rule", "Description", 1, "Living room", "Rollo"),
+            (8, "No conditions", None, 0, None, None),
+        ])
+        condition_cursor = MagicMock()
+        condition_cursor.__iter__.return_value = iter([
+            (7, "temp", "20", "25"),
+            (7, "tag", "4", "0"),
+        ])
+        connection = MagicMock()
+        connection.cursor.side_effect = [activity_cursor, condition_cursor]
+
+        with patch.object(database, "get_connection", return_value=connection):
+            activities = database.get_activities()
+
+        self.assertEqual(activities[0][6], ["temp (20, 25)", "tag (4, 0)"])
+        self.assertEqual(activities[1][6], [])
+        self.assertIn(
+            "FROM activity_conditions",
+            condition_cursor.execute.call_args.args[0]
+        )
+        activity_cursor.close.assert_called_once()
+        condition_cursor.close.assert_called_once()
+        connection.close.assert_called_once()
 
     def test_create_and_edit_pages_use_one_shared_form(self):
         with patch.object(
